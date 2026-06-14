@@ -246,7 +246,7 @@
     <div class="nav-item" onclick="switchNav('profil', 4, this)"><div style="width: 22px; height: 22px; border-radius: 50%; overflow: hidden; border: 1.5px solid currentColor; margin-bottom: 2px;"><img src="profile.jpg" style="width:100%; height:100%; object-fit:cover;"></div><span class="nav-label">Profil</span></div>
   </div>
 
-  <script>
+    <script>
     const SUPABASE_URL = "https://djojqarslfsvubuflwdn.supabase.co";
     const SUPABASE_KEY = "sb_publishable_vqUvkJX5XNx5_D75lCnJzw_KPeFSim9"; 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -259,6 +259,8 @@
             tampilkanAlert("Akses Admin Diterima!", "sukses");
             document.getElementById('loginLockOverlay').classList.add('hidden');
             ambilDataWeb(); 
+            // SINKRONISASI AKTIF: Langsung muat status saklar dari server pas sukses login!
+            muatStatusSosmedAdmin(); 
         } else {
             tampilkanAlert("PIN Salah! Akses Ditolak.", "error");
             document.getElementById('adminPinInput').value = '';
@@ -294,7 +296,7 @@
         else { form.style.display = 'block'; btn.innerHTML = '<i class="fas fa-times-circle"></i> Batalkan Input'; }
     }
 
-    // 3. LOGIKA POP-UP EDIT REAL-TIME
+    // LOGIKA POP-UP EDIT REAL-TIME
     function bukaPopupEdit(id, tabel, dataLama) {
         document.getElementById('edit-id').value = id;
         document.getElementById('edit-table').value = tabel;
@@ -398,7 +400,7 @@
     }
     async function hapusStore(id) { if(confirm("Hapus?")) { await supabaseClient.from('store_products').delete().eq('id', id); ambilDataStore(); } }
 
-    // 4. FUNGSI TEMA WARNA
+    // FUNGSI TEMA WARNA
     function gantiTemaAdmin(color, el) {
         document.querySelectorAll('.theme-dot').forEach(e => e.classList.remove('selected'));
         el.classList.add('selected');
@@ -406,35 +408,41 @@
         localStorage.setItem('adminThemeColor', color);
     }
     
-    // 5. FUNGSI ON/OFF SOSMED KE LOCALSTORAGE
-    function simpanSosmed() {
-        let sosmedSettings = {
+    // FUNGSI UPDATE STATUS ON/OFF SOSMED LANGSUNG KE SUPABASE
+    async function simpanSosmed() {
+        const platforms = {
             tiktok: document.getElementById('tg-tiktok').checked,
             ig: document.getElementById('tg-ig').checked,
             tele: document.getElementById('tg-tele').checked,
             dc: document.getElementById('tg-dc').checked,
             socia: document.getElementById('tg-socia').checked
         };
-        localStorage.setItem('sosmedVisibility', JSON.stringify(sosmedSettings));
-        tampilkanAlert("Setting Sosmed Disimpan!");
+
+        for (const [namaPlatform, statusTampil] of Object.entries(platforms)) {
+            await supabaseClient
+                .from('sosmed_visibility')
+                .update({ is_visible: statusTampil })
+                .eq('platform', namaPlatform);
+        }
+        tampilkanAlert("Status Sosmed di Web Publik Berhasil Diperbarui!", "sukses");
+    }
+
+    // Ambil status asli dari server pas admin baru login
+    async function muatStatusSosmedAdmin() {
+        const { data, error } = await supabaseClient.from('sosmed_visibility').select('*');
+        if (data) {
+            data.forEach(row => {
+                const element = document.getElementById('tg-' + row.platform);
+                if (element) element.checked = row.is_visible;
+            });
+        }
     }
 
     window.onload = function() {
         document.getElementById('adminPinInput').focus();
-        
         // Load Tema
         let savedTheme = localStorage.getItem('adminThemeColor');
         if (savedTheme) { document.documentElement.style.setProperty('--tg-accent', savedTheme); }
-        
-        // Load Sosmed Setting
-        let savedSosmed = JSON.parse(localStorage.getItem('sosmedVisibility'));
-        if(savedSosmed) {
-            document.getElementById('tg-tiktok').checked = savedSosmed.tiktok;
-            document.getElementById('tg-ig').checked = savedSosmed.ig;
-            document.getElementById('tg-tele').checked = savedSosmed.tele;
-            document.getElementById('tg-dc').checked = savedSosmed.dc;
-            document.getElementById('tg-socia').checked = savedSosmed.socia;
-        }
     }
   </script>
 </body>
