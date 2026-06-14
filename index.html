@@ -3,413 +3,446 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Dashboard—Web Kyy</title>
-
+  
   <!-- 1. META TAG BANNER -->
-  <meta name="description" content="Web Dashboard kebutuhan menyefiakan alat", app mod dan serta app premium resmi.">
+  <title>Web Admin DEV - Rizky</title>
+  <meta name="description" content="Dashboard Administrator Utama Pengelola Database Website Rizky.">
   <meta property="og:title" content="Web Admin DEV - Rizky">
-  <meta property="og:description" content="Web Dashboard kebutuhan menyefiakan alat.">
-  <meta property="og:image" content="https://dasboard-web-kyy.vercel.app/profile.jpg"> <!-- Bisa diganti link gambar lu -->
+  <meta property="og:description" content="Akses Khusus Developer untuk manajemen aplikasi dan store.">
+  <meta property="og:image" content="https://dasboard-admin-kyy.vercel.app/profile.jpg"> <!-- Bisa diganti link gambar lu -->
   <meta property="og:type" content="website">
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+  
   <style>
-    /* VARIABEL TEMA WARNA AKSEN */
-    :root {
-      --tg-bg: #0e1621;
-      --tg-panel: #17212b;
-      --tg-accent: #3390ec;
-      --tg-text-muted: #7f91a4;
-      --tg-text: #ffffff;
-    }
-
+    :root { --tg-bg: #0e1621; --tg-panel: #17212b; --tg-accent: #3390ec; --tg-text-muted: #7f91a4; --tg-text: #ffffff; --admin-add: #10b981; --admin-edit: #f59e0b; --admin-delete: #ef4444; }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--tg-bg); color: var(--tg-text); height: 100vh; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; user-select: none; -webkit-tap-highlight-color: transparent; }
     
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--tg-bg);
-      color: var(--tg-text);
-      height: 100vh;
-      height: 100dvh; 
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    /* HEADER BANNER */
     .header-wrapper { padding: 15px 15px 5px 15px; background-color: var(--tg-bg); flex-shrink: 0; }
-    .tg-header-banner { position: relative; width: 100%; height: 90px; background-color: var(--tg-panel); border-radius: 18px; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-    .header-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; opacity: 0.4; pointer-events: none; }
-    .header-overlay-content { position: relative; z-index: 2; width: 100%; padding: 0 18px; display: flex; justify-content: space-between; align-items: center; }
-    .tg-title { font-size: 20px; font-weight: 800; text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.8); letter-spacing: 0.5px; color: var(--tg-accent); transition: color 0.3s ease; }
-    .tg-header-icons svg { width: 24px; height: 24px; fill: #ffffff; cursor: pointer; transition: transform 0.2s; }
-    .tg-header-icons svg:active { transform: scale(0.85); }
-
-    /* SEARCH & TABS */
-    .search-box-container { background-color: var(--tg-bg); padding: 5px 15px 10px 15px; display: none; flex-shrink: 0; animation: slideDown 0.3s ease; }
-    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-    .search-box-container.show { display: block; }
-    .search-input { width: 100%; padding: 12px 16px; border-radius: 12px; background-color: var(--tg-panel); border: 1px solid rgba(255, 255, 255, 0.08); color: #fff; font-size: 14px; outline: none; transition: border-color 0.3s; }
-    .search-input:focus { border-color: var(--tg-accent); }
-    .tg-tabs-container { background-color: var(--tg-bg); padding: 5px 15px 12px 15px; flex-shrink: 0; }
-    .tg-tabs { display: flex; background-color: var(--tg-panel); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
-    .tg-tab { flex: 1; text-align: center; padding: 10px 0; font-size: 14px; font-weight: 600; color: var(--tg-text-muted); display: flex; justify-content: center; align-items: center; gap: 6px; cursor: pointer; transition: all 0.3s ease; }
-    .tg-tab.active { background-color: rgba(255, 255, 255, 0.08); color: #ffffff; }
-    .tab-badge { background-color: #0e1621; color: var(--tg-text-muted); font-size: 11px; padding: 2px 7px; border-radius: 10px; transition: all 0.3s ease; }
-    .tg-tab.active .tab-badge { background-color: var(--tg-accent); color: white; }
-
-    /* PAGE CONTENT */
+    .tg-header-banner { position: relative; width: 100%; height: 90px; background-color: var(--tg-panel); border-radius: 18px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; }
+    .header-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; opacity: 0.3; pointer-events: none; }
+    .tg-title { font-size: 18px; font-weight: 800; color: var(--tg-accent); display: flex; align-items: center; gap: 8px; flex: 1; z-index: 2; transition: color 0.3s; }
+    .admin-badge { background: #ef4444; color: white; font-size: 10px; padding: 3px 6px; border-radius: 6px; font-weight: bold; }
+    
     .page-content { flex: 1; overflow-y: auto; display: none; padding: 5px 0 110px 0; -webkit-overflow-scrolling: touch; }
     .page-content.active { display: block; animation: fadeIn 0.4s ease; }
-    @keyframes fadeIn { from { opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-    /* CHAT ITEM (WEB) */
-    .chat-item { display: flex; align-items: center; gap: 12px; margin: 10px 15px; padding: 14px; border-radius: 14px; background: rgba(23,33,43,.6); border: 1px solid rgba(255,255,255,.06); cursor: pointer; transition: transform 0.2s; }
-    .chat-item:active { transform: scale(0.98); }
-    .avatar { width: 48px; height: 48px; border-radius: 12px; background: rgba(255,255,255,.08); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; overflow: hidden; }
-    .chat-content { flex: 1; min-width: 0; }
-    .chat-top, .chat-bottom { display: flex; justify-content: space-between; gap: 10px; }
-    .chat-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
-    .chat-msg { color: var(--tg-text-muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .chat-time { font-size: 12px; color: var(--tg-text-muted); flex-shrink: 0; }
-
-    /* MOD BOX ITEM (APP & STORE) */
-    .mod-box-item { background: rgba(23, 33, 43, 0.8); margin: 12px 15px; padding: 18px; border-radius: 18px; border: 1px solid rgba(255, 255, 255, 0.08); display: flex; flex-direction: column; gap: 12px; transition: transform 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-    .mod-box-header { display: flex; justify-content: space-between; align-items: center; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    
+    /* STYLE FORM & LIST */
+    .admin-add-trigger-box { border: 2px dashed var(--admin-add); background: rgba(16, 185, 129, 0.05); margin: 12px 15px; padding: 16px; border-radius: 16px; text-align: center; cursor: pointer; color: var(--admin-add); font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .admin-form-card { background: rgba(23, 33, 43, 0.9); margin: 10px 15px 20px 15px; padding: 20px; border-radius: 18px; border: 1px solid var(--admin-add); display: none; }
+    .admin-form-title { font-size: 15px; font-weight: bold; color: var(--admin-add); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+    .admin-input { width: 100%; padding: 12px 15px; margin-bottom: 12px; border-radius: 10px; background: var(--tg-bg); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 14px; outline: none; }
+    .admin-btn-save { width: 100%; padding: 12px; background: var(--admin-add); color: white; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; }
+    
+    .mod-box-item { background: rgba(23, 33, 43, 0.8); margin: 12px 15px; padding: 18px; border-radius: 18px; border: 1px solid rgba(255, 255, 255, 0.08); }
+    .mod-box-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .mod-box-title-group { display: flex; align-items: center; gap: 12px; }
-    .mod-box-icon { font-size: 26px; width: 48px; height: 48px; background: rgba(255,255,255,0.05); border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .mod-box-icon { width: 48px; height: 48px; background: rgba(255,255,255,0.05); border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 24px; }
     .mod-box-name { font-size: 16px; font-weight: 700; color: #ffffff; }
-    .mod-box-size { font-size: 12px; font-weight: 700; color: var(--tg-accent); background: rgba(255,255,255, 0.05); padding: 4px 10px; border-radius: 8px; transition: color 0.3s; }
+    .mod-box-size { font-size: 12px; font-weight: 700; color: var(--tg-accent); background: rgba(255,255,255, 0.05); padding: 4px 10px; border-radius: 8px; }
     .mod-box-desc { font-size: 13.5px; color: var(--tg-text-muted); line-height: 1.5; }
-    .mod-btn-download { width: 100%; padding: 12px; background: var(--tg-accent); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 14.5px; cursor: pointer; text-align: center; text-decoration: none; display: block; transition: background 0.3s, transform 0.1s; }
-    .mod-btn-download:active { opacity: 0.8; transform: translateY(2px); }
+    .admin-action-bar { display: flex; gap: 8px; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; }
+    .btn-admin { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; font-size: 13px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-admin.edit { background: rgba(245, 158, 11, 0.15); color: var(--admin-edit); border: 1px solid var(--admin-edit); }
+    .btn-admin.delete { background: rgba(239, 68, 68, 0.15); color: var(--admin-delete); border: 1px solid var(--admin-delete); }
+    
+    /* NAV BOTTOM */
+    .bottom-nav-wrapper { position: fixed; bottom: max(20px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: 92%; max-width: 440px; height: 68px; background-color: rgba(23, 33, 43, 0.95); backdrop-filter: blur(25px); border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8); z-index: 20; display: flex; align-items: center; }
+    .nav-item { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--tg-text-muted); cursor: pointer; z-index: 10; position: relative; width: 20%; transition: color 0.3s; }
+    .nav-item.active { color: #ffffff; }
+    .nav-item svg { width: 23px; height: 23px; fill: currentColor; margin-bottom: 4px; transition: transform 0.3s; }
+    .nav-item.active svg { transform: translateY(-2px) scale(1.1); }
+    .nav-label { font-size: 10px; font-weight: 700; }
+    .nav-sliding-indicator { position: absolute; top: 50%; left: 0; transform: translateY(-50%) translateX(0); height: 54px; width: 20%; z-index: 2; transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); pointer-events: none; }
+    .nav-sliding-indicator::before { content: ''; position: absolute; top: 0; left: 5px; right: 5px; bottom: 0; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 18px; }
 
-    /* SETTINGS CARD */
+    /* POPUP LOGIN & EDIT */
+    .glass-popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 99999; display: flex; align-items: center; justify-content: center; transition: all 0.4s ease; }
+    .glass-popup-overlay.hidden { opacity: 0; pointer-events: none; transform: scale(1.1); }
+    .glass-popup-card { background: rgba(23, 33, 43, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 24px; text-align: center; max-width: 340px; width: 90%; box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
+    .popup-title { font-size: 18px; font-weight: 800; color: white; margin-bottom: 15px; }
+    
+    .pin-input { text-align: center; font-size: 24px; letter-spacing: 12px; font-weight: bold; color: var(--tg-accent); background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; width: 100%; outline: none; margin-bottom: 15px; }
+    .btn-unlock { width: 100%; padding: 12px; background: var(--tg-accent); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 14.5px; cursor: pointer; transition: transform 0.1s; }
+    .btn-unlock:active { transform: scale(0.97); }
+
+    .popup-actions { display: flex; gap: 10px; margin-top: 15px; }
+    .btn-popup { flex: 1; padding: 12px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; color: white; }
+    .btn-no { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
+    .btn-yes { background: var(--tg-accent); }
+
+    /* 4. TEMA SETTINGS */
     .settings-container { padding: 15px; display: flex; flex-direction: column; gap: 15px; }
     .settings-card { background: var(--tg-panel); border-radius: 18px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.05); }
-    .settings-title { font-size: 14px; font-weight: 700; color: var(--tg-accent); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px; transition: color 0.3s; }
-    .theme-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-    .theme-dot { height: 50px; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; border: 2px solid transparent; transition: transform 0.2s; }
-    .theme-dot:active { transform: scale(0.9); }
-    .theme-dot.selected { border-color: #ffffff; transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
-    .stat-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
-    .stat-row:last-child { border: none; padding-bottom: 0; }
-    .btn-vt-scan { width: 100%; padding: 14px; background: rgba(0, 200, 83, 0.1); border: 1px solid #00c853; color: #00c853; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14.5px; margin-top: 10px; transition: background 0.2s, transform 0.1s; }
-    .btn-vt-scan:active { background: rgba(0, 200, 83, 0.2); transform: scale(0.98); }
+    .theme-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 15px; }
+    .theme-dot { height: 50px; border-radius: 14px; cursor: pointer; border: 2px solid transparent; transition: transform 0.2s; }
+    .theme-dot.selected { border-color: #ffffff; transform: scale(1.05); }
 
-    /* VIP PROFILE RGB CARD */
+    /* 5. VIP PROFILE RGB & SOSMED SETTING */
     @keyframes rgbGlow { 0% { color: #ff0000; text-shadow: 0 0 10px #ff0000; } 33% { color: #00ff00; text-shadow: 0 0 10px #00ff00; } 66% { color: #0000ff; text-shadow: 0 0 10px #0000ff; } 100% { color: #ff0000; text-shadow: 0 0 10px #ff0000; } }
-    .vip-card { background: linear-gradient(145deg, #1f2937, #111827); border: 1px solid rgba(255,215,0,0.4); padding: 35px 20px; border-radius: 24px; text-align: center; margin: 15px; position: relative; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.6); display: flex; flex-direction: column; align-items: center; }
-    .vip-badge { position: absolute; top: 15px; right: 15px; background: gold; color: black; font-size: 11px; font-weight: 900; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; z-index: 3; }
+    .vip-card { background: linear-gradient(145deg, #1f2937, #111827); border: 1px solid rgba(255,215,0,0.4); padding: 25px; border-radius: 20px; text-align: center; margin: 15px; position: relative; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+    .vip-badge { position: absolute; top: 10px; right: 10px; background: gold; color: black; font-size: 10px; font-weight: 900; padding: 3px 8px; border-radius: 5px; text-transform: uppercase; }
     .rgb-text { animation: rgbGlow 3s linear infinite; font-size: 22px; font-weight: 900; margin-bottom: 5px; }
-    
-    .social-buttons { display: flex; gap: 12px; justify-content: center; width: 100%; flex-wrap: wrap; margin-top: 15px; position: relative; z-index: 2; }
-    .btn-social { width: 50px; height: 50px; background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 14px; display: flex; align-items: center; justify-content: center; text-decoration: none; color: white; transition: transform 0.2s; }
-    .btn-social svg { width: 22px; height: 22px; fill: #ffffff; }
-
-    /* POP-UP GLASSMORPHISM */
-    .glass-popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 10000; display: flex; align-items: center; justify-content: center; transition: opacity 0.3s ease; }
-    .glass-popup-overlay.hidden { display: none !important; opacity: 0; }
-    .glass-popup-card { background: rgba(17, 24, 39, 0.9); border: 1px solid rgba(255, 255, 255, 0.2); padding: 25px; border-radius: 24px; text-align: center; max-width: 320px; width: 90%; box-shadow: 0 15px 35px rgba(0,0,0,0.8); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-    .popup-title { font-size: 20px; font-weight: 800; color: white; margin-bottom: 10px; }
-    .popup-desc { font-size: 14px; color: #D1D5DB; margin-bottom: 22px; line-height: 1.5; }
-    .popup-actions { display: flex; gap: 12px; justify-content: center; }
-    .btn-popup { flex: 1; padding: 12px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 14.5px; transition: transform 0.1s; }
-    .btn-no { background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255,255,255,0.2); }
-    .btn-yes { background: var(--tg-accent); color: white; }
-
-    /* BOTTOM NAV */
-    .bottom-nav-wrapper { position: fixed; bottom: max(20px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: 92%; max-width: 440px; height: 68px; background-color: rgba(23, 33, 43, 0.92); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 12px 45px rgba(0, 0, 0, 0.7); z-index: 9999; display: flex; align-items: center; }
-    .nav-item { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--tg-text-muted); cursor: pointer; z-index: 10; position: relative; transition: color 0.3s ease; width: 20%; }
-    .nav-item.active { color: #ffffff; }
-    .nav-item svg { width: 22px; height: 22px; fill: currentColor; margin-bottom: 3px; transition: transform 0.3s; }
-    .nav-item.active svg { transform: translateY(-1px) scale(1.05); }
-    .nav-label { font-size: 10px; font-weight: 700; text-align: center; white-space: nowrap; letter-spacing: 0.3px;}
-    .nav-sliding-indicator { position: absolute; top: 50%; left: 0; transform: translateY(-50%) translateX(0); height: 54px; width: 20%; z-index: 2; transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); pointer-events: none; }
-    .nav-sliding-indicator::before { content: ''; position: absolute; top: 0; left: 5px; right: 5px; bottom: 0; background: rgba(255, 255, 255, 0.14); border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 18px; }
-
-    .store-container { width: 100%; padding: 5px 0 20px 0; }
+    .sosmed-toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: rgba(0,0,0,0.2); border-radius: 12px; margin-bottom: 8px; font-size: 14px; font-weight: bold; }
+    /* Toggle Switch CSS */
+    .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--admin-add); }
+    input:checked + .slider:before { transform: translateX(20px); }
   </style>
 </head>
 <body>
 
-  <!-- HEADER -->
+  <!-- POP-UP LOCK SCREEN LOGIN ADMIN -->
+  <div id="loginLockOverlay" class="glass-popup-overlay">
+    <div class="glass-popup-card">
+        <div style="font-size: 42px; color: var(--tg-accent); margin-bottom: 12px;"><i class="fas fa-user-shield"></i></div>
+        <div class="popup-title">Developer Verification</div>
+        <div style="font-size: 13px; color: var(--tg-text-muted); margin-bottom: 20px;">Masukkan PIN Keamanan Admin DEV</div>
+        <input type="password" id="adminPinInput" class="pin-input" maxlength="6" placeholder="******" pattern="\d*" inputmode="numeric" onkeyup="if(event.key === 'Enter') verifikasiLoginAdmin()">
+        <button class="btn-unlock" onclick="verifikasiLoginAdmin()">Verifikasi Masuk</button>
+    </div>
+  </div>
+
+  <!-- POP-UP MODAL EDIT DATA SECARA REAL-TIME -->
+  <div id="editDataPopup" class="glass-popup-overlay hidden">
+    <div class="glass-popup-card" style="text-align: left; max-height: 80vh; overflow-y: auto;">
+      <div class="popup-title" style="text-align: center;"><i class="fas fa-edit"></i> Edit Data Server</div>
+      <input type="hidden" id="edit-id">
+      <input type="hidden" id="edit-table">
+      <div id="dynamic-edit-fields"></div>
+      <div class="popup-actions">
+        <button class="btn-popup btn-no" onclick="document.getElementById('editDataPopup').classList.add('hidden')">Batal</button>
+        <button class="btn-popup btn-yes" onclick="eksekusiUpdateSupabase()">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIFIKASI TOAST -->
+  <div id="custom-toast" style="position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 14px 24px; border-radius: 14px; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 10px; box-shadow: 0 8px 30px rgba(16, 185, 129, 0.3); z-index: 99999; transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+    <i class="fas fa-check-circle" id="toast-icon"></i> <span id="toast-message">Sukses!</span>
+  </div>
+
   <div class="header-wrapper">
     <header class="tg-header-banner">
-      <video autoplay loop muted playsinline webkit-playsinline class="header-video"><source src="background-profile.mp4" type="video/mp4"></video>
+      <video autoplay loop muted playsinline class="header-video"><source src="background-profile.mp4" type="video/mp4"></video>
       <div class="header-overlay-content">
-        <div class="tg-title" id="header-title">Dashboard Web</div>
-        <div class="tg-header-icons">
-          <svg id="searchIconBtn" viewBox="0 0 24 24" onclick="toggleSearch()"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-        </div>
+        <div class="tg-title" id="header-title">Web Admin <span class="admin-badge">DEV</span></div>
       </div>
     </header>
   </div>
 
-  <div class="search-box-container" id="searchBoxWrapper">
-    <input type="text" id="searchInput" class="search-input" placeholder="Cari di home..." oninput="searchKarya(this.value)" autocomplete="off">
-  </div>
-
-  <div class="tg-tabs-container" id="karya-tabs-header">
-    <div class="tg-tabs">
-      <div class="tg-tab active" onclick="filterCategory('all', this)">All <span class="tab-badge" id="badge-all">0</span></div>
-      <div class="tg-tab" onclick="filterCategory('tools', this)">Tools <span class="tab-badge" id="badge-tools">0</span></div>
-      <div class="tg-tab" onclick="filterCategory('lainnya', this)">Lainnya <span class="tab-badge" id="badge-lainnya">0</span></div>
-    </div>
-  </div>
-
-  <!-- PAGE 1: HOME -->
+  <!-- TAB 1: HOME -->
   <div class="page-content active" id="page-home">
+    <div class="admin-add-trigger-box" id="btn-show-web" onclick="toggleForm('web-form', 'btn-show-web', 'Web Saya')">
+        <i class="fas fa-plus-circle"></i> Tambah Web Saya Baru
+    </div>
+    <div class="admin-form-card" id="web-form">
+        <div class="admin-form-title"><i class="fas fa-globe"></i> Input Web Baru</div>
+        <input type="text" id="web-title" class="admin-input" placeholder="Nama Web (Contoh: QRIS Generator)">
+        <input type="text" id="web-url" class="admin-input" placeholder="Link Website (Contoh: https://...)">
+        <button class="admin-btn-save" onclick="simpanWebKeSupabase()">Simpan Ke Database</button>
+    </div>
     <div id="container-web-list"></div>
   </div>
 
-  <!-- PAGE 2: APP MOD -->
+  <!-- TAB 2: APP MOD -->
   <div class="page-content" id="page-appmod">
+    <div class="admin-add-trigger-box" id="btn-show-app" onclick="toggleForm('app-form', 'btn-show-app', 'App Mod')">
+        <i class="fas fa-plus-circle"></i> Tambah App Mod Baru
+    </div>
+    <div class="admin-form-card" id="app-form">
+        <div class="admin-form-title"><i class="fas fa-folder-plus"></i> Input Aplikasi Baru</div>
+        <input type="text" id="app-title" class="admin-input" placeholder="Nama Aplikasi Mod">
+        <input type="text" id="app-desc" class="admin-input" placeholder="Deskripsi Singkat Fitur Mod">
+        <input type="text" id="app-size" class="admin-input" placeholder="Ukuran File (Contoh: 65 MB)">
+        <input type="text" id="app-url" class="admin-input" placeholder="Link Download File">
+        <input type="text" id="app-img" class="admin-input" placeholder="Link Ikon ImgBB (Opsional)">
+        <button class="admin-btn-save" onclick="simpanAppKeSupabase()">Simpan Ke Database</button>
+    </div>
     <div id="container-app-list"></div>
   </div>
 
-  <!-- PAGE 3: MY STORE -->
+  <!-- TAB 3: STORE -->
   <div class="page-content" id="page-store">
-    <div class="store-container">
-        <h2 style="text-align: center; font-size: 16px; margin-bottom: 20px; letter-spacing: 1px; color:var(--tg-accent);">🌟 ETALASE APP PREMIUM 🌟</h2>
-        <div id="container-store-list"></div>
-        <div style="text-align: center; font-size: 11px; color: #627284; margin: 30px 0 10px 0;">© 2026 REZKYY STORE. All Rights Reserved.</div>
+    <div class="admin-add-trigger-box" id="btn-show-store" onclick="toggleForm('store-form', 'btn-show-store', 'Produk Jualan')">
+        <i class="fas fa-plus-circle"></i> Tambah Produk Jualan Baru
     </div>
+    <div class="admin-form-card" id="store-form">
+        <div class="admin-form-title"><i class="fas fa-shopping-bag"></i> Input Produk Store Baru</div>
+        <input type="text" id="prod-title" class="admin-input" placeholder="Nama Aplikasi Premium">
+        <input type="text" id="prod-desc" class="admin-input" placeholder="Deskripsi Masa Aktif">
+        <input type="text" id="prod-price" class="admin-input" placeholder="Harga Jual">
+        <!-- 2. STOK PRODUK -->
+        <input type="text" id="prod-stock" class="admin-input" placeholder="Jumlah Stok / Ketersediaan">
+        <input type="text" id="prod-wa" class="admin-input" placeholder="Link Order WA">
+        <input type="text" id="prod-img" class="admin-input" placeholder="Link Gambar Produk (Opsional)">
+        <button class="admin-btn-save" onclick="simpanStoreKeSupabase()">Simpan Ke Database</button>
+    </div>
+    <div id="container-store-list"></div>
   </div>
 
-  <!-- PAGE 4: PENGATURAN TEMA -->
+  <!-- 4. TAB PENGATURAN WARNA -->
   <div class="page-content" id="page-pengaturan">
     <div class="settings-container">
       <div class="settings-card">
-        <div class="settings-title">Aksen Warna Tema</div>
+        <div style="font-size:15px; font-weight:bold; color:var(--tg-accent);"><i class="fas fa-palette"></i> Aksen Warna Tema Admin</div>
         <div class="theme-grid">
-          <div class="theme-dot selected" style="background-color: #3390ec;" onclick="changeTheme('#3390ec', this)"></div>
-          <div class="theme-dot" style="background-color: #a259ff;" onclick="changeTheme('#a259ff', this)"></div>
-          <div class="theme-dot" style="background-color: #10b981;" onclick="changeTheme('#10b981', this)"></div>
-          <div class="theme-dot" style="background-color: #ff23e6;" onclick="changeTheme('#ff23e6', this)"></div>
-          <div class="theme-dot" style="background-color: #000ef9;" onclick="changeTheme('#000ef9', this)"></div>
-          <div class="theme-dot" style="background-color: #00fd3b;" onclick="changeTheme('#00fd3b', this)"></div>
-          <div class="theme-dot" style="background-color: #ff1e1e;" onclick="changeTheme('#ff1e1e', this)"></div>
-          <div class="theme-dot" style="background-color: #660eba;" onclick="changeTheme('#660eba', this)"></div>
+          <div class="theme-dot selected" style="background-color: #3390ec;" onclick="gantiTemaAdmin('#3390ec', this)"></div>
+          <div class="theme-dot" style="background-color: #a259ff;" onclick="gantiTemaAdmin('#a259ff', this)"></div>
+          <div class="theme-dot" style="background-color: #10b981;" onclick="gantiTemaAdmin('#10b981', this)"></div>
+          <div class="theme-dot" style="background-color: #ff23e6;" onclick="gantiTemaAdmin('#ff23e6', this)"></div>
+          <div class="theme-dot" style="background-color: #000ef9;" onclick="gantiTemaAdmin('#000ef9', this)"></div>
+          <div class="theme-dot" style="background-color: #00fd3b;" onclick="gantiTemaAdmin('#00fd3b', this)"></div>
+          <div class="theme-dot" style="background-color: #ff1e1e;" onclick="gantiTemaAdmin('#ff1e1e', this)"></div>
+          <div class="theme-dot" style="background-color: #660eba;" onclick="gantiTemaAdmin('#660eba', this)"></div>
         </div>
-      </div>
-      <div class="settings-card">
-        <div class="settings-title">Sistem & Keamanan File</div>
-        <div class="stat-row"><span class="stat-label">Status Server</span><span style="color: #10b981; font-weight: bold;">Online ✔</span></div>
-        <div class="stat-row"><span class="stat-label">Enkripsi Unduhan</span><span style="color: #10b981;">Aman (SSL)</span></div>
-        <button class="btn-vt-scan" onclick="triggerVirusTotal()"><i class="fas fa-shield-alt"></i> Cek Keamanan via VirusTotal</button>
       </div>
     </div>
   </div>
 
-      <!-- PAGE 5: PROFIL VIP PUBLIC -->
+    <!-- 5. TAB PROFIL VIP & SOSMED SETTING -->
   <div class="page-content" id="page-profil">
     <div class="vip-card">
-        <!-- Video Background -->
+        <div class="vip-badge">Developer VIP</div>
+        
+        <!-- VIDEO BACKGROUND KARTU VIP -->
         <video autoplay loop muted playsinline webkit-playsinline class="header-video" style="opacity: 0.25;">
           <source src="banner-profile.mp4" type="video/mp4">
         </video>
-        
-        <div style="position: relative; z-index: 2;">
-            <img src="profile.jpg" style="width:100px; height:100px; border-radius:50%; border: 3px solid gold; margin-bottom:10px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
-            <!-- Nama Kelap-Kelip RGB -->
-            <div class="rgb-text">Rizky Kurniawan</div>
-            <div style="color:var(--tg-accent); font-size:13px; font-weight:600; margin-bottom:22px; letter-spacing:1px;">Developer & Creator</div>
-        </div>
 
-        <!-- TOMBOL SOSMED REAL-TIME SINKRON SUPABASE -->
-        <div class="social-buttons" id="sosmed-container">
-            <a href="https://www.tiktok.com/@rizky._kurniawan25" target="_blank" class="btn-social" id="btn-tiktok"><svg viewBox="0 0 24 24"><path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.06-2.89-.52-4.08-1.34-.67-.47-1.24-1.09-1.69-1.8v7.41c.1 2.22-1.25 4.39-3.38 5.14-2.11.77-4.63.17-6.15-1.42-1.58-1.64-2.01-4.23-1.01-6.24 1-1.99 3.27-3.23 5.49-2.94v4.03c-1.12-.13-2.29.35-2.88 1.32-.61.97-.47 2.34.34 3.14.8.78 2.09.91 3.03.3 1.01-.61 1.51-1.84 1.44-3.01V.02z"/></svg></a>
-            <a href="https://www.instagram.com/rizky._kurniawan25" target="_blank" class="btn-social" id="btn-ig"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg></a>
-            <a href="https://t.me/rizky_kurniawan25" target="_blank" class="btn-social" id="btn-tele"><svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></a>
-            <!-- KODE DISCORD YANG SUDAH BERSIH DARI TYPO -->
-            <a href="https://discord.gg/Crr8MuVCe" target="_blank" class="btn-social" id="btn-dc"><svg viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.873-.894.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .077-.011c3.92 1.793 8.18 1.793 12.061 0a.073.073 0 0 1 .078.009c.12.099.246.195.373.289a.077.077 0 0 1-.006.127 12.298 12.298 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.156 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.156 2.418z"/></svg></a>
-            <a href="https://sociabuzz.com/rizkyy_25/tribe" target="_blank" class="btn-social" id="btn-socia"><svg viewBox="0 0 24 24"><path d="M14.5,7.5C14.5,6.1 13.4,5 12,5C10.6,5 9.5,6.1 9.5,7.5C9.5,10.3 16,9.2 16,14.5C16,16.7 14.2,18.5 12,18.5C9.8,18.5 8,16.7 8,14.5H10.5C10.5,15.3 11.2,16 12,16C12.8,16 13.5,15.3 13.5,14.5C13.5,11.7 7,12.8 7,7.5C7,5.3 8.8,3.5 12,3.5C15.2,3.5 17,5.3 17,7.5H14.5Z"/></svg></a>
-            <a href="javascript:void(0)" onclick="showBugPopup()" class="btn-social" style="border-color: rgba(239, 68, 68, 0.4);"><i class="fas fa-exclamation-triangle" style="color:#ef4444; font-size:18px;"></i></a>
+        <!-- KONTEN PROFIL -->
+        <div style="position: relative; z-index: 2;">
+            <img src="profile.jpg" style="width:90px; height:90px; border-radius:50%; border: 3px solid gold; margin-bottom:10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+            <div class="rgb-text">Rizky Kurniawan</div>
+            <div style="color:var(--tg-text-muted); font-size:12px; margin-bottom:10px;">Super Administrator System</div>
         </div>
+    </div>
+
+    <div style="padding: 0 15px;">
+        <h3 style="font-size:14px; color:var(--tg-accent); margin-bottom:10px;"><i class="fas fa-cogs"></i> Kontrol Tampil Sosmed (Publik)</h3>
+        <p style="font-size:11px; color:var(--tg-text-muted); margin-bottom:15px;">Hidup/matikan tombol sosmed yang akan tampil di halaman web publik pengunjung.</p>
+        
+        <div class="sosmed-toggle-row"><i class="fab fa-tiktok"></i> TikTok <label class="switch"><input type="checkbox" id="tg-tiktok" onchange="simpanSosmed()"><span class="slider"></span></label></div>
+        <div class="sosmed-toggle-row"><i class="fab fa-instagram"></i> Instagram <label class="switch"><input type="checkbox" id="tg-ig" onchange="simpanSosmed()"><span class="slider"></span></label></div>
+        <div class="sosmed-toggle-row"><i class="fab fa-telegram"></i> Telegram <label class="switch"><input type="checkbox" id="tg-tele" onchange="simpanSosmed()"><span class="slider"></span></label></div>
+        <div class="sosmed-toggle-row"><i class="fab fa-discord"></i> Discord <label class="switch"><input type="checkbox" id="tg-dc" onchange="simpanSosmed()"><span class="slider"></span></label></div>
+        <div class="sosmed-toggle-row"><i class="fas fa-bolt"></i> Sociabuzz <label class="switch"><input type="checkbox" id="tg-socia" onchange="simpanSosmed()"><span class="slider"></span></label></div>
     </div>
   </div>
 
-  <!-- NAV BAWAH LUNCUR - LOGO HOME DIGANTI RUMAH -->
   <div class="bottom-nav-wrapper">
     <div class="nav-sliding-indicator" id="indicator"></div>
+    <!-- 6. GANTI ICON HOME MENJADI RUMAH -->
     <div class="nav-item active" onclick="switchNav('home', 0, this)"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span class="nav-label">Home</span></div>
     <div class="nav-item" onclick="switchNav('appmod', 1, this)"><svg viewBox="0 0 24 24"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg><span class="nav-label">App Mod</span></div>
     <div class="nav-item" onclick="switchNav('store', 2, this)"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg><span class="nav-label">Store</span></div>
-    <div class="nav-item" onclick="switchNav('pengaturan', 3, this)"><svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0 0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg><span class="nav-label">Setting</span></div>
-    <div class="nav-item" onclick="switchNav('profil', 4, this)"><div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; border: 1.5px solid currentColor; margin-bottom: 2px;"><img src="profile.jpg" style="width:100%; height:100%; object-fit:cover;"></div><span class="nav-label">Profil</span></div>
+    <div class="nav-item" onclick="switchNav('pengaturan', 3, this)"><svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg><span class="nav-label">Setting</span></div>
+    <div class="nav-item" onclick="switchNav('profil', 4, this)"><div style="width: 22px; height: 22px; border-radius: 50%; overflow: hidden; border: 1.5px solid currentColor; margin-bottom: 2px;"><img src="profile.jpg" style="width:100%; height:100%; object-fit:cover;"></div><span class="nav-label">Profil</span></div>
   </div>
 
-  <!-- POP-UP DOWNLOAD & BUG REPORT -->
-  <div id="downloadPopup" class="glass-popup-overlay hidden">
-    <div class="glass-popup-card">
-        <div style="font-size:36px; margin-bottom:10px;">📥</div>
-        <div class="popup-title">Ingin download?</div>
-        <div class="popup-desc" id="popupDownloadDetails">Apakah anda yakin?</div>
-        <div class="popup-actions">
-            <button class="btn-popup btn-no" onclick="closeDownloadPopup()">Batal</button>
-            <button class="btn-popup btn-yes" id="confirmDownloadBtn" onclick="executeDownload()">Download</button>
-        </div>
-    </div>
-  </div>
-  <div id="bugPopup" class="glass-popup-overlay hidden">
-    <div class="glass-popup-card">
-      <div style="font-size:36px;margin-bottom:10px;">⚠️</div>
-      <div class="popup-title">Laporkan Masalah</div>
-      <div class="popup-desc">Hubungi developer melalui Telegram untuk melaporkan bug.</div>
-      <div class="popup-actions">
-        <button class="btn-popup btn-no" onclick="closeBugPopup()">Tutup</button>
-        <button class="btn-popup btn-yes" onclick="submitBug()">Hubungi</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
+    <script>
     const SUPABASE_URL = "https://djojqarslfsvubuflwdn.supabase.co";
     const SUPABASE_KEY = "sb_publishable_vqUvkJX5XNx5_D75lCnJzw_KPeFSim9"; 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let dataWebLokal = [];
-    let currentCategory = 'all';
-    let searchQueryStr = '';
-    let activeDownloadUrl = '';
-
-    async function ambilDataWeb() {
-        const container = document.getElementById('container-web-list');
-        const { data, error } = await supabaseClient.from('web_saya').select('*').order('id', { ascending: false });
-        if(error || !data) { container.innerHTML = `<p style="text-align:center;color:var(--tg-text-muted);">Gagal load website</p>`; return; }
-        dataWebLokal = data; renderHomeList();
+    async function verifikasiLoginAdmin() {
+        const inputPin = document.getElementById('adminPinInput').value;
+        if(!inputPin) return tampilkanAlert("PIN tidak boleh kosong!", "error");
+        const { data, error } = await supabaseClient.from('admin_auth').select('pin_code').eq('pin_code', inputPin).single();
+        if (data) {
+            tampilkanAlert("Akses Admin Diterima!", "sukses");
+            document.getElementById('loginLockOverlay').classList.add('hidden');
+            ambilDataWeb(); 
+            // SINKRONISASI AKTIF: Langsung muat status saklar dari server pas sukses login!
+            muatStatusSosmedAdmin(); 
+        } else {
+            tampilkanAlert("PIN Salah! Akses Ditolak.", "error");
+            document.getElementById('adminPinInput').value = '';
+        }
     }
 
-    function renderHomeList() {
-        const container = document.getElementById('container-web-list');
-        let toolsCount = dataWebLokal.filter(i => i.nama_web.toLowerCase().includes('generator') || i.nama_web.toLowerCase().includes('tool')).length;
-        document.getElementById('badge-all').innerText = dataWebLokal.length;
-        document.getElementById('badge-tools').innerText = toolsCount;
-        document.getElementById('badge-lainnya').innerText = dataWebLokal.length - toolsCount;
-        container.innerHTML = '';
-        dataWebLokal.forEach(web => {
-            let isTool = web.nama_web.toLowerCase().includes('generator') || web.nama_web.toLowerCase().includes('tool');
-            if (currentCategory === 'tools' && !isTool) return;
-            if (currentCategory === 'lainnya' && isTool) return;
-            if (searchQueryStr && !web.nama_web.toLowerCase().includes(searchQueryStr)) return;
-
-            container.innerHTML += `
-                <div class="chat-item" onclick="window.open('${web.link_web}', '_blank')">
-                    <div class="avatar"><i class="fas fa-globe"></i></div>
-                    <div class="chat-content">
-                        <div class="chat-top"><span class="chat-title">${web.nama_web}</span><span class="chat-time">🌐 Active</span></div>
-                        <div class="chat-bottom"><span class="chat-msg">Klik untuk membuka tautan website</span></div>
-                    </div>
-                </div>`;
-        });
-    }
-
-    async function ambilDataApp() {
-        const container = document.getElementById('container-app-list');
-        const { data, error } = await supabaseClient.from('app_mods').select('*').order('id', { ascending: false });
-        if(error || !data || data.length === 0) { container.innerHTML = `<p style="text-align:center;color:var(--tg-text-muted);padding:20px;">Aplikasi kosong.</p>`; return; }
-        container.innerHTML = '';
-        data.forEach(app => {
-            let imgHtml = app.img_url ? `<img src="${app.img_url}" onerror="this.outerHTML='📱'" style="width:100%; height:100%; object-fit:cover; border-radius:12px;">` : '📱';
-            container.innerHTML += `
-                <div class="mod-box-item">
-                    <div class="mod-box-header">
-                        <div class="mod-box-title-group"><div class="mod-box-icon">${imgHtml}</div><div class="mod-box-name">${app.nama_app}</div></div>
-                        <div class="mod-box-size">${app.ukuran || 'N/A'}</div>
-                    </div>
-                    <div class="mod-box-desc">${app.deskripsi || 'No Description'}</div>
-                    <button class="mod-btn-download" onclick="triggerDownloadNotif('${app.nama_app}', '${app.ukuran}', '${app.link_download}')">Unduh File Mod</button>
-                </div>`;
-        });
-    }
-
-    async function ambilDataStore() {
-        const container = document.getElementById('container-store-list');
-        const { data, error } = await supabaseClient.from('store_products').select('*').order('id', { ascending: false });
-        if(error || !data || data.length === 0) { container.innerHTML = `<p style="text-align:center;color:var(--tg-text-muted);padding:20px;">Etalase jualan kosong.</p>`; return; }
-        container.innerHTML = '';
-        data.forEach(prod => {
-            // MENAMBAHKAN RENDER STOK UNTUK PUBLIK
-            let stockBadge = prod.stok ? `<span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px; font-size:10px; margin-left:6px; color:#fff;">Stok: ${prod.stok}</span>` : '';
-            let iconHtml = prod.img_url ? `<img src="${prod.img_url}" onerror="this.outerHTML='🛍️'" style="width:100%; height:100%; object-fit:cover; border-radius:12px;">` : '🛍️';
-            
-            container.innerHTML += `
-                <div class="mod-box-item">
-                    <div class="mod-box-header">
-                        <div class="mod-box-title-group"><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${prod.nama_produk}</div></div>
-                        <div class="mod-box-size" style="color:#00ff7f; background:none;">${prod.harga}${stockBadge}</div>
-                    </div>
-                    <div class="mod-box-desc">${prod.deskripsi || 'Tidak ada deskripsi.'}</div>
-                    <button class="mod-btn-download" style="background:linear-gradient(135deg, var(--tg-accent), #4b0082);" onclick="window.open('${prod.link_wa}', '_blank')">Beli Sekarang</button>
-                </div>`;
-        });
+    function tampilkanAlert(pesan, jenis = 'sukses') {
+        const toast = document.getElementById('custom-toast');
+        document.getElementById('toast-message').innerText = pesan;
+        if (jenis === 'error') { toast.style.background = '#ef4444'; document.getElementById('toast-icon').className = 'fas fa-exclamation-circle'; } 
+        else { toast.style.background = '#10b981'; document.getElementById('toast-icon').className = 'fas fa-check-circle'; }
+        toast.style.top = '20px'; setTimeout(() => { toast.style.top = '-100px'; }, 3000);
     }
 
     function switchNav(page, index, el) {
       document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
       document.querySelectorAll('.page-content').forEach(content => content.classList.remove('active'));
       document.getElementById('indicator').style.transform = `translateY(-50%) translateX(${index * 100}%)`;
-      if(el) el.classList.add('active');
-      document.getElementById('page-' + page).classList.add('active');
-
-      const searchIcon = document.getElementById('searchIconBtn');
-      if (page === 'home') { document.getElementById('karya-tabs-header').style.display = 'block'; searchIcon.style.display = 'block'; document.getElementById('header-title').innerText = 'Dashboard Web'; ambilDataWeb(); } 
-      else {
-        document.getElementById('karya-tabs-header').style.display = 'none'; searchIcon.style.display = 'none'; document.getElementById('searchBoxWrapper').classList.remove('show');
-        if(page === 'appmod') { document.getElementById('header-title').innerText = 'App Mod'; ambilDataApp(); }
-        else if(page === 'store') { document.getElementById('header-title').innerText = 'My Store'; ambilDataStore(); }
-        else if(page === 'pengaturan') document.getElementById('header-title').innerText = 'Pengaturan';
-        else document.getElementById('header-title').innerText = 'Profile';
-      }
+      if(el) el.classList.add('active'); document.getElementById('page-' + page).classList.add('active');
+      
+      const titleEl = document.getElementById('header-title');
+      if (page === 'home') { titleEl.innerHTML = 'Web Admin <span class="admin-badge">DEV</span>'; ambilDataWeb(); }
+      else if (page === 'appmod') { titleEl.innerHTML = 'App Mod <span class="admin-badge">DEV</span>'; ambilDataApp(); }
+      else if (page === 'store') { titleEl.innerHTML = 'Store Admin <span class="admin-badge">DEV</span>'; ambilDataStore(); }
+      else if (page === 'pengaturan') titleEl.innerHTML = 'Pengaturan <span class="admin-badge">DEV</span>';
+      else titleEl.innerHTML = 'Profile <span class="admin-badge">DEV</span>';
     }
 
-    function triggerDownloadNotif(title, size, url) { activeDownloadUrl = url; document.getElementById('popupDownloadDetails').innerHTML = `Mengunduh <b>${title}</b><br><br>📦 Size: <span style="color:var(--tg-accent); font-weight:bold;">${size}</span>`; document.getElementById('downloadPopup').classList.remove('hidden'); }
-    function closeDownloadPopup() { document.getElementById('downloadPopup').classList.add('hidden'); }
-    function executeDownload() { closeDownloadPopup(); window.open(activeDownloadUrl, '_blank'); }
-    function triggerVirusTotal() { window.open('https://www.virustotal.com/gui/home/url', '_blank'); }
-    function toggleSearch() { const box = document.getElementById('searchBoxWrapper'); box.classList.toggle('show'); if (box.classList.contains('show')) document.getElementById('searchInput').focus(); }
-    function filterCategory(cat, el) { document.querySelectorAll('.tg-tab').forEach(e => e.classList.remove('active')); el.classList.add('active'); currentCategory = cat; renderHomeList(); }
-    function searchKarya(val) { searchQueryStr = val.toLowerCase().trim(); renderHomeList(); }
-    function showBugPopup() { document.getElementById('bugPopup').classList.remove('hidden'); }
-    function closeBugPopup() { document.getElementById('bugPopup').classList.add('hidden'); }
-    function submitBug() { closeBugPopup(); window.open('https://t.me/rizky_kurniawan25', '_blank'); }
+    function toggleForm(formId, btnId, namaMenu) {
+        const form = document.getElementById(formId);
+        const btn = document.getElementById(btnId);
+        if (form.style.display === 'block') { form.style.display = 'none'; btn.innerHTML = `<i class="fas fa-plus-circle"></i> Tambah ${namaMenu} Baru`; } 
+        else { form.style.display = 'block'; btn.innerHTML = '<i class="fas fa-times-circle"></i> Batalkan Input'; }
+    }
 
-    // FUNGSI LOAD TEMA DAN SOSMED (SISTEM BACA)
-    function changeTheme(color, el) {
+    // LOGIKA POP-UP EDIT REAL-TIME
+    function bukaPopupEdit(id, tabel, dataLama) {
+        document.getElementById('edit-id').value = id;
+        document.getElementById('edit-table').value = tabel;
+        const fieldsContainer = document.getElementById('dynamic-edit-fields');
+        fieldsContainer.innerHTML = '';
+
+        let innerH = '';
+        if (tabel === 'web_saya') {
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama Web</label><input type="text" id="upd-1" class="admin-input" value="${dataLama.nama_web}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Web</label><input type="text" id="upd-2" class="admin-input" value="${dataLama.link_web}">`;
+        } else if (tabel === 'app_mods') {
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama App</label><input type="text" id="upd-1" class="admin-input" value="${dataLama.nama_app}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Deskripsi</label><input type="text" id="upd-2" class="admin-input" value="${dataLama.deskripsi}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Ukuran File</label><input type="text" id="upd-3" class="admin-input" value="${dataLama.ukuran}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Download</label><input type="text" id="upd-4" class="admin-input" value="${dataLama.link_download}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Ikon</label><input type="text" id="upd-5" class="admin-input" value="${dataLama.img_url}">`;
+        } else if (tabel === 'store_products') {
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama Produk</label><input type="text" id="upd-1" class="admin-input" value="${dataLama.nama_produk}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Deskripsi</label><input type="text" id="upd-2" class="admin-input" value="${dataLama.deskripsi}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Harga Jual</label><input type="text" id="upd-3" class="admin-input" value="${dataLama.harga}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Stok Produk</label><input type="text" id="upd-stok" class="admin-input" value="${dataLama.stok || ''}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link WA</label><input type="text" id="upd-4" class="admin-input" value="${dataLama.link_wa}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Gambar</label><input type="text" id="upd-5" class="admin-input" value="${dataLama.img_url}">`;
+        }
+        fieldsContainer.innerHTML = innerH;
+        document.getElementById('editDataPopup').classList.remove('hidden');
+    }
+
+    async function eksekusiUpdateSupabase() {
+        const id = document.getElementById('edit-id').value;
+        const tabel = document.getElementById('edit-table').value;
+        let updateData = {};
+
+        if (tabel === 'web_saya') updateData = { nama_web: document.getElementById('upd-1').value, link_web: document.getElementById('upd-2').value };
+        else if (tabel === 'app_mods') updateData = { nama_app: document.getElementById('upd-1').value, deskripsi: document.getElementById('upd-2').value, ukuran: document.getElementById('upd-3').value, link_download: document.getElementById('upd-4').value, img_url: document.getElementById('upd-5').value };
+        else if (tabel === 'store_products') updateData = { nama_produk: document.getElementById('upd-1').value, deskripsi: document.getElementById('upd-2').value, harga: document.getElementById('upd-3').value, stok: document.getElementById('upd-stok').value, link_wa: document.getElementById('upd-4').value, img_url: document.getElementById('upd-5').value };
+
+        const { error } = await supabaseClient.from(tabel).update(updateData).eq('id', id);
+        if (error) { tampilkanAlert("Update Gagal: " + error.message, "error"); } 
+        else {
+            tampilkanAlert("Berhasil di-update!", "sukses");
+            document.getElementById('editDataPopup').classList.add('hidden');
+            if (tabel === 'web_saya') ambilDataWeb(); else if (tabel === 'app_mods') ambilDataApp(); else if (tabel === 'store_products') ambilDataStore();
+        }
+    }
+
+    // FUNGSI CRUD WEB
+    async function simpanWebKeSupabase() {
+        const nama = document.getElementById('web-title').value; const url = document.getElementById('web-url').value;
+        if(!nama || !url) return tampilkanAlert("Wajib diisi!", "error");
+        const { error } = await supabaseClient.from('web_saya').insert([{ nama_web: nama, link_web: url }]);
+        if (!error) { tampilkanAlert("Tersimpan!", "sukses"); toggleForm('web-form', 'btn-show-web', 'Web Saya'); ambilDataWeb(); }
+    }
+    async function ambilDataWeb() {
+        const container = document.getElementById('container-web-list');
+        const { data } = await supabaseClient.from('web_saya').select('*').order('id', { ascending: false });
+        if (!data) return; container.innerHTML = '';
+        data.forEach(web => {
+            const dataStr = btoa(unescape(encodeURIComponent(JSON.stringify(web))));
+            container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header" style="margin-bottom:0;"><div class="mod-box-title-group"><div class="mod-box-icon" style="font-size:20px; width:40px; height:40px;"><i class="fas fa-globe"></i></div><div class="mod-box-name">${web.nama_web}</div></div></div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${web.id}, 'web_saya', JSON.parse(decodeURIComponent(escape(atob('${dataStr}')))))"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusWeb(${web.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
+        });
+    }
+    async function hapusWeb(id) { if(confirm("Hapus?")) { await supabaseClient.from('web_saya').delete().eq('id', id); ambilDataWeb(); } }
+
+    // FUNGSI CRUD APP
+    async function simpanAppKeSupabase() {
+        const nama = document.getElementById('app-title').value; const desc = document.getElementById('app-desc').value; const size = document.getElementById('app-size').value; const url = document.getElementById('app-url').value; const img = document.getElementById('app-img').value;
+        if(!nama || !url) return tampilkanAlert("Wajib diisi!", "error");
+        const { error } = await supabaseClient.from('app_mods').insert([{ nama_app: nama, deskripsi: desc, ukuran: size, link_download: url, img_url: img }]);
+        if (!error) { tampilkanAlert("Tersimpan!", "sukses"); toggleForm('app-form', 'btn-show-app', 'App Mod'); ambilDataApp(); }
+    }
+    async function ambilDataApp() {
+        const container = document.getElementById('container-app-list');
+        const { data } = await supabaseClient.from('app_mods').select('*').order('id', { ascending: false });
+        if (!data) return; container.innerHTML = '';
+        data.forEach(app => {
+            let iconHtml = app.img_url ? `<img src="${app.img_url}" onerror="this.outerHTML='📱'" style="width:100%; height:100%; object-fit:cover;">` : '📱';
+            const dataStr = btoa(unescape(encodeURIComponent(JSON.stringify(app))));
+            container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header"><div class="mod-box-title-group"><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${app.nama_app}</div></div><div class="mod-box-size">${app.ukuran || 'N/A'}</div></div><div class="mod-box-desc">${app.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${app.id}, 'app_mods', JSON.parse(decodeURIComponent(escape(atob('${dataStr}')))))"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusApp(${app.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
+        });
+    }
+    async function hapusApp(id) { if(confirm("Hapus?")) { await supabaseClient.from('app_mods').delete().eq('id', id); ambilDataApp(); } }
+
+    // FUNGSI CRUD STORE
+    async function simpanStoreKeSupabase() {
+        const nama = document.getElementById('prod-title').value; const desc = document.getElementById('prod-desc').value; const price = document.getElementById('prod-price').value; const stok = document.getElementById('prod-stock').value; const wa = document.getElementById('prod-wa').value; const img = document.getElementById('prod-img').value;
+        if(!nama || !price) return tampilkanAlert("Wajib diisi!", "error");
+        const { error } = await supabaseClient.from('store_products').insert([{ nama_produk: nama, deskripsi: desc, harga: price, stok: stok, link_wa: wa, img_url: img }]);
+        if (!error) { tampilkanAlert("Tersimpan!", "sukses"); toggleForm('store-form', 'btn-show-store', 'Store'); ambilDataStore(); }
+    }
+    async function ambilDataStore() {
+        const container = document.getElementById('container-store-list');
+        const { data } = await supabaseClient.from('store_products').select('*').order('id', { ascending: false });
+        if (!data) return; container.innerHTML = '';
+        data.forEach(prod => {
+            let iconHtml = prod.img_url ? `<img src="${prod.img_url}" onerror="this.outerHTML='🛍️'" style="width:100%; height:100%; object-fit:cover;">` : '🛍️';
+            const dataStr = btoa(unescape(encodeURIComponent(JSON.stringify(prod))));
+            let stockBadge = prod.stok ? `<span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px; font-size:10px; margin-left:5px; color:#fff;">Stok: ${prod.stok}</span>` : '';
+            container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header"><div class="mod-box-title-group"><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${prod.nama_produk}</div></div><div class="mod-box-size" style="color:#00ff7f; background:none;">${prod.harga}${stockBadge}</div></div><div class="mod-box-desc">${prod.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${prod.id}, 'store_products', JSON.parse(decodeURIComponent(escape(atob('${dataStr}')))))"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusStore(${prod.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
+        });
+    }
+    async function hapusStore(id) { if(confirm("Hapus?")) { await supabaseClient.from('store_products').delete().eq('id', id); ambilDataStore(); } }
+
+    // FUNGSI TEMA WARNA
+    function gantiTemaAdmin(color, el) {
         document.querySelectorAll('.theme-dot').forEach(e => e.classList.remove('selected'));
-        el.classList.add('selected'); document.documentElement.style.setProperty('--tg-accent', color);
-        localStorage.setItem('publicThemeColor', color);
+        el.classList.add('selected');
+        document.documentElement.style.setProperty('--tg-accent', color);
+        localStorage.setItem('adminThemeColor', color);
+    }
+    
+    // FUNGSI UPDATE STATUS ON/OFF SOSMED LANGSUNG KE SUPABASE
+    async function simpanSosmed() {
+        const platforms = {
+            tiktok: document.getElementById('tg-tiktok').checked,
+            ig: document.getElementById('tg-ig').checked,
+            tele: document.getElementById('tg-tele').checked,
+            dc: document.getElementById('tg-dc').checked,
+            socia: document.getElementById('tg-socia').checked
+        };
+
+        for (const [namaPlatform, statusTampil] of Object.entries(platforms)) {
+            await supabaseClient
+                .from('sosmed_visibility')
+                .update({ is_visible: statusTampil })
+                .eq('platform', namaPlatform);
+        }
+        tampilkanAlert("Status Sosmed di Web Publik Berhasil Diperbarui!", "sukses");
     }
 
-        window.onload = function() {
-        ambilDataWeb(); 
-        ambilDataApp(); 
-        ambilDataStore();
-        
-        // Load Tema Tersimpan di Browser
-        let savedTheme = localStorage.getItem('publicThemeColor');
-        if (savedTheme) document.documentElement.style.setProperty('--tg-accent', savedTheme);
-
-        // AMBIL REAL-TIME STATUS ON/OFF SOSMED DARI DATABASE SUPABASE
-        muatSosmedDiPublik();
-    }
-
-    async function muatSosmedDiPublik() {
+    // Ambil status asli dari server pas admin baru login
+    async function muatStatusSosmedAdmin() {
         const { data, error } = await supabaseClient.from('sosmed_visibility').select('*');
         if (data) {
             data.forEach(row => {
-                const tombolSosmed = document.getElementById('btn-' + row.platform);
-                if (tombolSosmed) {
-                    // Jika di database statusnya true maka tampilkan (flex), jika false maka sembunyikan (none)
-                    tombolSosmed.style.display = row.is_visible ? 'flex' : 'none';
-                }
+                const element = document.getElementById('tg-' + row.platform);
+                if (element) element.checked = row.is_visible;
             });
         }
+    }
+
+    window.onload = function() {
+        document.getElementById('adminPinInput').focus();
+        // Load Tema
+        let savedTheme = localStorage.getItem('adminThemeColor');
+        if (savedTheme) { document.documentElement.style.setProperty('--tg-accent', savedTheme); }
     }
   </script>
 </body>
