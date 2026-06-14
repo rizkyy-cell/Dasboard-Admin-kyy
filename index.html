@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Web Admin DEV</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root { --tg-bg: #0e1621; --tg-panel: #17212b; --tg-accent: #3390ec; --tg-text-muted: #7f91a4; --tg-text: #ffffff; --admin-add: #10b981; --admin-edit: #f59e0b; --admin-delete: #ef4444; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--tg-bg); color: var(--tg-text); height: 100vh; overflow: hidden; display: flex; flex-direction: column; user-select: none; -webkit-tap-highlight-color: transparent; }
+    .header-wrapper { padding: 15px 15px 5px 15px; background-color: var(--tg-bg); flex-shrink: 0; }
+    .tg-header-banner { position: relative; width: 100%; height: 90px; background-color: var(--tg-panel); border-radius: 18px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; }
+    .header-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; opacity: 0.3; pointer-events: none; }
+    .tg-title { font-size: 18px; font-weight: 800; color: var(--tg-accent); display: flex; align-items: center; gap: 8px; flex: 1; z-index: 2; }
+    .admin-badge { background: #ef4444; color: white; font-size: 10px; padding: 3px 6px; border-radius: 6px; font-weight: bold; }
+    .page-content { flex: 1; overflow-y: auto; display: none; padding: 5px 0 110px 0; -webkit-overflow-scrolling: touch; }
+    .page-content.active { display: block; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    
+    /* STYLE FORM INPUT & TRIGGER */
+    .admin-add-trigger-box { border: 2px dashed var(--admin-add); background: rgba(16, 185, 129, 0.05); margin: 12px 15px; padding: 16px; border-radius: 16px; text-align: center; cursor: pointer; color: var(--admin-add); font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .admin-form-card { background: rgba(23, 33, 43, 0.9); margin: 10px 15px 20px 15px; padding: 20px; border-radius: 18px; border: 1px solid var(--admin-add); display: none; }
+    .admin-form-title { font-size: 15px; font-weight: bold; color: var(--admin-add); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+    .admin-input { width: 100%; padding: 12px 15px; margin-bottom: 12px; border-radius: 10px; background: var(--tg-bg); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 14px; outline: none; }
+    .admin-btn-save { width: 100%; padding: 12px; background: var(--admin-add); color: white; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; }
+    
+    /* STYLE KOMPONEN LIST ITEM DATA */
+    .mod-box-item { background: rgba(23, 33, 43, 0.8); margin: 12px 15px; padding: 18px; border-radius: 18px; border: 1px solid rgba(255, 255, 255, 0.08); }
+    .mod-box-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .mod-box-title-group { display: flex; align-items: center; gap: 12px; }
+    .mod-box-icon { width: 48px; height: 48px; background: rgba(255,255,255,0.05); border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 24px; }
+    .mod-box-name { font-size: 16px; font-weight: 700; color: #ffffff; }
+    .mod-box-size { font-size: 12px; font-weight: 700; color: var(--tg-accent); background: rgba(255,255,255, 0.05); padding: 4px 10px; border-radius: 8px; }
+    .mod-box-desc { font-size: 13.5px; color: var(--tg-text-muted); line-height: 1.5; }
+    .admin-action-bar { display: flex; gap: 8px; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; }
+    .btn-admin { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; font-size: 13px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-admin.edit { background: rgba(245, 158, 11, 0.15); color: var(--admin-edit); border: 1px solid var(--admin-edit); }
+    .btn-admin.delete { background: rgba(239, 68, 68, 0.15); color: var(--admin-delete); border: 1px solid var(--admin-delete); }
+    
+    /* NAVIGATION BAR BAWAH */
+    .bottom-nav-wrapper { position: fixed; bottom: max(16px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: 94%; max-width: 460px; height: 72px; background-color: rgba(23, 33, 43, 0.95); border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8); z-index: 20; display: flex; align-items: center; }
+    .nav-item { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--tg-text-muted); cursor: pointer; z-index: 10; position: relative; width: 20%; }
+    .nav-item.active { color: #ffffff; }
+    .nav-item svg { width: 23px; height: 23px; fill: currentColor; margin-bottom: 4px; }
+    .nav-label { font-size: 10px; font-weight: 700; }
+    .nav-sliding-indicator { position: absolute; top: 50%; left: 0; transform: translateY(-50%) translateX(0); height: 58px; width: 20%; z-index: 2; transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); pointer-events: none; }
+    .nav-sliding-indicator::before { content: ''; position: absolute; top: 0; left: 6px; right: 6px; bottom: 0; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 18px; }
+
+    /* LAYER GLASSMORPHISM SCREEN LOCK UTK LOGIN */
+    .lock-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(14, 22, 33, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 99999; display: flex; align-items: center; justify-content: center; transition: all 0.5s ease; }
+    .lock-overlay.hidden { opacity: 0; pointer-events: none; transform: scale(1.1); }
+    .lock-card { background: rgba(23, 33, 43, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px 24px; border-radius: 24px; text-align: center; max-width: 320px; width: 90%; box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
+    .lock-icon { font-size: 42px; color: var(--tg-accent); margin-bottom: 12px; animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+    .lock-title { font-size: 18px; font-weight: 800; color: white; margin-bottom: 6px; }
+    .lock-desc { font-size: 13px; color: var(--tg-text-muted); margin-bottom: 20px; }
+    .pin-input { text-align: center; font-size: 24px; letter-spacing: 12px; font-weight: bold; color: var(--tg-accent); background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; width: 100%; outline: none; margin-bottom: 15px; }
+    .btn-unlock { width: 100%; padding: 12px; background: var(--tg-accent); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 14.5px; cursor: pointer; transition: transform 0.1s; }
+    .btn-unlock:active { transform: scale(0.97); }
+  </style>
+</head>
+<body>
+
+  <!-- POP-UP LOCK SCREEN LOGIN ADMIN -->
+  <div id="loginLockOverlay" class="lock-overlay">
+    <div class="lock-card">
+        <div class="lock-icon"><i class="fas fa-user-shield"></i></div>
+        <div class="lock-title">Developer Verification</div>
+        <div class="lock-desc">Masukkan PIN Keamanan Admin DEV</div>
+        <!-- Input password tipe password biar bullet gak keliatan -->
+        <input type="password" id="adminPinInput" class="pin-input" maxlength="6" placeholder="******" pattern="\d*" inputmode="numeric" onkeyup="if(event.key === 'Enter') verifikasiLoginAdmin()">
+        <button class="btn-unlock" onclick="verifikasiLoginAdmin()">Verifikasi Masuk</button>
+    </div>
+  </div>
+
+  <!-- KAPSUL NOTIFIKASI ALERT TOAST -->
+  <div id="custom-toast" style="position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 14px 24px; border-radius: 14px; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 10px; box-shadow: 0 8px 30px rgba(16, 185, 129, 0.3); z-index: 9999; transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+    <i class="fas fa-check-circle" id="toast-icon"></i> <span id="toast-message">Sukses!</span>
+  </div>
+
+  <!-- HEADER BANNER VIDEO -->
+  <div class="header-wrapper">
+    <header class="tg-header-banner">
+      <video autoplay loop muted playsinline class="header-video"><source src="background-profile.mp4" type="video/mp4"></video>
+      <div class="header-overlay-content">
+        <div class="tg-title" id="header-title">Web Admin <span class="admin-badge">DEV</span></div>
+      </div>
+    </header>
+  </div>
+
+  <!-- MENU TAB 1: HOME (MANAJEMEN WEBSITE SAYA) -->
+  <div class="page-content active" id="page-home">
+    <div class="admin-add-trigger-box" id="btn-show-web" onclick="toggleForm('web-form', 'btn-show-web', 'Web Saya')">
+        <i class="fas fa-plus-circle"></i> Tambah Web Saya Baru
+    </div>
+    <div class="admin-form-card" id="web-form">
+        <div class="admin-form-title"><i class="fas fa-globe"></i> Input Web Baru</div>
+        <input type="text" id="web-title" class="admin-input" placeholder="Nama Web (Contoh: QRIS Template Generator)">
+        <input type="text" id="web-url" class="admin-input" placeholder="Link Website (Contoh: https://...)">
+        <button class="admin-btn-save" onclick="simpanWebKeSupabase()">Simpan Ke Database</button>
+    </div>
+    <h3 style="margin: 20px 15px 10px 15px; font-size:14px; color:var(--tg-text-muted);">Daftar Website di Server:</h3>
+    <div id="container-web-list"><p style="text-align: center; color: var(--tg-text-muted); padding: 20px;">Mengambil data...</p></div>
+  </div>
+
+  <!-- MENU TAB 2: APP MOD (MANAJEMEN APLIKASI MOD) -->
+  <div class="page-content" id="page-appmod">
+    <div class="admin-add-trigger-box" id="btn-show-app" onclick="toggleForm('app-form', 'btn-show-app', 'App Mod')">
+        <i class="fas fa-plus-circle"></i> Tambah App Mod Baru
+    </div>
+    <div class="admin-form-card" id="app-form">
+        <div class="admin-form-title"><i class="fas fa-folder-plus"></i> Input Aplikasi Baru</div>
+        <input type="text" id="app-title" class="admin-input" placeholder="Nama Aplikasi Mod">
+        <input type="text" id="app-desc" class="admin-input" placeholder="Deskripsi Singkat Fitur Mod">
+        <input type="text" id="app-size" class="admin-input" placeholder="Ukuran File (Contoh: 65 MB)">
+        <input type="text" id="app-url" class="admin-input" placeholder="Link Download File Mod">
+        <input type="text" id="app-img" class="admin-input" placeholder="Link Direct Ikon/Gambar ImgBB (Opsional)">
+        <button class="admin-btn-save" onclick="simpanAppKeSupabase()">Simpan Ke Database</button>
+    </div>
+    <h3 style="margin: 20px 15px 10px 15px; font-size:14px; color:var(--tg-text-muted);">Daftar Aplikasi di Server:</h3>
+    <div id="container-app-list"><p style="text-align: center; color: var(--tg-text-muted); padding: 20px;">Mengambil data...</p></div>
+  </div>
+
+  <!-- MENU TAB 3: STORE (MANAJEMEN ETALASE PRODUK JUALAN) -->
+  <div class="page-content" id="page-store">
+    <div class="admin-add-trigger-box" id="btn-show-store" onclick="toggleForm('store-form', 'btn-show-store', 'Produk Jualan')">
+        <i class="fas fa-plus-circle"></i> Tambah Produk Jualan Baru
+    </div>
+    <div class="admin-form-card" id="store-form">
+        <div class="admin-form-title"><i class="fas fa-shopping-bag"></i> Input Produk Store Baru</div>
+        <input type="text" id="prod-title" class="admin-input" placeholder="Nama Aplikasi Premium (Contoh: CapCut Pro)">
+        <input type="text" id="prod-desc" class="admin-input" placeholder="Deskripsi Masa Aktif & Aturan Akun">
+        <input type="text" id="prod-price" class="admin-input" placeholder="Harga Jual (Contoh: Rp 15k - 1 Month)">
+        <input type="text" id="prod-wa" class="admin-input" placeholder="Link Chat Order WA (Contoh: https://wa.me/...)">
+        <input type="text" id="prod-img" class="admin-input" placeholder="Link Direct Gambar Produk ImgBB (Opsional)">
+        <button class="admin-btn-save" onclick="simpanStoreKeSupabase()">Simpan Ke Database</button>
+    </div>
+    <h3 style="margin: 20px 15px 10px 15px; font-size:14px; color:var(--tg-text-muted);">Daftar Produk di Etalase Server:</h3>
+    <div id="container-store-list"><p style="text-align: center; color: var(--tg-text-muted); padding: 20px;">Mengambil data...</p></div>
+  </div>
+
+  <!-- TAB UNTUK MENU 4 & 5 (STATIS SISI CLIENT) -->
+  <div class="page-content" id="page-pengaturan"><div style="padding: 40px; text-align:center; color:var(--tg-text-muted);">Menu Setting Statis Sisi Client.</div></div>
+  <div class="page-content" id="page-profil"><div style="padding: 40px; text-align:center; color:var(--tg-text-muted);">Menu Profil Statis Sisi Client.</div></div>
+
+  <!-- BOTTOM FOOTER INTERACTIVE SLIDING NAVIGATION -->
+  <div class="bottom-nav-wrapper">
+    <div class="nav-sliding-indicator" id="indicator"></div>
+    <div class="nav-item active" onclick="switchNav('home', 0, this)"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg><span class="nav-label">Home</span></div>
+    <div class="nav-item" onclick="switchNav('appmod', 1, this)"><svg viewBox="0 0 24 24"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg><span class="nav-label">App Mod</span></div>
+    <div class="nav-item" onclick="switchNav('store', 2, this)"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg><span class="nav-label">Store</span></div>
+    <div class="nav-item" onclick="switchNav('pengaturan', 3, this)"><svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg><span class="nav-label">Setting</span></div>
+    <div class="nav-item" onclick="switchNav('profil', 4, this)"><div style="width: 22px; height: 22px; border-radius: 50%; overflow: hidden; border: 1.5px solid currentColor; margin-bottom: 2px;"><img src="profile.jpg" style="width:100%; height:100%; object-fit:cover;"></div><span class="nav-label">Profil</span></div>
+  </div>
+
+  <script>
+    
+
+        // FUNGSI VERIFIKASI LOGIN PIN ANTI-INSPECT ELEMENT
+    async function verifikasiLoginAdmin() {
+        const inputPin = document.getElementById('adminPinInput').value;
+        if(!inputPin) return tampilkanAlert("PIN tidak boleh kosong!", "error");
+
+        // Ambil data PIN rahasia langsung dari server Supabase
+        const { data, error } = await supabaseClient
+            .from('admin_auth')
+            .select('pin_code')
+            .eq('pin_code', inputPin)
+            .single();
+
+        // Jika data cocok dan ditemukan di database
+        if (data) {
+            tampilkanAlert("Akses Admin Diterima!", "sukses");
+            document.getElementById('loginLockOverlay').classList.add('hidden');
+            ambilDataWeb(); // Jalankan load data
+        } else {
+            tampilkanAlert("PIN Salah! Akses Ditolak.", "error");
+            document.getElementById('adminPinInput').value = '';
+            document.getElementById('adminPinInput').focus();
+        }
+    }
+
+    // KONEKSI DATABASE UTAMA SUPABASE LU
+    const SUPABASE_URL = "https://djojqarslfsvubuflwdn.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_vqUvkJX5XNx5_D75lCnJzw_KPeFSim9"; 
+    
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // SISTEM NOTIFIKASI TOAST MELUNCUR
+    function tampilkanAlert(pesan, jenis = 'sukses') {
+        const toast = document.getElementById('custom-toast');
+        const toastMsg = document.getElementById('toast-message');
+        const toastIcon = document.getElementById('toast-icon');
+        toastMsg.innerText = pesan;
+        if (jenis === 'error') {
+            toast.style.background = '#ef4444'; toast.style.boxShadow = '0 8px 30px rgba(239, 68, 68, 0.3)'; toastIcon.className = 'fas fa-exclamation-circle';
+        } else {
+            toast.style.background = '#10b981'; toast.style.boxShadow = '0 8px 30px rgba(16, 185, 129, 0.3)'; toastIcon.className = 'fas fa-check-circle';
+        }
+        toast.style.top = '20px'; setTimeout(() => { toast.style.top = '-100px'; }, 3000);
+    }
+
+    // MANAJEMEN PINDAH TAB NAVIGATION
+    function switchNav(page, index, el) {
+      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+      document.querySelectorAll('.page-content').forEach(content => content.classList.remove('active'));
+      document.getElementById('indicator').style.transform = `translateY(-50%) translateX(${index * 100}%)`;
+      if(el) el.classList.add('active'); document.getElementById('page-' + page).classList.add('active');
+      
+      const titleEl = document.getElementById('header-title');
+      if (page === 'home') { titleEl.innerHTML = 'Web Admin <span class="admin-badge">DEV</span>'; ambilDataWeb(); }
+      else if (page === 'appmod') { titleEl.innerHTML = 'App Mod <span class="admin-badge">DEV</span>'; ambilDataApp(); }
+      else if (page === 'store') { titleEl.innerHTML = 'Store Admin <span class="admin-badge">DEV</span>'; ambilDataStore(); }
+      else if (page === 'pengaturan') titleEl.innerHTML = 'Pengaturan <span class="admin-badge">DEV</span>';
+      else titleEl.innerHTML = 'Akun <span class="admin-badge">DEV</span>';
+    }
+
+    function toggleForm(formId, btnId, namaMenu) {
+        const form = document.getElementById(formId);
+        const btn = document.getElementById(btnId);
+        if (form.style.display === 'block') {
+            form.style.display = 'none'; btn.innerHTML = `<i class="fas fa-plus-circle"></i> Tambah ${namaMenu} Baru`;
+        } else {
+            form.style.display = 'block'; btn.innerHTML = '<i class="fas fa-times-circle"></i> Batalkan Input';
+        }
+    }
+
+    // ==========================================
+    // LOGIKA TAB 1: WEBSITE SAYA (HOME)
+    // ==========================================
+    async function simpanWebKeSupabase() {
+        const nama = document.getElementById('web-title').value;
+        const url = document.getElementById('web-url').value;
+        if(!nama || !url) return tampilkanAlert("Nama dan Link Web wajib diisi!", "error");
+
+        const { error } = await supabaseClient.from('web_saya').insert([{ nama_web: nama, link_web: url }]);
+        if (error) { tampilkanAlert("Gagal kirim: " + error.message, "error"); } 
+        else {
+            tampilkanAlert("Link Web tersimpan!", "sukses");
+            document.getElementById('web-title').value = ''; document.getElementById('web-url').value = '';
+            toggleForm('web-form', 'btn-show-web', 'Web Saya'); ambilDataWeb();
+        }
+    }
+
+    async function ambilDataWeb() {
+        const container = document.getElementById('container-web-list');
+        const { data, error } = await supabaseClient.from('web_saya').select('*').order('id', { ascending: false });
+        if (error) return container.innerHTML = `<p style="color:red; text-align:center;">Error: ${error.message}</p>`;
+        if (!data || data.length === 0) return container.innerHTML = `<p style="color:var(--tg-text-muted); text-align:center; padding:15px;">Belum ada data web.</p>`;
+        
+        container.innerHTML = '';
+        data.forEach(web => {
+            container.innerHTML += `
+                <div class="mod-box-item">
+                    <div class="mod-box-header" style="margin-bottom:0;">
+                        <div class="mod-box-title-group">
+                            <div class="mod-box-icon" style="font-size:20px; width:40px; height:40px;"><i class="fas fa-globe"></i></div>
+                            <div class="mod-box-name">${web.nama_web}</div>
+                        </div>
+                    </div>
+                    <div class="admin-action-bar">
+                        <button class="btn-admin edit" onclick="window.open('${web.link_web}', '_blank')"><i class="fas fa-external-link-alt"></i> Test</button>
+                        <button class="btn-admin delete" onclick="hapusWeb(${web.id})"><i class="fas fa-trash"></i> Hapus</button>
+                    </div>
+                </div>`;
+        });
+    }
+
+    async function hapusWeb(id) {
+        if(!confirm("Hapus website ini dari database?")) return;
+        const { error } = await supabaseClient.from('web_saya').delete().eq('id', id);
+        if (error) { tampilkanAlert("Gagal hapus: " + error.message, "error"); }
+        else { tampilkanAlert("Web berhasil didelete!", "sukses"); ambilDataWeb(); }
+    }
+
+    // ==========================================
+    // LOGIKA TAB 2: APLIKASI MOD (APP MOD)
+    // ==========================================
+    async function simpanAppKeSupabase() {
+        const nama = document.getElementById('app-title').value;
+        const desc = document.getElementById('app-desc').value;
+        const size = document.getElementById('app-size').value;
+        const url = document.getElementById('app-url').value;
+        const img = document.getElementById('app-img').value;
+
+        if(!nama || !url) return tampilkanAlert("Nama dan Link Download wajib diisi!", "error");
+
+        const { error } = await supabaseClient.from('app_mods').insert([{ nama_app: nama, deskripsi: desc, ukuran: size, link_download: url, img_url: img }]);
+        if (error) { tampilkanAlert("Gagal kirim: " + error.message, "error"); } 
+        else {
+            tampilkanAlert("Aplikasi Mod tersimpan!", "sukses");
+            document.getElementById('app-title').value = ''; document.getElementById('app-desc').value = '';
+            document.getElementById('app-size').value = ''; document.getElementById('app-url').value = ''; document.getElementById('app-img').value = '';
+            toggleForm('app-form', 'btn-show-app', 'App Mod'); ambilDataApp();
+        }
+    }
+
+    async function ambilDataApp() {
+        const container = document.getElementById('container-app-list');
+        const { data, error } = await supabaseClient.from('app_mods').select('*').order('id', { ascending: false });
+        if (error) return container.innerHTML = `<p style="color:red; text-align:center;">Error: ${error.message}</p>`;
+        if (!data || data.length === 0) return container.innerHTML = `<p style="color:var(--tg-text-muted); text-align:center; padding:15px;">Database kosong.</p>`;
+        
+        container.innerHTML = '';
+        data.forEach(app => {
+            let iconHtml = app.img_url ? `<img src="${app.img_url}" onerror="this.outerHTML='📱'" style="width:100%; height:100%; object-fit:cover;">` : '📱';
+            container.innerHTML += `
+                <div class="mod-box-item">
+                    <div class="mod-box-header">
+                        <div class="mod-box-title-group">
+                            <div class="mod-box-icon">${iconHtml}</div>
+                            <div class="mod-box-name">${app.nama_app}</div>
+                        </div>
+                        <div class="mod-box-size">${app.ukuran || 'N/A'}</div>
+                    </div>
+                    <div class="mod-box-desc">${app.deskripsi || 'Tidak ada deskripsi.'}</div>
+                    <div class="admin-action-bar">
+                        <button class="btn-admin edit" onclick="tampilkanAlert('Fitur edit segera hadir', 'sukses')"><i class="fas fa-edit"></i> Edit</button>
+                        <button class="btn-admin delete" onclick="hapusApp(${app.id})"><i class="fas fa-trash"></i> Hapus</button>
+                    </div>
+                </div>`;
+        });
+    }
+
+    async function hapusApp(id) {
+        if(!confirm("Hapus aplikasi ini?")) return;
+        const { error } = await supabaseClient.from('app_mods').delete().eq('id', id);
+        if (error) { tampilkanAlert("Gagal hapus: " + error.message, "error"); }
+        else { tampilkanAlert("Aplikasi dihapus!", "sukses"); ambilDataApp(); }
+    }
+
+    // ==========================================
+    // LOGIKA TAB 3: ETALASE JUALAN (STORE)
+    // ==========================================
+    async function simpanStoreKeSupabase() {
+        const nama = document.getElementById('prod-title').value;
+        const desc = document.getElementById('prod-desc').value;
+        const price = document.getElementById('prod-price').value;
+        const wa = document.getElementById('prod-wa').value;
+        const img = document.getElementById('prod-img').value;
+
+        if(!nama || !price || !wa) return tampilkanAlert("Nama, Harga, and Link WA wajib diisi!", "error");
+
+        const { error } = await supabaseClient.from('store_products').insert([{ nama_produk: nama, deskripsi: desc, harga: price, link_wa: wa, img_url: img }]);
+        if (error) { tampilkanAlert("Gagal kirim: " + error.message, "error"); } 
+        else {
+            tampilkanAlert("Produk masuk etalase!", "sukses");
+            document.getElementById('prod-title').value = ''; document.getElementById('prod-desc').value = '';
+            document.getElementById('prod-price').value = ''; document.getElementById('prod-wa').value = ''; document.getElementById('prod-img').value = '';
+            toggleForm('store-form', 'btn-show-store', 'Produk Jualan'); ambilDataStore();
+        }
+    }
+
+    async function ambilDataStore() {
+        const container = document.getElementById('container-store-list');
+        const { data, error } = await supabaseClient.from('store_products').select('*').order('id', { ascending: false });
+        if (error) return container.innerHTML = `<p style="color:red; text-align:center;">Error: ${error.message}</p>`;
+        if (!data || data.length === 0) return container.innerHTML = `<p style="color:var(--tg-text-muted); text-align:center; padding:15px;">Etalase store kosong.</p>`;
+        
+        container.innerHTML = '';
+        data.forEach(prod => {
+            let iconHtml = prod.img_url ? `<img src="${prod.img_url}" onerror="this.outerHTML='🛍️'" style="width:100%; height:100%; object-fit:cover;">` : '🛍️';
+            container.innerHTML += `
+                <div class="mod-box-item">
+                    <div class="mod-box-header">
+                        <div class="mod-box-title-group">
+                            <div class="mod-box-icon">${iconHtml}</div>
+                            <div class="mod-box-name">${prod.nama_produk}</div>
+                        </div>
+                        <div class="mod-box-size" style="color:#00ff7f; background:none;">${prod.harga}</div>
+                    </div>
+                    <div class="mod-box-desc">${prod.deskripsi || 'Tidak ada deskripsi.'}</div>
+                    <div class="admin-action-bar">
+                        <button class="btn-admin edit" onclick="window.open('${prod.link_wa}', '_blank')"><i class="fab fa-whatsapp"></i> Chat WA</button>
+                        <button class="btn-admin delete" onclick="hapusStore(${prod.id})"><i class="fas fa-trash"></i> Hapus</button>
+                    </div>
+                </div>`;
+        });
+    }
+
+    async function hapusStore(id) {
+        if(!confirm("Hapus produk ini dari etalase jualan?")) return;
+        const { error } = await supabaseClient.from('store_products').delete().eq('id', id);
+        if (error) tampilkanAlert("Gagal hapus: " + error.message, "error");
+        else { tampilkanAlert("Produk dihapus!", "sukses"); ambilDataStore(); }
+    }
+
+    // Otomatis fokus ke input PIN saat halaman dimuat
+    window.onload = function() {
+        document.getElementById('adminPinInput').focus();
+    }
+  </script>
+</body>
+</html>
