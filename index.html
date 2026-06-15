@@ -267,9 +267,11 @@
         ambilDataWeb();
         muatStatusSosmedAdmin();
     } else {
-        tampilkanAlert("PIN Salah! Akses Ditolak.", "error");
-        document.getElementById('adminPinInput').value = '';
-    }
+    const errData = await res.json().catch(() => ({}));
+    const pesan = errData.message || "PIN Salah! Akses Ditolak.";
+    tampilkanAlert(pesan, "error");
+    document.getElementById('adminPinInput').value = '';
+}
     }
 
     function tampilkanAlert(pesan, jenis = 'sukses') {
