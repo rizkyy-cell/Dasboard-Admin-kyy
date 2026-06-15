@@ -178,8 +178,8 @@
         <input type="text" id="prod-title" class="admin-input" placeholder="Nama Aplikasi Premium">
         <input type="text" id="prod-desc" class="admin-input" placeholder="Deskripsi Masa Aktif">
         <input type="text" id="prod-price" class="admin-input" placeholder="Harga Jual">
-        <!-- 2. STOK PRODUK -->
-        <input type="text" id="prod-stock" class="admin-input" placeholder="Jumlah Stok / Ketersediaan">
+        <!-- 2. STOCK PRODUK -->
+        <input type="text" id="prod-stock" class="admin-input" placeholder="Jumlah Stock / Ketersediaan">
         <input type="text" id="prod-wa" class="admin-input" placeholder="Link Order WA">
         <input type="text" id="prod-img" class="admin-input" placeholder="Link Gambar Produk (Opsional)">
         <button class="admin-btn-save" onclick="simpanStoreKeSupabase()">Simpan Ke Database</button>
@@ -317,7 +317,7 @@
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama Produk</label><input type="text" id="upd-1" class="admin-input" value="${dataLama.nama_produk}">`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Deskripsi</label><input type="text" id="upd-2" class="admin-input" value="${dataLama.deskripsi}">`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Harga Jual</label><input type="text" id="upd-3" class="admin-input" value="${dataLama.harga}">`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Stok Produk</label><input type="text" id="upd-stok" class="admin-input" value="${dataLama.stok || ''}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Stock Produk</label><input type="text" id="upd-stock" class="admin-input" value="${dataLama.stock || ''}">`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link WA</label><input type="text" id="upd-4" class="admin-input" value="${dataLama.link_wa}">`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Gambar</label><input type="text" id="upd-5" class="admin-input" value="${dataLama.img_url}">`;
         }
@@ -332,7 +332,7 @@
 
         if (tabel === 'web_saya') updateData = { nama_web: document.getElementById('upd-1').value, link_web: document.getElementById('upd-2').value };
         else if (tabel === 'app_mods') updateData = { nama_app: document.getElementById('upd-1').value, deskripsi: document.getElementById('upd-2').value, ukuran: document.getElementById('upd-3').value, link_download: document.getElementById('upd-4').value, img_url: document.getElementById('upd-5').value };
-        else if (tabel === 'store_products') updateData = { nama_produk: document.getElementById('upd-1').value, deskripsi: document.getElementById('upd-2').value, harga: document.getElementById('upd-3').value, stok: document.getElementById('upd-stok').value, link_wa: document.getElementById('upd-4').value, img_url: document.getElementById('upd-5').value };
+        else if (tabel === 'store_products') updateData = { nama_produk: document.getElementById('upd-1').value, deskripsi: document.getElementById('upd-2').value, harga: document.getElementById('upd-3').value, stock: document.getElementById('upd-stock').value, link_wa: document.getElementById('upd-4').value, img_url: document.getElementById('upd-5').value };
 
         const { error } = await supabaseClient.from(tabel).update(updateData).eq('id', id);
         if (error) { tampilkanAlert("Update Gagal: " + error.message, "error"); } 
@@ -382,9 +382,9 @@
 
     // FUNGSI CRUD STORE
     async function simpanStoreKeSupabase() {
-        const nama = document.getElementById('prod-title').value; const desc = document.getElementById('prod-desc').value; const price = document.getElementById('prod-price').value; const stok = document.getElementById('prod-stock').value; const wa = document.getElementById('prod-wa').value; const img = document.getElementById('prod-img').value;
+        const nama = document.getElementById('prod-title').value; const desc = document.getElementById('prod-desc').value; const price = document.getElementById('prod-price').value; const stock = document.getElementById('prod-stock').value; const wa = document.getElementById('prod-wa').value; const img = document.getElementById('prod-img').value;
         if(!nama || !price) return tampilkanAlert("Wajib diisi!", "error");
-        const { error } = await supabaseClient.from('store_products').insert([{ nama_produk: nama, deskripsi: desc, harga: price, stok: stok, link_wa: wa, img_url: img }]);
+        const { error } = await supabaseClient.from('store_products').insert([{ nama_produk: nama, deskripsi: desc, harga: price, stock: stock, link_wa: wa, img_url: img }]);
         if (!error) { tampilkanAlert("Tersimpan!", "sukses"); toggleForm('store-form', 'btn-show-store', 'Store'); ambilDataStore(); }
     }
     async function ambilDataStore() {
@@ -394,7 +394,7 @@
         data.forEach(prod => {
             let iconHtml = prod.img_url ? `<img src="${prod.img_url}" onerror="this.outerHTML='🛍️'" style="width:100%; height:100%; object-fit:cover;">` : '🛍️';
             const dataStr = btoa(unescape(encodeURIComponent(JSON.stringify(prod))));
-            let stockBadge = prod.stok ? `<span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px; font-size:10px; margin-left:5px; color:#fff;">Stok: ${prod.stok}</span>` : '';
+            let stockBadge = prod.stock ? `<span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px; font-size:10px; margin-left:5px; color:#fff;">Stock: ${prod.stock}</span>` : '';
             container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header"><div class="mod-box-title-group"><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${prod.nama_produk}</div></div><div class="mod-box-size" style="color:#00ff7f; background:none;">${prod.harga}${stockBadge}</div></div><div class="mod-box-desc">${prod.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${prod.id}, 'store_products', JSON.parse(decodeURIComponent(escape(atob('${dataStr}')))))"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusStore(${prod.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
         });
     }
