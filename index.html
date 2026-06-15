@@ -133,6 +133,9 @@
       <video autoplay loop muted playsinline class="header-video"><source src="background-profile.mp4" type="video/mp4"></video>
       <div class="header-overlay-content">
         <div class="tg-title" id="header-title">Web Admin <span class="admin-badge">DEV</span></div>
+<button onclick="logoutAdmin()" style="background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#ef4444; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer; z-index:3; position:relative;">
+    <i class="fas fa-sign-out-alt"></i> Logout
+</button>
       </div>
     </header>
   </div>
@@ -262,10 +265,12 @@
     });
     
     if (res.ok) {
-        tampilkanAlert("Akses Admin Diterima!", "sukses");
-        document.getElementById('loginLockOverlay').classList.add('hidden');
-        ambilDataWeb();
-        muatStatusSosmedAdmin();
+    tampilkanAlert("Akses Admin Diterima!", "sukses");
+    document.getElementById('loginLockOverlay').classList.add('hidden');
+    ambilDataWeb();
+    muatStatusSosmedAdmin();
+    resetSessionTimer(); // ← TAMBAH DI SINI
+    }
     } else {
     const errData = await res.json().catch(() => ({}));
     const pesan = errData.message || "PIN Salah! Akses Ditolak.";
@@ -447,6 +452,242 @@
         let savedTheme = localStorage.getItem('adminThemeColor');
         if (savedTheme) { document.documentElement.style.setProperty('--tg-accent', savedTheme); }
     }
+      function logoutAdmin() {
+    if(confirm("Yakin mau logout?")) {
+        document.getElementById('loginLockOverlay').classList.remove('hidden');
+        document.getElementById('adminPinInput').value = '';
+        document.getElementById('adminPinInput').focus();
+    }
+      }
+
+  <script>
+    const SUPABASE_URL = "https://djojqarslfsvubuflwdn.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_vqUvkJX5XNx5_D75lCnJzw_KPeFSim9"; 
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function verifikasiLoginAdmin() {
+        const inputPin = document.getElementById('adminPinInput').value;
+        if (!inputPin) return tampilkanAlert("PIN tidak boleh kosong!", "error");
+        
+        const res = await fetch('/api/verify-pin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin: inputPin })
+        });
+        
+        if (res.ok) {
+            tampilkanAlert("Akses Admin Diterima!", "sukses");
+            document.getElementById('loginLockOverlay').classList.add('hidden');
+            ambilDataWeb();
+            muatStatusSosmedAdmin();
+            resetSessionTimer(); 
+        } else {
+            const errData = await res.json().catch(() => ({}));
+            const pesan = errData.message || "PIN Salah! Akses Ditolak.";
+            tampilkanAlert(pesan, "error");
+            document.getElementById('adminPinInput').value = '';
+        }
+    }
+
+    function tampilkanAlert(pesan, jenis = 'sukses') {
+        const toast = document.getElementById('custom-toast');
+        document.getElementById('toast-message').innerText = pesan;
+        if (jenis === 'error') { toast.style.background = '#ef4444'; document.getElementById('toast-icon').className = 'fas fa-exclamation-circle'; } 
+        else { toast.style.background = '#10b981'; document.getElementById('toast-icon').className = 'fas fa-check-circle'; }
+        toast.style.top = '20px'; setTimeout(() => { toast.style.top = '-100px'; }, 3000);
+    }
+
+    function switchNav(page, index, el) {
+      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+      document.querySelectorAll('.page-content').forEach(content => content.classList.remove('active'));
+      document.getElementById('indicator').style.transform = `translateY(-50%) translateX(${index * 100}%)`;
+      if(el) el.classList.add('active'); document.getElementById('page-' + page).classList.add('active');
+      
+      const titleEl = document.getElementById('header-title');
+      if (page === 'home') { titleEl.innerHTML = 'Web Admin <span class="admin-badge">DEV</span>'; ambilDataWeb(); }
+      else if (page === 'appmod') { titleEl.innerHTML = 'App Mod <span class="admin-badge">DEV</span>'; ambilDataApp(); }
+      else if (page === 'store') { titleEl.innerHTML = 'Store Admin <span class="admin-badge">DEV</span>'; ambilDataStore(); }
+      else if (page === 'pengaturan') titleEl.innerHTML = 'Pengaturan <span class="admin-badge">DEV</span>';
+      else { titleEl.innerHTML = 'Profile <span class="admin-badge">DEV</span>'; muatStatusSosmedAdmin(); }
+    }
+
+    function toggleForm(formId, btnId, namaMenu) {
+        const form = document.getElementById(formId);
+        const btn = document.getElementById(btnId);
+        if (form.style.display === 'block') { form.style.display = 'none'; btn.innerHTML = `<i class="fas fa-plus-circle"></i> Tambah ${namaMenu} Baru`; } 
+        else { form.style.display = 'block'; btn.innerHTML = '<i class="fas fa-times-circle"></i> Batalkan Input'; }
+    }
+
+    // LOGIKA POP-UP EDIT REAL-TIME
+    function bukaPopupEdit(id, tabel, dataLama) {
+        document.getElementById('edit-id').value = id;
+        document.getElementById('edit-table').value = tabel;
+        const fieldsContainer = document.getElementById('dynamic-edit-fields');
+        fieldsContainer.innerHTML = '';
+
+        let innerH = '';
+        if (tabel === 'web_saya') {
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama Web</label><input type="text" id="upd-1" class="admin-input" value="${dataLama.nama_web}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Web</label><input type="text" id="upd-2" class="admin-input" value="${dataLama.link_web}">`;
+        } else if (tabel === 'app_mods') {
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama App</label><input type="text" id="upd-1" class="admin-input" value="${dataLama.nama_app}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Deskripsi</label><input type="text" id="upd-2" class="admin-input" value="${dataLama.deskripsi}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Ukuran File</label><input type="text" id="upd-3" class="admin-input" value="${dataLama.ukuran}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Download</label><input type="text" id="upd-4" class="admin-input" value="${dataLama.link_download}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Ikon</label><input type="text" id="upd-5" class="admin-input" value="${dataLama.img_url}">`;
+        } else if (tabel === 'store_products') {
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama Produk</label><input type="text" id="upd-1" class="admin-input" value="${dataLama.nama_produk}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Deskripsi</label><input type="text" id="upd-2" class="admin-input" value="${dataLama.deskripsi}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Harga Jual</label><input type="text" id="upd-3" class="admin-input" value="${dataLama.harga}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Stock Produk</label><input type="text" id="upd-stock" class="admin-input" value="${dataLama.stock || ''}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link WA</label><input type="text" id="upd-4" class="admin-input" value="${dataLama.link_wa}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Gambar</label><input type="text" id="upd-5" class="admin-input" value="${dataLama.img_url}">`;
+        }
+        fieldsContainer.innerHTML = innerH;
+        document.getElementById('editDataPopup').classList.remove('hidden');
+    }
+
+    async function eksekusiUpdateSupabase() {
+        const id = document.getElementById('edit-id').value;
+        const tabel = document.getElementById('edit-table').value;
+        let updateData = {};
+
+        if (tabel === 'web_saya') updateData = { nama_web: document.getElementById('upd-1').value, link_web: document.getElementById('upd-2').value };
+        else if (tabel === 'app_mods') updateData = { nama_app: document.getElementById('upd-1').value, deskripsi: document.getElementById('upd-2').value, ukuran: document.getElementById('upd-3').value, link_download: document.getElementById('upd-4').value, img_url: document.getElementById('upd-5').value };
+        else if (tabel === 'store_products') updateData = { nama_produk: document.getElementById('upd-1').value, deskripsi: document.getElementById('upd-2').value, harga: document.getElementById('upd-3').value, stock: document.getElementById('upd-stock').value, link_wa: document.getElementById('upd-4').value, img_url: document.getElementById('upd-5').value };
+
+        const { error } = await supabaseClient.from(tabel).update(updateData).eq('id', id);
+        if (error) { tampilkanAlert("Update Gagal: " + error.message, "error"); } 
+        else {
+            tampilkanAlert("Berhasil di-update!", "sukses");
+            document.getElementById('editDataPopup').classList.add('hidden');
+            if (tabel === 'web_saya') ambilDataWeb(); else if (tabel === 'app_mods') ambilDataApp(); else if (tabel === 'store_products') ambilDataStore();
+        }
+    }
+
+    // FUNGSI CRUD WEB
+    async function simpanWebKeSupabase() {
+        const nama = document.getElementById('web-title').value; const url = document.getElementById('web-url').value;
+        if(!nama || !url) return tampilkanAlert("Wajib diisi!", "error");
+        const { error } = await supabaseClient.from('web_saya').insert([{ nama_web: nama, link_web: url }]);
+        if (!error) { tampilkanAlert("Tersimpan!", "sukses"); toggleForm('web-form', 'btn-show-web', 'Web Saya'); ambilDataWeb(); }
+    }
+    async function ambilDataWeb() {
+        const container = document.getElementById('container-web-list');
+        const { data } = await supabaseClient.from('web_saya').select('*').order('id', { ascending: false });
+        if (!data) return; container.innerHTML = '';
+        data.forEach(web => {
+            const dataStr = btoa(unescape(encodeURIComponent(JSON.stringify(web))));
+            container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header" style="margin-bottom:0;"><div class="mod-box-title-group"><div class="mod-box-icon" style="font-size:20px; width:40px; height:40px;"><i class="fas fa-globe"></i></div><div class="mod-box-name">${web.nama_web}</div></div></div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${web.id}, 'web_saya', JSON.parse(decodeURIComponent(escape(atob('${dataStr}')))))"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusWeb(${web.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
+        });
+    }
+    async function hapusWeb(id) { if(confirm("Hapus?")) { await supabaseClient.from('web_saya').delete().eq('id', id); ambilDataWeb(); } }
+
+    // FUNGSI CRUD APP
+    async function simpanAppKeSupabase() {
+        const nama = document.getElementById('app-title').value; const desc = document.getElementById('app-desc').value; const size = document.getElementById('app-size').value; const url = document.getElementById('app-url').value; const img = document.getElementById('app-img').value;
+        if(!nama || !url) return tampilkanAlert("Wajib diisi!", "error");
+        const { error } = await supabaseClient.from('app_mods').insert([{ nama_app: nama, deskripsi: desc, ukuran: size, link_download: url, img_url: img }]);
+        if (!error) { tampilkanAlert("Tersimpan!", "sukses"); toggleForm('app-form', 'btn-show-app', 'App Mod'); ambilDataApp(); }
+    }
+    async function ambilDataApp() {
+        const container = document.getElementById('container-app-list');
+        const { data } = await supabaseClient.from('app_mods').select('*').order('id', { ascending: false });
+        if (!data) return; container.innerHTML = '';
+        data.forEach(app => {
+            let iconHtml = app.img_url ? `<img src="${app.img_url}" onerror="this.outerHTML='📱'" style="width:100%; height:100%; object-fit:cover;">` : '📱';
+            const dataStr = btoa(unescape(encodeURIComponent(JSON.stringify(app))));
+            container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header"><div class="mod-box-title-group"><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${app.nama_app}</div></div><div class="mod-box-size">${app.ukuran || 'N/A'}</div></div><div class="mod-box-desc">${app.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${app.id}, 'app_mods', JSON.parse(decodeURIComponent(escape(atob('${dataStr}')))))"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusApp(${app.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
+        });
+    }
+    async function hapusApp(id) { if(confirm("Hapus?")) { await supabaseClient.from('app_mods').delete().eq('id', id); ambilDataApp(); } }
+
+    // FUNGSI CRUD STORE
+    async function simpanStoreKeSupabase() {
+        const nama = document.getElementById('prod-title').value; const desc = document.getElementById('prod-desc').value; const price = document.getElementById('prod-price').value; const stock = document.getElementById('prod-stock').value; const wa = document.getElementById('prod-wa').value; const img = document.getElementById('prod-img').value;
+        if(!nama || !price) return tampilkanAlert("Wajib diisi!", "error");
+        const { error } = await supabaseClient.from('store_products').insert([{ nama_produk: nama, deskripsi: desc, harga: price, stock: stock, link_wa: wa, img_url: img }]);
+        if (!error) { tampilkanAlert("Tersimpan!", "sukses"); toggleForm('store-form', 'btn-show-store', 'Store'); ambilDataStore(); }
+    }
+    async function ambilDataStore() {
+        const container = document.getElementById('container-store-list');
+        const { data } = await supabaseClient.from('store_products').select('*').order('id', { ascending: false });
+        if (!data) return; container.innerHTML = '';
+        data.forEach(prod => {
+            let iconHtml = prod.img_url ? `<img src="${prod.img_url}" onerror="this.outerHTML='🛍️'" style="width:100%; height:100%; object-fit:cover;">` : '🛍️';
+            const dataStr = btoa(unescape(encodeURIComponent(JSON.stringify(prod))));
+            let stockBadge = prod.stock ? `<span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px; font-size:10px; margin-left:5px; color:#fff;">Stock: ${prod.stock}</span>` : '';
+            container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header"><div class="mod-box-title-group"><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${prod.nama_produk}</div></div><div class="mod-box-size" style="color:#00ff7f; background:none;">${prod.harga}${stockBadge}</div></div><div class="mod-box-desc">${prod.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${prod.id}, 'store_products', JSON.parse(decodeURIComponent(escape(atob('${dataStr}')))))"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusStore(${prod.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
+        });
+    }
+    async function hapusStore(id) { if(confirm("Hapus?")) { await supabaseClient.from('store_products').delete().eq('id', id); ambilDataStore(); } }
+
+    // FUNGSI TEMA WARNA
+    function gantiTemaAdmin(color, el) {
+        document.querySelectorAll('.theme-dot').forEach(e => e.classList.remove('selected'));
+        el.classList.add('selected');
+        document.documentElement.style.setProperty('--tg-accent', color);
+        localStorage.setItem('adminThemeColor', color);
+    }
+    
+    // FUNGSI UPDATE STATUS ON/OFF SOSMED LANGSUNG KE SUPABASE
+    async function simpanSosmed() {
+        const platforms = ['tiktok', 'ig', 'tele', 'dc', 'socia'];
+        for (const nama of platforms) {
+            const status = document.getElementById('tg-' + nama).checked;
+            await supabaseClient
+                .from('sosmed_visibility')
+                .update({ is_visible: status })
+                .eq('platform', nama);
+        }
+        tampilkanAlert("Status Sosmed di Web Publik Berhasil Diperbarui!", "sukses");
+        await muatStatusSosmedAdmin();
+    }
+
+    // Ambil status asli dari server pas admin baru login
+    async function muatStatusSosmedAdmin() {
+        const { data, error } = await supabaseClient.from('sosmed_visibility').select('*');
+        if (data) {
+            data.forEach(row => {
+                const element = document.getElementById('tg-' + row.platform);
+                if (element) element.checked = row.is_visible;
+            });
+        }
+    }
+
+    function logoutAdmin() {
+        if(confirm("Yakin mau logout?")) {
+            document.getElementById('loginLockOverlay').classList.remove('hidden');
+            document.getElementById('adminPinInput').value = '';
+            document.getElementById('adminPinInput').focus();
+            clearTimeout(sessionTimer);
+        }
+    }
+
+    let sessionTimer;
+    function resetSessionTimer() {
+        clearTimeout(sessionTimer);
+        sessionTimer = setTimeout(() => {
+            tampilkanAlert("Sesi habis! Silakan login ulang.", "error");
+            setTimeout(() => {
+                document.getElementById('loginLockOverlay').classList.remove('hidden');
+                document.getElementById('adminPinInput').value = '';
+                document.getElementById('adminPinInput').focus();
+            }, 2000);
+        }, 10 * 60 * 1000); // 10 menit
+    }
+
+    // Reset timer setiap ada aktivitas
+    document.addEventListener('click', resetSessionTimer);
+    document.addEventListener('keypress', resetSessionTimer);
+
+    window.onload = function() {
+        document.getElementById('adminPinInput').focus();
+        // Load Tema
+        let savedTheme = localStorage.getItem('adminThemeColor');
+        if (savedTheme) { document.documentElement.style.setProperty('--tg-accent', savedTheme); }
+    }
   </script>
+
 </body>
 </html>
