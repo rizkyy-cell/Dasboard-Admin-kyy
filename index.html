@@ -252,19 +252,24 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function verifikasiLoginAdmin() {
-        const inputPin = document.getElementById('adminPinInput').value;
-        if(!inputPin) return tampilkanAlert("PIN tidak boleh kosong!", "error");
-        const { data, error } = await supabaseClient.from('admin_auth').select('pin_code').eq('pin_code', inputPin).single();
-        if (data) {
-            tampilkanAlert("Akses Admin Diterima!", "sukses");
-            document.getElementById('loginLockOverlay').classList.add('hidden');
-            ambilDataWeb(); 
-            // SINKRONISASI AKTIF: Langsung muat status saklar dari server pas sukses login!
-            muatStatusSosmedAdmin(); 
-        } else {
-            tampilkanAlert("PIN Salah! Akses Ditolak.", "error");
-            document.getElementById('adminPinInput').value = '';
-        }
+    const inputPin = document.getElementById('adminPinInput').value;
+    if (!inputPin) return tampilkanAlert("PIN tidak boleh kosong!", "error");
+    
+    const res = await fetch('/api/verify-pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: inputPin })
+    });
+    
+    if (res.ok) {
+        tampilkanAlert("Akses Admin Diterima!", "sukses");
+        document.getElementById('loginLockOverlay').classList.add('hidden');
+        ambilDataWeb();
+        muatStatusSosmedAdmin();
+    } else {
+        tampilkanAlert("PIN Salah! Akses Ditolak.", "error");
+        document.getElementById('adminPinInput').value = '';
+    }
     }
 
     function tampilkanAlert(pesan, jenis = 'sukses') {
@@ -409,21 +414,18 @@
     
     // FUNGSI UPDATE STATUS ON/OFF SOSMED LANGSUNG KE SUPABASE
     async function simpanSosmed() {
-        const platforms = {
-            tiktok: document.getElementById('tg-tiktok').checked,
-            ig: document.getElementById('tg-ig').checked,
-            tele: document.getElementById('tg-tele').checked,
-            dc: document.getElementById('tg-dc').checked,
-            socia: document.getElementById('tg-socia').checked
-        };
-
-        for (const [namaPlatform, statusTampil] of Object.entries(platforms)) {
-            await supabaseClient
-                .from('sosmed_visibility')
-                .update({ is_visible: statusTampil })
-                .eq('platform', namaPlatform);
-        }
-        tampilkanAlert("Status Sosmed di Web Publik Berhasil Diperbarui!", "sukses");
+    const platforms = ['tiktok', 'ig', 'tele', 'dc', 'socia'];
+    
+    for (const nama of platforms) {
+        const status = document.getElementById('tg-' + nama).checked;
+        await supabaseClient
+            .from('sosmed_visibility')
+            .update({ is_visible: status })
+            .eq('platform', nama);
+    }
+    
+    tampilkanAlert("Status Sosmed di Web Publik Berhasil Diperbarui!", "sukses");
+    await muatStatusSosmedAdmin();
     }
 
     // Ambil status asli dari server pas admin baru login
