@@ -250,6 +250,8 @@
   </div>
 
     <script>
+alert("script loaded!");
+// ... kode lainnya
     const SUPABASE_URL = "https://djojqarslfsvubuflwdn.supabase.co";
     const SUPABASE_KEY = "sb_publishable_vqUvkJX5XNx5_D75lCnJzw_KPeFSim9"; 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -265,12 +267,13 @@
     });
     
     if (res.ok) {
-    tampilkanAlert("Akses Admin Diterima!", "sukses");
-    document.getElementById('loginLockOverlay').classList.add('hidden');
-    ambilDataWeb();
-    muatStatusSosmedAdmin();
-    resetSessionTimer(); // ← TAMBAH DI SINI
-    }
+        tampilkanAlert("Akses Admin Diterima!", "sukses");
+        document.getElementById('loginLockOverlay').classList.add('hidden');
+        ambilDataWeb();
+        muatStatusSosmedAdmin();
+        resetSessionTimer();
+        document.addEventListener('click', resetSessionTimer);
+        document.addEventListener('keypress', resetSessionTimer);
     } else {
     const errData = await res.json().catch(() => ({}));
     const pesan = errData.message || "PIN Salah! Akses Ditolak.";
