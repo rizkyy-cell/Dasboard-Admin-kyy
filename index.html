@@ -94,6 +94,23 @@
     .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
     input:checked + .slider { background-color: var(--admin-add); }
     input:checked + .slider:before { transform: translateX(20px); }
+
+    /* GLASSMORPHISM CONFIRM POPUP */
+    .glass-confirm-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 999999; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s ease; }
+    .glass-confirm-card { background: rgba(23, 33, 43, 0.92); border: 1px solid rgba(255,255,255,0.15); border-radius: 24px; padding: 28px 24px 20px 24px; max-width: 320px; width: 88%; box-shadow: 0 20px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.1); text-align: center; }
+    .glass-confirm-icon { font-size: 40px; margin-bottom: 14px; }
+    .glass-confirm-title { font-size: 17px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+    .glass-confirm-msg { font-size: 13px; color: var(--tg-text-muted); margin-bottom: 22px; line-height: 1.5; }
+    .glass-confirm-btns { display: flex; gap: 10px; }
+    .glass-confirm-btn { flex: 1; padding: 13px; border: none; border-radius: 14px; font-weight: 700; font-size: 14px; cursor: pointer; transition: transform 0.1s, opacity 0.1s; }
+    .glass-confirm-btn:active { transform: scale(0.96); opacity: 0.8; }
+    .glass-confirm-cancel { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; }
+    .glass-confirm-ok { background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; box-shadow: 0 4px 15px rgba(239,68,68,0.4); }
+
+    /* SCROLL TO TOP BUTTON */
+    .scroll-top-btn { position: fixed; bottom: 100px; right: 18px; width: 44px; height: 44px; background: rgba(255,255,255,0.08); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2); border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15); transition: opacity 0.3s, transform 0.3s; opacity: 0; pointer-events: none; color: rgba(255,255,255,0.8); font-size: 16px; }
+    .scroll-top-btn.visible { opacity: 1; pointer-events: all; }
+    .scroll-top-btn:active { transform: scale(0.92); }
   </style>
 </head>
 <body>
@@ -239,6 +256,11 @@
     </div>
   </div>
 
+  <!-- SCROLL TO TOP BUTTON -->
+  <button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToTop()">
+    <i class="fas fa-chevron-up"></i>
+  </button>
+
   <div class="bottom-nav-wrapper">
     <div class="nav-sliding-indicator" id="indicator"></div>
     <!-- 6. GANTI ICON HOME MENJADI RUMAH -->
@@ -371,7 +393,7 @@
             container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header" style="margin-bottom:0;"><div class="mod-box-title-group"><div class="mod-box-icon" style="font-size:20px; width:40px; height:40px;"><i class="fas fa-globe"></i></div><div class="mod-box-name">${web.nama_web}</div></div></div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${web.id}, 'web_saya', JSON.parse(decodeURIComponent(escape(atob('${dataStr}')))))"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusWeb(${web.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
         });
     }
-    async function hapusWeb(id) { if(confirm("Hapus?")) { await supabaseClient.from('web_saya').delete().eq('id', id); ambilDataWeb(); } }
+    async function hapusWeb(id) { glassConfirm("Hapus Web?", "Data ini akan dihapus permanen dari database.", async () => { await supabaseClient.from('web_saya').delete().eq('id', id); ambilDataWeb(); }); }
 
     // FUNGSI CRUD APP
     async function simpanAppKeSupabase() {
@@ -390,7 +412,7 @@
             container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header"><div class="mod-box-title-group"><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${app.nama_app}</div></div><div class="mod-box-size">${app.ukuran || 'N/A'}</div></div><div class="mod-box-desc">${app.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${app.id}, 'app_mods', JSON.parse(decodeURIComponent(escape(atob('${dataStr}')))))"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusApp(${app.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
         });
     }
-    async function hapusApp(id) { if(confirm("Hapus?")) { await supabaseClient.from('app_mods').delete().eq('id', id); ambilDataApp(); } }
+    async function hapusApp(id) { glassConfirm("Hapus App?", "Data ini akan dihapus permanen dari database.", async () => { await supabaseClient.from('app_mods').delete().eq('id', id); ambilDataApp(); }); }
 
     // FUNGSI CRUD STORE
     async function simpanStoreKeSupabase() {
@@ -410,7 +432,7 @@
             container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header"><div class="mod-box-title-group"><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${prod.nama_produk}</div></div><div class="mod-box-size" style="color:#00ff7f; background:none;">${prod.harga}${stockBadge}</div></div><div class="mod-box-desc">${prod.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${prod.id}, 'store_products', JSON.parse(decodeURIComponent(escape(atob('${dataStr}')))))"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusStore(${prod.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
         });
     }
-    async function hapusStore(id) { if(confirm("Hapus?")) { await supabaseClient.from('store_products').delete().eq('id', id); ambilDataStore(); } }
+    async function hapusStore(id) { glassConfirm("Hapus Produk?", "Produk ini akan dihapus permanen dari database.", async () => { await supabaseClient.from('store_products').delete().eq('id', id); ambilDataStore(); }); }
 
     // FUNGSI TEMA WARNA
     function gantiTemaAdmin(color, el) {
@@ -454,12 +476,48 @@
         if (savedTheme) { document.documentElement.style.setProperty('--tg-accent', savedTheme); }
     }
       function logoutAdmin() {
-    if(confirm("Yakin mau logout?")) {
-        document.getElementById('loginLockOverlay').classList.remove('hidden');
-        document.getElementById('adminPinInput').value = '';
-        document.getElementById('adminPinInput').focus();
-    }
+        glassConfirm("Yakin mau logout?", "Kamu akan keluar dari sesi admin.", () => {
+            document.getElementById('loginLockOverlay').classList.remove('hidden');
+            document.getElementById('adminPinInput').value = '';
+            document.getElementById('adminPinInput').focus();
+        });
       }
+
+      // GLASSMORPHISM CONFIRM
+      function glassConfirm(judul, pesan, onOk) {
+        const overlay = document.createElement('div');
+        overlay.className = 'glass-confirm-overlay';
+        overlay.innerHTML = `
+          <div class="glass-confirm-card">
+            <div class="glass-confirm-icon">🗑️</div>
+            <div class="glass-confirm-title">${judul}</div>
+            <div class="glass-confirm-msg">${pesan}</div>
+            <div class="glass-confirm-btns">
+              <button class="glass-confirm-btn glass-confirm-cancel" id="gcCancel">Batal</button>
+              <button class="glass-confirm-btn glass-confirm-ok" id="gcOk">Hapus</button>
+            </div>
+          </div>`;
+        document.body.appendChild(overlay);
+        overlay.querySelector('#gcCancel').onclick = () => overlay.remove();
+        overlay.querySelector('#gcOk').onclick = () => { overlay.remove(); onOk(); };
+        overlay.onclick = (e) => { if(e.target === overlay) overlay.remove(); };
+      }
+
+      // SCROLL TO TOP
+      function scrollToTop() {
+        const active = document.querySelector('.page-content.active');
+        if (active) active.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      document.querySelectorAll('.page-content').forEach(el => {
+        el.addEventListener('scroll', () => {
+          const btn = document.getElementById('scrollTopBtn');
+          if (el.scrollTop > 150 && el.classList.contains('active')) {
+            btn.classList.add('visible');
+          } else {
+            btn.classList.remove('visible');
+          }
+        });
+      });
 
       let sessionTimer;
 
