@@ -4,12 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   
-  <!-- 1. META TAG BANNER -->
   <title>Web Admin DEV - Rizky</title>
   <meta name="description" content="Dashboard Administrator Utama Pengelola Database Website Rizky.">
   <meta property="og:title" content="Web Admin DEV - Rizky">
   <meta property="og:description" content="Akses Khusus Developer untuk manajemen aplikasi dan store.">
-  <meta property="og:image" content="https://dasboard-admin-kyy.vercel.app/profile.jpg"> <!-- Bisa diganti link gambar lu -->
+  <meta property="og:image" content="https://dasboard-admin-kyy.vercel.app/profile.jpg">
   <meta property="og:type" content="website">
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -22,25 +21,23 @@
     
     .header-wrapper { padding: 15px 15px 5px 15px; background-color: var(--tg-bg); flex-shrink: 0; }
     .tg-header-banner { position: relative; width: 100%; height: 90px; background-color: var(--tg-panel); border-radius: 18px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; }
-    .header-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; opacity: 0.3; pointer-events: none; }
-    .tg-title { font-size: 18px; font-weight: 800; color: var(--tg-accent); display: flex; align-items: center; gap: 8px; flex: 1; z-index: 2; transition: color 0.3s; }
+    .header-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.3; pointer-events: none; object-fit: cover; }
+    .header-overlay-content { position: relative; z-index: 2; width: 100%; padding: 0 15px; display: flex; justify-content: space-between; align-items: center; }
+    .tg-title { font-size: 18px; font-weight: 800; color: var(--tg-accent); display: flex; align-items: center; gap: 8px; }
     .admin-badge { background: #ef4444; color: white; font-size: 10px; padding: 3px 6px; border-radius: 6px; font-weight: bold; }
     
     .page-content { flex: 1; overflow-y: auto; display: none; padding: 5px 0 110px 0; -webkit-overflow-scrolling: touch; }
     .page-content.active { display: block; animation: fadeIn 0.4s ease; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     
-    /* STYLE FORM & LIST */
     .admin-add-trigger-box { border: 2px dashed var(--admin-add); background: rgba(16, 185, 129, 0.05); margin: 12px 15px; padding: 16px; border-radius: 16px; text-align: center; cursor: pointer; color: var(--admin-add); font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; }
     .admin-form-card { background: rgba(23, 33, 43, 0.9); margin: 10px 15px 20px 15px; padding: 20px; border-radius: 18px; border: 1px solid var(--admin-add); display: none; }
     .admin-form-title { font-size: 15px; font-weight: bold; color: var(--admin-add); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
-    .admin-input { width: 100%; padding: 12px 15px; margin-bottom: 12px; border-radius: 10px; background: var(--tg-bg); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 14px; outline: none; }
-    /* ANNOUNCEMENT */
-    .announcement-card { background: rgba(23,33,43,0.9); margin: 12px 15px; padding: 18px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.08); }
-    .announcement-preview { background: rgba(255,193,7,0.1); border: 1px solid rgba(255,193,7,0.3); border-radius: 12px; padding: 14px; margin-top: 10px; display: none; }
-    .announcement-preview.show { display: block; }
-    .announcement-badge { display: inline-block; background: #f59e0b; color: #000; font-size: 10px; font-weight: bold; padding: 2px 8px; border-radius: 6px; margin-bottom: 8px; }
-    .announcement-text-preview { font-size: 13px; color: #fff; line-height: 1.5; white-space: pre-wrap; }
+    
+    /* INPUT & TEXTAREA SUPORT ENTER PARAGRAF BARU */
+    .admin-input, .admin-textarea { width: 100%; padding: 12px 15px; margin-bottom: 12px; border-radius: 10px; background: var(--tg-bg); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 14px; outline: none; font-family: inherit; }
+    .admin-textarea { resize: none; height: 100px; }
+    .admin-input:focus, .admin-textarea:focus { border-color: var(--tg-accent); }
     .admin-btn-save { width: 100%; padding: 12px; background: var(--admin-add); color: white; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; }
     
     .mod-box-item { background: rgba(23, 33, 43, 0.8); margin: 12px 15px; padding: 18px; border-radius: 18px; border: 1px solid rgba(255, 255, 255, 0.08); }
@@ -49,7 +46,7 @@
     .mod-box-icon { width: 48px; height: 48px; background: rgba(255,255,255,0.05); border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 24px; }
     .mod-box-name { font-size: 16px; font-weight: 700; color: #ffffff; }
     .mod-box-size { font-size: 12px; font-weight: 700; color: var(--tg-accent); background: rgba(255,255,255, 0.05); padding: 4px 10px; border-radius: 8px; }
-    .mod-box-desc { font-size: 13.5px; color: var(--tg-text-muted); line-height: 1.5; }
+    .mod-box-desc { font-size: 13.5px; color: var(--tg-text-muted); line-height: 1.5; word-break: break-word; }
     .admin-action-bar { display: flex; gap: 8px; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; }
     .btn-admin { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; font-size: 13px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
     .btn-admin.edit { background: rgba(245, 158, 11, 0.15); color: var(--admin-edit); border: 1px solid var(--admin-edit); }
@@ -65,35 +62,27 @@
     .nav-sliding-indicator { position: absolute; top: 50%; left: 0; transform: translateY(-50%) translateX(0); height: 54px; width: 20%; z-index: 2; transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); pointer-events: none; }
     .nav-sliding-indicator::before { content: ''; position: absolute; top: 0; left: 5px; right: 5px; bottom: 0; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 18px; }
 
-    /* POPUP LOGIN & EDIT */
-    .glass-popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 99999; display: flex; align-items: center; justify-content: center; transition: all 0.4s ease; }
-    .glass-popup-overlay.hidden { opacity: 0; pointer-events: none; transform: scale(1.1); }
-    .glass-popup-card { background: rgba(23, 33, 43, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 24px; text-align: center; max-width: 340px; width: 90%; box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
+    /* GLASSMORPHISM POPUP ALERT & MODAL EDIT */
+    .glass-popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 99999; display: flex; align-items: center; justify-content: center; }
+    .glass-popup-overlay.hidden { display: none !important; }
+    .glass-popup-card { background: rgba(23, 33, 43, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.12); padding: 25px; border-radius: 24px; text-align: center; max-width: 340px; width: 90%; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
     .popup-title { font-size: 18px; font-weight: 800; color: white; margin-bottom: 15px; }
     
-    .pin-input { text-align: center; font-size: 24px; letter-spacing: 12px; font-weight: bold; color: var(--tg-accent); background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; width: 100%; outline: none; margin-bottom: 15px; }
-    .btn-unlock { width: 100%; padding: 12px; background: var(--tg-accent); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 14.5px; cursor: pointer; transition: transform 0.1s; }
-    .btn-unlock:active { transform: scale(0.97); }
+    .pin-input { text-align: center; font-size: 24px; letter-spacing: 12px; font-weight: bold; color: var(--tg-accent); background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 10px; width: 100%; outline: none; margin-bottom: 15px; }
+    .btn-unlock { width: 100%; padding: 12px; background: var(--tg-accent); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 14px; cursor: pointer; }
 
     .popup-actions { display: flex; gap: 10px; margin-top: 15px; }
-    .btn-popup { flex: 1; padding: 12px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; color: white; }
-    .btn-no { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
-    .btn-yes { background: var(--tg-accent); }
+    .btn-popup { flex: 1; padding: 12px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 14px; }
+    .btn-no { background: rgba(255, 255, 255, 0.08); color: #fff; border: 1px solid rgba(255,255,255,0.1); }
+    .btn-yes { background: var(--tg-accent); color: white; }
 
-    /* 4. TEMA SETTINGS */
     .settings-container { padding: 15px; display: flex; flex-direction: column; gap: 15px; }
     .settings-card { background: var(--tg-panel); border-radius: 18px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.05); }
     .theme-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 15px; }
     .theme-dot { height: 50px; border-radius: 14px; cursor: pointer; border: 2px solid transparent; transition: transform 0.2s; }
     .theme-dot.selected { border-color: #ffffff; transform: scale(1.05); }
 
-    /* 5. VIP PROFILE RGB & SOSMED SETTING */
-    @keyframes rgbGlow { 0% { color: #ff0000; text-shadow: 0 0 10px #ff0000; } 33% { color: #00ff00; text-shadow: 0 0 10px #00ff00; } 66% { color: #0000ff; text-shadow: 0 0 10px #0000ff; } 100% { color: #ff0000; text-shadow: 0 0 10px #ff0000; } }
-    .vip-card { background: linear-gradient(145deg, #1f2937, #111827); border: 1px solid rgba(255,215,0,0.4); padding: 25px; border-radius: 20px; text-align: center; margin: 15px; position: relative; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-    .vip-badge { position: absolute; top: 10px; right: 10px; background: gold; color: black; font-size: 10px; font-weight: 900; padding: 3px 8px; border-radius: 5px; text-transform: uppercase; }
-    .rgb-text { animation: rgbGlow 3s linear infinite; font-size: 22px; font-weight: 900; margin-bottom: 5px; }
     .sosmed-toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: rgba(0,0,0,0.2); border-radius: 12px; margin-bottom: 8px; font-size: 14px; font-weight: bold; }
-    /* Toggle Switch CSS */
     .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 34px; }
@@ -104,18 +93,16 @@
 </head>
 <body>
 
-  <!-- POP-UP LOCK SCREEN LOGIN ADMIN -->
   <div id="loginLockOverlay" class="glass-popup-overlay">
     <div class="glass-popup-card">
         <div style="font-size: 42px; color: var(--tg-accent); margin-bottom: 12px;"><i class="fas fa-user-shield"></i></div>
         <div class="popup-title">Developer Verification</div>
         <div style="font-size: 13px; color: var(--tg-text-muted); margin-bottom: 20px;">Masukkan PIN Keamanan Admin DEV</div>
-        <input type="password" id="adminPinInput" class="pin-input" maxlength="6" placeholder="******" pattern="\d*" inputmode="numeric" onkeyup="if(event.key === 'Enter') verifikasiLoginAdmin()">
+        <input type="password" id="adminPinInput" class="pin-input" maxlength="6" placeholder="******" pattern="\d*" inputmode="numeric" enterkeyhint="done" onkeyup="if(event.key === 'Enter') verifikasiLoginAdmin()">
         <button class="btn-unlock" onclick="verifikasiLoginAdmin()">Verifikasi Masuk</button>
     </div>
   </div>
 
-  <!-- POP-UP MODAL EDIT DATA SECARA REAL-TIME -->
   <div id="editDataPopup" class="glass-popup-overlay hidden">
     <div class="glass-popup-card" style="text-align: left; max-height: 80vh; overflow-y: auto;">
       <div class="popup-title" style="text-align: center;"><i class="fas fa-edit"></i> Edit Data Server</div>
@@ -129,7 +116,6 @@
     </div>
   </div>
 
-  <!-- NOTIFIKASI TOAST -->
   <div id="custom-toast" style="position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 14px 24px; border-radius: 14px; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 10px; box-shadow: 0 8px 30px rgba(16, 185, 129, 0.3); z-index: 99999; transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
     <i class="fas fa-check-circle" id="toast-icon"></i> <span id="toast-message">Sukses!</span>
   </div>
@@ -139,64 +125,57 @@
       <video autoplay loop muted playsinline class="header-video"><source src="background-profile.mp4" type="video/mp4"></video>
       <div class="header-overlay-content">
         <div class="tg-title" id="header-title">Web Admin <span class="admin-badge">DEV</span></div>
-<button onclick="logoutAdmin()" style="background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#ef4444; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer; z-index:3; position:relative;">
-    <i class="fas fa-sign-out-alt"></i> Logout
-</button>
+        <button onclick="logoutAdmin()" style="background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#ef4444; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer;">Logout</button>
       </div>
     </header>
   </div>
 
-  <!-- TAB 1: HOME -->
   <div class="page-content active" id="page-home">
     <div class="admin-add-trigger-box" id="btn-show-web" onclick="toggleForm('web-form', 'btn-show-web', 'Web Saya')">
         <i class="fas fa-plus-circle"></i> Tambah Web Saya Baru
     </div>
     <div class="admin-form-card" id="web-form">
         <div class="admin-form-title"><i class="fas fa-globe"></i> Input Web Baru</div>
-        <input type="text" id="web-title" class="admin-input" placeholder="Nama Web (Contoh: QRIS Generator)" enterkeyhint="next">
-        <input type="text" id="web-url" class="admin-input" placeholder="Link Website (Contoh: https://...)" enterkeyhint="done">
+        <input type="text" id="web-title" class="admin-input" placeholder="Nama Web (Contoh: QRIS Generator)">
+        <input type="text" id="web-url" class="admin-input" placeholder="Link Website (Contoh: https://...)">
         <button class="admin-btn-save" onclick="simpanWebKeSupabase()">Simpan Ke Database</button>
     </div>
     <div id="container-web-list"></div>
   </div>
 
-  <!-- TAB 2: APP MOD -->
   <div class="page-content" id="page-appmod">
     <div class="admin-add-trigger-box" id="btn-show-app" onclick="toggleForm('app-form', 'btn-show-app', 'App Mod')">
         <i class="fas fa-plus-circle"></i> Tambah App Mod Baru
     </div>
     <div class="admin-form-card" id="app-form">
         <div class="admin-form-title"><i class="fas fa-folder-plus"></i> Input Aplikasi Baru</div>
-        <input type="text" id="app-title" class="admin-input" placeholder="Nama Aplikasi Mod" enterkeyhint="next">
-        <input type="text" id="app-desc" class="admin-input" placeholder="Deskripsi Singkat Fitur Mod" enterkeyhint="next">
-        <input type="text" id="app-size" class="admin-input" placeholder="Ukuran File (Contoh: 65 MB)" enterkeyhint="next">
-        <input type="text" id="app-url" class="admin-input" placeholder="Link Download File" enterkeyhint="next">
-        <input type="text" id="app-img" class="admin-input" placeholder="Link Ikon ImgBB (Opsional)" enterkeyhint="done">
+        <input type="text" id="app-title" class="admin-input" placeholder="Nama Aplikasi Mod">
+        <textarea id="app-desc" class="admin-textarea" placeholder="Deskripsi Singkat Fitur Mod (Bisa klik enter paragraf baru...)"></textarea>
+        <input type="text" id="app-size" class="admin-input" placeholder="Ukuran File (Contoh: 65 MB)">
+        <input type="text" id="app-url" class="admin-input" placeholder="Link Download File">
+        <input type="text" id="app-img" class="admin-input" placeholder="Link Ikon ImgBB (Opsional)">
         <button class="admin-btn-save" onclick="simpanAppKeSupabase()">Simpan Ke Database</button>
     </div>
     <div id="container-app-list"></div>
   </div>
 
-  <!-- TAB 3: STORE -->
   <div class="page-content" id="page-store">
     <div class="admin-add-trigger-box" id="btn-show-store" onclick="toggleForm('store-form', 'btn-show-store', 'Produk Jualan')">
         <i class="fas fa-plus-circle"></i> Tambah Produk Jualan Baru
     </div>
     <div class="admin-form-card" id="store-form">
         <div class="admin-form-title"><i class="fas fa-shopping-bag"></i> Input Produk Store Baru</div>
-        <input type="text" id="prod-title" class="admin-input" placeholder="Nama Aplikasi Premium" enterkeyhint="next">
-        <input type="text" id="prod-desc" class="admin-input" placeholder="Deskripsi Masa Aktif" enterkeyhint="next">
-        <input type="text" id="prod-price" class="admin-input" placeholder="Harga Jual" enterkeyhint="next">
-        <!-- 2. STOCK PRODUK -->
-        <input type="text" id="prod-stock" class="admin-input" placeholder="Jumlah Stock / Ketersediaan" enterkeyhint="next">
-        <input type="text" id="prod-wa" class="admin-input" placeholder="Link Order WA" enterkeyhint="next">
-        <input type="text" id="prod-img" class="admin-input" placeholder="Link Gambar Produk (Opsional)" enterkeyhint="done">
+        <input type="text" id="prod-title" class="admin-input" placeholder="Nama Aplikasi Premium">
+        <textarea id="prod-desc" class="admin-textarea" placeholder="Deskripsi Masa Aktif & Detail (Bisa klik enter paragraf baru...)"></textarea>
+        <input type="text" id="prod-price" class="admin-input" placeholder="Harga Jual">
+        <input type="text" id="prod-stock" class="admin-input" placeholder="Jumlah Stock / Ketersediaan">
+        <input type="text" id="prod-wa" class="admin-input" placeholder="Link Order WA">
+        <input type="text" id="prod-img" class="admin-input" placeholder="Link Gambar Produk (Opsional)">
         <button class="admin-btn-save" onclick="simpanStoreKeSupabase()">Simpan Ke Database</button>
     </div>
     <div id="container-store-list"></div>
   </div>
 
-  <!-- 4. TAB PENGATURAN WARNA -->
   <div class="page-content" id="page-pengaturan">
     <div class="settings-container">
       <div class="settings-card">
@@ -206,67 +185,30 @@
           <div class="theme-dot" style="background-color: #a259ff;" onclick="gantiTemaAdmin('#a259ff', this)"></div>
           <div class="theme-dot" style="background-color: #10b981;" onclick="gantiTemaAdmin('#10b981', this)"></div>
           <div class="theme-dot" style="background-color: #ff23e6;" onclick="gantiTemaAdmin('#ff23e6', this)"></div>
-          <div class="theme-dot" style="background-color: #000ef9;" onclick="gantiTemaAdmin('#000ef9', this)"></div>
-          <div class="theme-dot" style="background-color: #00fd3b;" onclick="gantiTemaAdmin('#00fd3b', this)"></div>
-          <div class="theme-dot" style="background-color: #ff1e1e;" onclick="gantiTemaAdmin('#ff1e1e', this)"></div>
-          <div class="theme-dot" style="background-color: #660eba;" onclick="gantiTemaAdmin('#660eba', this)"></div>
         </div>
       </div>
 
-      <!-- ANNOUNCEMENT CARD -->
-      <div class="announcement-card">
-        <div style="font-size:15px; font-weight:bold; color:#f59e0b; margin-bottom:14px;"><i class="fas fa-bullhorn"></i> Pengumuman Web Publik</div>
-        <p style="font-size:11px; color:var(--tg-text-muted); margin-bottom:14px;">Kirim pengumuman yang akan tampil di web publik. Kosongkan untuk menyembunyikan.</p>
-        
-        <label style="font-size:12px; color:var(--tg-text-muted); font-weight:bold; display:block; margin-bottom:6px;">Judul Pengumuman</label>
-        <input type="text" id="ann-title" class="admin-input" placeholder="Contoh: Maintenance, Promo, Info" enterkeyhint="next" oninput="previewAnnouncement()">
-        
-        <label style="font-size:12px; color:var(--tg-text-muted); font-weight:bold; display:block; margin-bottom:6px;">Isi Pesan</label>
-        <textarea id="ann-body" class="admin-input" placeholder="Tulis pesan pengumuman di sini..." rows="4" style="resize:none; font-family:inherit;" oninput="previewAnnouncement()"></textarea>
-
-        <label style="font-size:12px; color:var(--tg-text-muted); font-weight:bold; display:block; margin-bottom:6px;">Tipe</label>
-        <select id="ann-type" class="admin-input" onchange="previewAnnouncement()">
-          <option value="info">ℹ️ Info</option>
-          <option value="warning">⚠️ Peringatan</option>
-          <option value="promo">🎉 Promo</option>
-          <option value="maintenance">🔧 Maintenance</option>
+      <div class="settings-card">
+        <div style="font-size:15px; font-weight:bold; color:var(--admin-add); margin-bottom: 15px;"><i class="fas fa-bullhorn"></i> Manajemen Announcement</div>
+        <input type="text" id="anc-title" class="admin-input" placeholder="Judul Pengumuman (Contoh: Info, Maintenance)">
+        <textarea id="anc-body" class="admin-textarea" placeholder="Isi detail text pengumuman (Bisa klik enter paragraf baru...)"></textarea>
+        <select id="anc-type" class="admin-input" style="background: var(--tg-bg);">
+            <option value="info">Info (Biru)</option>
+            <option value="warning">Warning (Kuning)</option>
+            <option value="promo">Promo (Hijau)</option>
+            <option value="maintenance">Maintenance (Merah)</option>
         </select>
-
-        <div class="announcement-preview" id="ann-preview">
-          <div class="announcement-badge" id="ann-badge">INFO</div>
-          <div style="font-size:14px; font-weight:bold; color:#fff; margin-bottom:4px;" id="ann-preview-title"></div>
-          <div class="announcement-text-preview" id="ann-preview-body"></div>
+        <div style="margin-bottom:12px; display:flex; align-items:center; gap:10px;">
+            <label style="font-size:13px; font-weight:bold; color:white;">Status Aktif Publik:</label>
+            <input type="checkbox" id="anc-active" checked style="width:18px; height:18px;">
         </div>
-
-        <div style="display:flex; gap:10px; margin-top:14px;">
-          <button class="admin-btn-save" style="background:#f59e0b;" onclick="kirimAnnouncement()"><i class="fas fa-paper-plane"></i> Kirim ke Publik</button>
-          <button class="admin-btn-save" style="background:#ef4444; flex:0.4;" onclick="hapusAnnouncement()"><i class="fas fa-trash"></i></button>
-        </div>
-
-        <div id="ann-status" style="margin-top:10px; font-size:12px; color:var(--tg-text-muted); text-align:center;"></div>
+        <button class="admin-btn-save" style="background: var(--tg-accent);" onclick="simpanAnnouncementKeSupabase()">Publish Pengumuman Baru</button>
       </div>
     </div>
   </div>
 
-    <!-- 5. TAB PROFIL VIP & SOSMED SETTING -->
   <div class="page-content" id="page-profil">
-    <div class="vip-card">
-        <div class="vip-badge">Developer VIP</div>
-        
-        <!-- VIDEO BACKGROUND KARTU VIP -->
-        <video autoplay loop muted playsinline webkit-playsinline class="header-video" style="opacity: 0.25;">
-          <source src="banner-profile.mp4" type="video/mp4">
-        </video>
-
-        <!-- KONTEN PROFIL -->
-        <div style="position: relative; z-index: 2;">
-            <img src="profile.jpg" style="width:90px; height:90px; border-radius:50%; border: 3px solid gold; margin-bottom:10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
-            <div class="rgb-text">Rizky Kurniawan</div>
-            <div style="color:var(--tg-text-muted); font-size:12px; margin-bottom:10px;">Super Administrator System</div>
-        </div>
-    </div>
-
-    <div style="padding: 0 15px;">
+    <div style="padding: 20px 15px;">
         <h3 style="font-size:14px; color:var(--tg-accent); margin-bottom:10px;"><i class="fas fa-cogs"></i> Kontrol Tampil Sosmed (Publik)</h3>
         <p style="font-size:11px; color:var(--tg-text-muted); margin-bottom:15px;">Hidup/matikan tombol sosmed yang akan tampil di halaman web publik pengunjung.</p>
         
@@ -278,45 +220,47 @@
     </div>
   </div>
 
-  <div class="bottom-nav-wrapper">
+  <<div class="bottom-nav-wrapper">
     <div class="nav-sliding-indicator" id="indicator"></div>
-    <!-- 6. GANTI ICON HOME MENJADI RUMAH -->
     <div class="nav-item active" onclick="switchNav('home', 0, this)"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span class="nav-label">Home</span></div>
     <div class="nav-item" onclick="switchNav('appmod', 1, this)"><svg viewBox="0 0 24 24"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg><span class="nav-label">App Mod</span></div>
     <div class="nav-item" onclick="switchNav('store', 2, this)"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg><span class="nav-label">Store</span></div>
-    <div class="nav-item" onclick="switchNav('pengaturan', 3, this)"><svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg><span class="nav-label">Setting</span></div>
-    <div class="nav-item" onclick="switchNav('profil', 4, this)"><div style="width: 22px; height: 22px; border-radius: 50%; overflow: hidden; border: 1.5px solid currentColor; margin-bottom: 2px;"><img src="profile.jpg" style="width:100%; height:100%; object-fit:cover;"></div><span class="nav-label">Profil</span></div>
+    <div class="nav-item" onclick="switchNav('pengaturan', 3, this)"><svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0 0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg><span class="nav-label">Setting</span></div>
+    <div class="nav-item" onclick="switchNav('profil', 4, this)"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg><span class="nav-label">Profil</span></div>
   </div>
 
-    <script>
+  <script>
     const SUPABASE_URL = "https://djojqarslfsvubuflwdn.supabase.co";
     const SUPABASE_KEY = "sb_publishable_vqUvkJX5XNx5_D75lCnJzw_KPeFSim9"; 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // Variabel Penampung Data Memori Lokal
+    let memoriWeb = [];
+    let memoriApp = [];
+    let memoriStore = [];
+
     async function verifikasiLoginAdmin() {
-    const inputPin = document.getElementById('adminPinInput').value;
-    if (!inputPin) return tampilkanAlert("PIN tidak boleh kosong!", "error");
-    
-    const res = await fetch('/api/verify-pin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pin: inputPin })
-    });
-    
-    if (res.ok) {
-        tampilkanAlert("Akses Admin Diterima!", "sukses");
-        document.getElementById('loginLockOverlay').classList.add('hidden');
-        ambilDataWeb();
-        muatStatusSosmedAdmin();
-        resetSessionTimer();
-        document.addEventListener('click', resetSessionTimer);
-        document.addEventListener('keypress', resetSessionTimer);
-    } else {
-    const errData = await res.json().catch(() => ({}));
-    const pesan = errData.message || "PIN Salah! Akses Ditolak.";
-    tampilkanAlert(pesan, "error");
-    document.getElementById('adminPinInput').value = '';
-}
+        const inputPin = document.getElementById('adminPinInput').value;
+        if (!inputPin) return tampilkanAlert("PIN tidak boleh kosong!", "error");
+        
+        const res = await fetch('/api/verify-pin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin: inputPin })
+        });
+        
+        if (res.ok) {
+            tampilkanAlert("Akses Admin Diterima!", "sukses");
+            document.getElementById('loginLockOverlay').classList.add('hidden');
+            ambilDataWeb();
+            ambilDataApp();
+            ambilDataStore();
+            muatStatusSosmedAdmin();
+            resetSessionTimer();
+        } else {
+            tampilkanAlert("PIN Salah! Akses Ditolak.", "error");
+            document.getElementById('adminPinInput').value = '';
+        }
     }
 
     function tampilkanAlert(pesan, jenis = 'sukses') {
@@ -334,12 +278,13 @@
       if(el) el.classList.add('active'); document.getElementById('page-' + page).classList.add('active');
       
       const titleEl = document.getElementById('header-title');
-      if (page === 'home') { titleEl.innerHTML = 'Web Admin <span class="admin-badge">DEV</span>'; ambilDataWeb(); }
-      else if (page === 'appmod') { titleEl.innerHTML = 'App Mod <span class="admin-badge">DEV</span>'; ambilDataApp(); }
-      else if (page === 'store') { titleEl.innerHTML = 'Store Admin <span class="admin-badge">DEV</span>'; ambilDataStore(); }
-      else if (page === 'pengaturan') { titleEl.innerHTML = 'Pengaturan <span class="admin-badge">DEV</span>'; muatAnnouncementAdmin(); }
-      else { titleEl.innerHTML = 'Profile <span class="admin-badge">DEV</span>'; muatStatusSosmedAdmin(); }
+      if (page === 'home') titleEl.innerHTML = 'Web Admin <span class="admin-badge">DEV</span>';
+      else if (page === 'appmod') titleEl.innerHTML = 'App Mod <span class="admin-badge">DEV</span>';
+      else if (page === 'store') titleEl.innerHTML = 'Store Admin <span class="admin-badge">DEV</span>';
+      else if (page === 'pengaturan') titleEl.innerHTML = 'Pengaturan <span class="admin-badge">DEV</span>';
+      else titleEl.innerHTML = 'Profile <span class="admin-badge">DEV</span>';
     }
+
     function toggleForm(formId, btnId, namaMenu) {
         const form = document.getElementById(formId);
         const btn = document.getElementById(btnId);
@@ -347,191 +292,172 @@
         else { form.style.display = 'block'; btn.innerHTML = '<i class="fas fa-times-circle"></i> Batalkan Input'; }
     }
 
-    // LOGIKA POP-UP EDIT REAL-TIME
-    function bukaPopupEdit(id, tabel, dataLama) {
-        document.getElementById('edit-id').value = id;
+    // MEMPERBAIKI POPUP EDIT & LOGIKA PARAGRAF BARU UNTUK EDIT DATA
+    function bukaPopupEdit(index, tabel) {
+        document.getElementById('edit-id').value = index;
         document.getElementById('edit-table').value = tabel;
         const fieldsContainer = document.getElementById('dynamic-edit-fields');
         fieldsContainer.innerHTML = '';
 
         let innerH = '';
         if (tabel === 'web_saya') {
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama Web</label><input type="text" id="upd-1" class="admin-input" value="${dataLama.nama_web}">`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Web</label><input type="text" id="upd-2" class="admin-input" value="${dataLama.link_web}">`;
+            let data = memoriWeb[index];
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama Web</label><input type="text" id="upd-1" class="admin-input" value="${data.nama_web.replace(/"/g, '&quot;')}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Web</label><input type="text" id="upd-2" class="admin-input" value="${data.link_web.replace(/"/g, '&quot;')}">`;
         } else if (tabel === 'app_mods') {
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama App</label><input type="text" id="upd-1" class="admin-input" value="${dataLama.nama_app}">`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Deskripsi</label><input type="text" id="upd-2" class="admin-input" value="${dataLama.deskripsi}">`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Ukuran File</label><input type="text" id="upd-3" class="admin-input" value="${dataLama.ukuran}">`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Download</label><input type="text" id="upd-4" class="admin-input" value="${dataLama.link_download}">`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Ikon</label><input type="text" id="upd-5" class="admin-input" value="${dataLama.img_url}">`;
+            let data = memoriApp[index];
+            // Merubah tag <br> kembali menjadi enter asli saat teks diedit di textarea
+            let descAsli = (data.deskripsi || '').replace(/<br\s*\/?>/mg, "\n");
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama App</label><input type="text" id="upd-1" class="admin-input" value="${data.nama_app.replace(/"/g, '&quot;')}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Deskripsi</label><textarea id="upd-2" class="admin-textarea">${descAsli}</textarea>`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Ukuran File</label><input type="text" id="upd-3" class="admin-input" value="${(data.ukuran || '').replace(/"/g, '&quot;')}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Download</label><input type="text" id="upd-4" class="admin-input" value="${(data.link_download || '').replace(/"/g, '&quot;')}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Ikon</label><input type="text" id="upd-5" class="admin-input" value="${(data.img_url || '').replace(/"/g, '&quot;')}">`;
         } else if (tabel === 'store_products') {
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama Produk</label><input type="text" id="upd-1" class="admin-input" value="${dataLama.nama_produk}">`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Deskripsi</label><input type="text" id="upd-2" class="admin-input" value="${dataLama.deskripsi}">`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Harga Jual</label><input type="text" id="upd-3" class="admin-input" value="${dataLama.harga}">`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Stock Produk</label><input type="text" id="upd-stock" class="admin-input" value="${dataLama.stock || ''}">`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link WA</label><input type="text" id="upd-4" class="admin-input" value="${dataLama.link_wa}">`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Gambar</label><input type="text" id="upd-5" class="admin-input" value="${dataLama.img_url}">`;
+            let data = memoriStore[index];
+            let descAsli = (data.deskripsi || '').replace(/<br\s*\/?>/mg, "\n");
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama Produk</label><input type="text" id="upd-1" class="admin-input" value="${data.nama_produk.replace(/"/g, '&quot;')}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Deskripsi</label><textarea id="upd-2" class="admin-textarea">${descAsli}</textarea>`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Harga Jual</label><input type="text" id="upd-3" class="admin-input" value="${data.harga.replace(/"/g, '&quot;')}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Stock Produk</label><input type="text" id="upd-stock" class="admin-input" value="${(data.stock || '')}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link WA</label><input type="text" id="upd-4" class="admin-input" value="${data.link_wa.replace(/"/g, '&quot;')}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Gambar</label><input type="text" id="upd-5" class="admin-input" value="${(data.img_url || '').replace(/"/g, '&quot;')}">`;
         }
         fieldsContainer.innerHTML = innerH;
         document.getElementById('editDataPopup').classList.remove('hidden');
     }
 
     async function eksekusiUpdateSupabase() {
-        const id = document.getElementById('edit-id').value;
+        const index = document.getElementById('edit-id').value;
         const tabel = document.getElementById('edit-table').value;
         let updateData = {};
+        let targetId = 0;
 
-        if (tabel === 'web_saya') updateData = { nama_web: document.getElementById('upd-1').value, link_web: document.getElementById('upd-2').value };
-        else if (tabel === 'app_mods') updateData = { nama_app: document.getElementById('upd-1').value, deskripsi: document.getElementById('upd-2').value, ukuran: document.getElementById('upd-3').value, link_download: document.getElementById('upd-4').value, img_url: document.getElementById('upd-5').value };
-        else if (tabel === 'store_products') updateData = { nama_produk: document.getElementById('upd-1').value, deskripsi: document.getElementById('upd-2').value, harga: document.getElementById('upd-3').value, stock: document.getElementById('upd-stock').value, link_wa: document.getElementById('upd-4').value, img_url: document.getElementById('upd-5').value };
+        if (tabel === 'web_saya') {
+            targetId = memoriWeb[index].id;
+            updateData = { nama_web: document.getElementById('upd-1').value, link_web: document.getElementById('upd-2').value };
+        } else if (tabel === 'app_mods') {
+            targetId = memoriApp[index].id;
+            // Merubah enter \n menjadi <br> agar web publik mengerti enter baris baru
+            let descFormatted = document.getElementById('upd-2').value.replace(/\n/g, '<br>');
+            updateData = { nama_app: document.getElementById('upd-1').value, deskripsi: descFormatted, ukuran: document.getElementById('upd-3').value, link_download: document.getElementById('upd-4').value, img_url: document.getElementById('upd-5').value };
+        } else if (tabel === 'store_products') {
+            targetId = memoriStore[index].id;
+            let descFormatted = document.getElementById('upd-2').value.replace(/\n/g, '<br>');
+            updateData = { nama_produk: document.getElementById('upd-1').value, deskripsi: descFormatted, harga: document.getElementById('upd-3').value, stock: document.getElementById('upd-stock').value, link_wa: document.getElementById('upd-4').value, img_url: document.getElementById('upd-5').value };
+        }
 
-        const { error } = await supabaseClient.from(tabel).update(updateData).eq('id', id);
+        const { error } = await supabaseClient.from(tabel).update(updateData).eq('id', targetId);
         if (error) { tampilkanAlert("Update Gagal: " + error.message, "error"); } 
         else {
             tampilkanAlert("Berhasil di-update!", "sukses");
             document.getElementById('editDataPopup').classList.add('hidden');
-            if (tabel === 'web_saya') ambilDataWeb(); else if (tabel === 'app_mods') ambilDataApp(); else if (tabel === 'store_products') ambilDataStore();
+            if (tabel === 'web_saya') ambilDataWeb(); 
+            else if (tabel === 'app_mods') ambilDataApp(); 
+            else if (tabel === 'store_products') ambilDataStore();
         }
     }
 
-    // FUNGSI CRUD WEB
+    // CRUD WEBSITE SAYA
+    async function ambilDataWeb() {
+        const { data } = await supabaseClient.from('web_saya').select('*').order('id', { ascending: false });
+        if (data) { memoriWeb = data; renderListWeb(); }
+    }
+    function renderListWeb() {
+        const container = document.getElementById('container-web-list'); container.innerHTML = '';
+        memoriWeb.forEach((web, idx) => {
+            container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header" style="margin-bottom:0;"><div class="mod-box-title-group"><div class="mod-box-icon" style="font-size:20px; width:40px; height:40px;"><i class="fas fa-globe"></i></div><div class="mod-box-name">${web.nama_web}</div></div></div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'web_saya')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusWeb(${web.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
+        });
+    }
     async function simpanWebKeSupabase() {
         const nama = document.getElementById('web-title').value; const url = document.getElementById('web-url').value;
         if(!nama || !url) return tampilkanAlert("Wajib diisi!", "error");
         const { error } = await supabaseClient.from('web_saya').insert([{ nama_web: nama, link_web: url }]);
         if (!error) { tampilkanAlert("Tersimpan!", "sukses"); toggleForm('web-form', 'btn-show-web', 'Web Saya'); ambilDataWeb(); }
     }
-    async function ambilDataWeb() {
-        const container = document.getElementById('container-web-list');
-        const { data } = await supabaseClient.from('web_saya').select('*').order('id', { ascending: false });
-        if (!data) return; container.innerHTML = '';
-        data.forEach(web => {
-            const dataStr = btoa(unescape(encodeURIComponent(JSON.stringify(web))));
-            container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header" style="margin-bottom:0;"><div class="mod-box-title-group"><div class="mod-box-icon" style="font-size:20px; width:40px; height:40px;"><i class="fas fa-globe"></i></div><div class="mod-box-name">${web.nama_web}</div></div></div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${web.id}, 'web_saya', JSON.parse(decodeURIComponent(escape(atob('${dataStr}')))))"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusWeb(${web.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
+    async function hapusWeb(id) { if(confirm("Yakin mau hapus data ini?")) { await supabaseClient.from('web_saya').delete().eq('id', id); ambilDataWeb(); } }
+
+    // CRUD APLIKASI MOD
+    async function ambilDataApp() {
+        const { data } = await supabaseClient.from('app_mods').select('*').order('id', { ascending: false });
+        if (data) { memoriApp = data; renderListApp(); }
+    }
+    function renderListApp() {
+        const container = document.getElementById('container-app-list'); container.innerHTML = '';
+        memoriApp.forEach((app, idx) => {
+            let iconHtml = app.img_url ? `<img src="${app.img_url}" onerror="this.outerHTML='📱'" style="width:100%; height:100%; object-fit:cover;">` : '📱';
+            container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header"><div class="mod-box-title-group"><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${app.nama_app}</div></div><div class="mod-box-size">${app.ukuran || 'N/A'}</div></div><div class="mod-box-desc">${app.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'app_mods')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusApp(${app.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
         });
     }
-    async function hapusWeb(id) { if(confirm("Hapus?")) { await supabaseClient.from('web_saya').delete().eq('id', id); ambilDataWeb(); } }
-
-    // FUNGSI CRUD APP
     async function simpanAppKeSupabase() {
-        const nama = document.getElementById('app-title').value; const desc = document.getElementById('app-desc').value; const size = document.getElementById('app-size').value; const url = document.getElementById('app-url').value; const img = document.getElementById('app-img').value;
+        const nama = document.getElementById('app-title').value; 
+        // Mengubah enter \n di form input baru menjadi <br> sebelum masuk database
+        let descRaw = document.getElementById('app-desc').value;
+        let descFormatted = descRaw.replace(/\n/g, '<br>');
+        const size = document.getElementById('app-size').value; const url = document.getElementById('app-url').value; const img = document.getElementById('app-img').value;
         if(!nama || !url) return tampilkanAlert("Wajib diisi!", "error");
-        const { error } = await supabaseClient.from('app_mods').insert([{ nama_app: nama, deskripsi: desc, ukuran: size, link_download: url, img_url: img }]);
+        const { error } = await supabaseClient.from('app_mods').insert([{ nama_app: nama, deskripsi: descFormatted, ukuran: size, link_download: url, img_url: img }]);
         if (!error) { tampilkanAlert("Tersimpan!", "sukses"); toggleForm('app-form', 'btn-show-app', 'App Mod'); ambilDataApp(); }
     }
-    async function ambilDataApp() {
-        const container = document.getElementById('container-app-list');
-        const { data } = await supabaseClient.from('app_mods').select('*').order('id', { ascending: false });
-        if (!data) return; container.innerHTML = '';
-        data.forEach(app => {
-            let iconHtml = app.img_url ? `<img src="${app.img_url}" onerror="this.outerHTML='📱'" style="width:100%; height:100%; object-fit:cover;">` : '📱';
-            const dataStr = btoa(unescape(encodeURIComponent(JSON.stringify(app))));
-            container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header"><div class="mod-box-title-group"><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${app.nama_app}</div></div><div class="mod-box-size">${app.ukuran || 'N/A'}</div></div><div class="mod-box-desc">${app.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${app.id}, 'app_mods', JSON.parse(decodeURIComponent(escape(atob('${dataStr}')))))"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusApp(${app.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
+    async function hapusApp(id) { if(confirm("Yakin mau hapus data ini?")) { await supabaseClient.from('app_mods').delete().eq('id', id); ambilDataApp(); } }
+
+    // CRUD STORE PRODUCTS
+    async function ambilDataStore() {
+        const { data } = await supabaseClient.from('store_products').select('*').order('id', { ascending: false });
+        if (data) { memoriStore = data; renderListStore(); }
+    }
+    function renderListStore() {
+        const container = document.getElementById('container-store-list'); container.innerHTML = '';
+        memoriStore.forEach((prod, idx) => {
+            let iconHtml = prod.img_url ? `<img src="${prod.img_url}" onerror="this.outerHTML='🛍️'" style="width:100%; height:100%; object-fit:cover;">` : '🛍️';
+            let stockBadge = prod.stock ? `<span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px; font-size:10px; margin-left:5px; color:#fff;">Stock: ${prod.stock}</span>` : '';
+            container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header"><div class="mod-box-title-group"><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${prod.nama_produk}</div></div><div class="mod-box-size" style="color:#00ff7f; background:none;">${prod.harga}${stockBadge}</div></div><div class="mod-box-desc">${prod.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'store_products')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusStore(${prod.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
         });
     }
-    async function hapusApp(id) { if(confirm("Hapus?")) { await supabaseClient.from('app_mods').delete().eq('id', id); ambilDataApp(); } }
-
-    // FUNGSI CRUD STORE
     async function simpanStoreKeSupabase() {
-        const nama = document.getElementById('prod-title').value; const desc = document.getElementById('prod-desc').value; const price = document.getElementById('prod-price').value; const stock = document.getElementById('prod-stock').value; const wa = document.getElementById('prod-wa').value; const img = document.getElementById('prod-img').value;
+        const nama = document.getElementById('prod-title').value; 
+        let descRaw = document.getElementById('prod-desc').value;
+        let descFormatted = descRaw.replace(/\n/g, '<br>');
+        const price = document.getElementById('prod-price').value; const stock = document.getElementById('prod-stock').value; const wa = document.getElementById('prod-wa').value; const img = document.getElementById('prod-img').value;
         if(!nama || !price) return tampilkanAlert("Wajib diisi!", "error");
-        const { error } = await supabaseClient.from('store_products').insert([{ nama_produk: nama, deskripsi: desc, harga: price, stock: stock, link_wa: wa, img_url: img }]);
+        const { error } = await supabaseClient.from('store_products').insert([{ nama_produk: nama, deskripsi: descFormatted, harga: price, stock: stock, link_wa: wa, img_url: img }]);
         if (!error) { tampilkanAlert("Tersimpan!", "sukses"); toggleForm('store-form', 'btn-show-store', 'Store'); ambilDataStore(); }
     }
-    async function ambilDataStore() {
-        const container = document.getElementById('container-store-list');
-        const { data } = await supabaseClient.from('store_products').select('*').order('id', { ascending: false });
-        if (!data) return; container.innerHTML = '';
-        data.forEach(prod => {
-            let iconHtml = prod.img_url ? `<img src="${prod.img_url}" onerror="this.outerHTML='🛍️'" style="width:100%; height:100%; object-fit:cover;">` : '🛍️';
-            const dataStr = btoa(unescape(encodeURIComponent(JSON.stringify(prod))));
-            let stockBadge = prod.stock ? `<span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px; font-size:10px; margin-left:5px; color:#fff;">Stock: ${prod.stock}</span>` : '';
-            container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header"><div class="mod-box-title-group"><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${prod.nama_produk}</div></div><div class="mod-box-size" style="color:#00ff7f; background:none;">${prod.harga}${stockBadge}</div></div><div class="mod-box-desc">${prod.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${prod.id}, 'store_products', JSON.parse(decodeURIComponent(escape(atob('${dataStr}')))))"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusStore(${prod.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
-        });
-    }
-    async function hapusStore(id) { if(confirm("Hapus?")) { await supabaseClient.from('store_products').delete().eq('id', id); ambilDataStore(); } }
+    async function hapusStore(id) { if(confirm("Yakin mau hapus data ini?")) { await supabaseClient.from('store_products').delete().eq('id', id); ambilDataStore(); } }
 
-    // FUNGSI TEMA WARNA
-    // ANNOUNCEMENT FUNCTIONS
-    function previewAnnouncement() {
-        const title = document.getElementById('ann-title').value;
-        const body = document.getElementById('ann-body').value;
-        const type = document.getElementById('ann-type').value;
-        const preview = document.getElementById('ann-preview');
-        const badge = document.getElementById('ann-badge');
-        const colors = { info: '#3390ec', warning: '#f59e0b', promo: '#10b981', maintenance: '#ef4444' };
-        const labels = { info: 'ℹ️ INFO', warning: '⚠️ PERINGATAN', promo: '🎉 PROMO', maintenance: '🔧 MAINTENANCE' };
-        if (title || body) {
-            preview.classList.add('show');
-            badge.textContent = labels[type];
-            badge.style.background = colors[type];
-            document.getElementById('ann-preview-title').textContent = title;
-            document.getElementById('ann-preview-body').textContent = body;
-        } else {
-            preview.classList.remove('show');
-        }
+    // CRUD ANNOUNCEMENT DENGAN FITUR PARAGRAF ENTER
+    async function simpanAnnouncementKeSupabase() {
+        const title = document.getElementById('anc-title').value;
+        let bodyRaw = document.getElementById('anc-body').value;
+        let bodyFormatted = bodyRaw.replace(/\n/g, '<br>');
+        const type = document.getElementById('anc-type').value;
+        const active = document.getElementById('anc-active').checked;
+        
+        if(!bodyRaw) return tampilkanAlert("Isi teks pengumuman tidak boleh kosong!", "error");
+        
+        const { error } = await supabaseClient.from('announcements').update({ title: title, body: bodyFormatted, type: type, active: active, updated_at: new Date() }).eq('id', 1);
+        if (!error) { tampilkanAlert("Pengumuman berhasil diperbarui di Web Publik!", "sukses"); } 
+        else { tampilkanAlert("Gagal memperbarui: " + error.message, "error"); }
     }
 
-    async function kirimAnnouncement() {
-        const title = document.getElementById('ann-title').value.trim();
-        const body = document.getElementById('ann-body').value.trim();
-        const type = document.getElementById('ann-type').value;
-        if (!title || !body) return tampilkanAlert("Judul dan isi wajib diisi!", "error");
-        const status = document.getElementById('ann-status');
-        status.textContent = 'Mengirim...';
-        const { error } = await supabaseClient.from('announcements').upsert([{ id: 1, title, body, type, active: true, updated_at: new Date().toISOString() }]);
-        if (!error) { tampilkanAlert("Pengumuman berhasil dikirim!", "sukses"); status.textContent = '✅ Aktif di web publik'; }
-        else { tampilkanAlert("Gagal: " + error.message, "error"); status.textContent = ''; }
-    }
-
-    async function hapusAnnouncement() {
-        glassConfirm("Hapus Pengumuman?", "Pengumuman akan disembunyikan dari web publik.", async () => {
-            await supabaseClient.from('announcements').upsert([{ id: 1, active: false, title: '', body: '', type: 'info', updated_at: new Date().toISOString() }]);
-            document.getElementById('ann-title').value = '';
-            document.getElementById('ann-body').value = '';
-            document.getElementById('ann-preview').classList.remove('show');
-            document.getElementById('ann-status').textContent = '🔕 Pengumuman disembunyikan';
-            tampilkanAlert("Pengumuman dihapus!", "sukses");
-        });
-    }
-
-    async function muatAnnouncementAdmin() {
-        const { data } = await supabaseClient.from('announcements').select('*').eq('id', 1).single();
-        if (data && data.active) {
-            document.getElementById('ann-title').value = data.title || '';
-            document.getElementById('ann-body').value = data.body || '';
-            document.getElementById('ann-type').value = data.type || 'info';
-            document.getElementById('ann-status').textContent = '✅ Aktif di web publik';
-            previewAnnouncement();
-        }
-    }
-
+    // TEMA & SOSMED TOGGLE
     function gantiTemaAdmin(color, el) {
         document.querySelectorAll('.theme-dot').forEach(e => e.classList.remove('selected'));
-        el.classList.add('selected');
-        document.documentElement.style.setProperty('--tg-accent', color);
+        el.classList.add('selected'); document.documentElement.style.setProperty('--tg-accent', color);
         localStorage.setItem('adminThemeColor', color);
     }
     
-    // FUNGSI UPDATE STATUS ON/OFF SOSMED LANGSUNG KE SUPABASE
     async function simpanSosmed() {
-    const platforms = ['tiktok', 'ig', 'tele', 'dc', 'socia'];
-    
-    for (const nama of platforms) {
-        const status = document.getElementById('tg-' + nama).checked;
-        await supabaseClient
-            .from('sosmed_visibility')
-            .update({ is_visible: status })
-            .eq('platform', nama);
-    }
-    
-    tampilkanAlert("Status Sosmed di Web Publik Berhasil Diperbarui!", "sukses");
-    await muatStatusSosmedAdmin();
+        const platforms = ['tiktok', 'ig', 'tele', 'dc', 'socia'];
+        for (const nama of platforms) {
+            const status = document.getElementById('tg-' + nama).checked;
+            await supabaseClient.from('sosmed_visibility').update({ is_visible: status }).eq('platform', nama);
+        }
+        tampilkanAlert("Status Sosmed Publik Berhasil Diperbarui!", "sukses");
     }
 
-    // Ambil status asli dari server pas admin baru login
     async function muatStatusSosmedAdmin() {
-        const { data, error } = await supabaseClient.from('sosmed_visibility').select('*');
+        const { data } = await supabaseClient.from('sosmed_visibility').select('*');
         if (data) {
             data.forEach(row => {
                 const element = document.getElementById('tg-' + row.platform);
@@ -540,37 +466,34 @@
         }
     }
 
-    window.onload = function() {
-        document.getElementById('adminPinInput').focus();
-        // Load Tema
-        let savedTheme = localStorage.getItem('adminThemeColor');
-        if (savedTheme) { document.documentElement.style.setProperty('--tg-accent', savedTheme); }
-    }
-      function logoutAdmin() {
-    if(confirm("Yakin mau logout?")) {
-        document.getElementById('loginLockOverlay').classList.remove('hidden');
-        document.getElementById('adminPinInput').value = '';
-        document.getElementById('adminPinInput').focus();
-    }
-      }
-
-      let sessionTimer;
-
-function resetSessionTimer() {
-    clearTimeout(sessionTimer);
-    sessionTimer = setTimeout(() => {
-        tampilkanAlert("Sesi habis! Silakan login ulang.", "error");
-        setTimeout(() => {
+    function logoutAdmin() {
+        if(confirm("Yakin mau logout?")) {
             document.getElementById('loginLockOverlay').classList.remove('hidden');
             document.getElementById('adminPinInput').value = '';
             document.getElementById('adminPinInput').focus();
-        }, 2000);
-    }, 10 * 60 * 1000); // 10 menit
-}
+        }
+    }
 
-// Reset timer setiap ada aktivitas
-document.addEventListener('click', resetSessionTimer);
-document.addEventListener('keypress', resetSessionTimer);
+    let sessionTimer;
+    function resetSessionTimer() {
+        clearTimeout(sessionTimer);
+        sessionTimer = setTimeout(() => {
+            tampilkanAlert("Sesi habis! Silakan login ulang.", "error");
+            setTimeout(() => {
+                document.getElementById('loginLockOverlay').classList.remove('hidden');
+                document.getElementById('adminPinInput').value = '';
+                document.getElementById('adminPinInput').focus();
+            }, 2000);
+        }, 10 * 60 * 1000);
+    }
+    document.addEventListener('click', resetSessionTimer);
+    document.addEventListener('keypress', resetSessionTimer);
+
+    window.onload = function() {
+        document.getElementById('adminPinInput').focus();
+        let savedTheme = localStorage.getItem('adminThemeColor');
+        if (savedTheme) { document.documentElement.style.setProperty('--tg-accent', savedTheme); }
+    }
   </script>
 </body>
 </html>
