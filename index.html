@@ -39,6 +39,9 @@
     .admin-textarea:focus { border-color: var(--tg-accent); }
     .admin-btn-save { width: 100%; padding: 12px; background: var(--admin-add); color: white; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; }
     
+    .admin-input { width: 100%; padding: 12px 15px; margin-bottom: 12px; border-radius: 10px; background: var(--tg-bg); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 14px; outline: none; font-family: inherit; }
+    .admin-input:focus { border-color: var(--tg-accent); }
+
     .mod-box-item { background: rgba(23, 33, 43, 0.8); margin: 12px 15px; padding: 18px; border-radius: 18px; border: 1px solid rgba(255, 255, 255, 0.08); }
     .mod-box-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .mod-box-title-group { display: flex; align-items: center; gap: 12px; }
@@ -81,6 +84,7 @@
     .theme-dot { height: 50px; border-radius: 14px; cursor: pointer; border: 2px solid transparent; transition: transform 0.2s; }
     .theme-dot.selected { border-color: #ffffff; transform: scale(1.05); }
 
+    /* VIP PROFILE RGB CARD STYLE */
     @keyframes rgbGlow { 0% { color: #ff0000; text-shadow: 0 0 10px #ff0000; } 33% { color: #00ff00; text-shadow: 0 0 10px #00ff00; } 66% { color: #0000ff; text-shadow: 0 0 10px #0000ff; } 100% { color: #ff0000; text-shadow: 0 0 10px #ff0000; } }
     .vip-card { background: linear-gradient(145deg, #1f2937, #111827); border: 1px solid rgba(255,215,0,0.4); padding: 25px; border-radius: 20px; text-align: center; margin: 15px; position: relative; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; }
     .vip-badge { position: absolute; top: 10px; right: 10px; background: gold; color: black; font-size: 10px; font-weight: 900; padding: 3px 8px; border-radius: 5px; text-transform: uppercase; z-index: 3; }
@@ -209,9 +213,24 @@
         </div>
         <button class="admin-btn-save" style="background: var(--tg-accent);" onclick="simpanAnnouncementKeSupabase()">Publish Pengumuman Baru</button>
         
-        <!-- WADAH RIWAYAT ANNOUNCEMENT YANG SUDAH DISTERILKAN DARI BUG -->
         <div id="container-announcement-list" style="margin-top: 20px;"></div>
       </div>
+
+      <div class="settings-card" style="border-color: var(--admin-edit);">
+        <div style="font-size:15px; font-weight:bold; color:var(--admin-edit); margin-bottom: 15px;"><i class="fas fa-envelope"></i> Kirim Notifikasi Kotak Surat</div>
+        <textarea id="inbox-title" class="admin-textarea" placeholder="Judul Notifikasi (Contoh: System Update)"></textarea>
+        <textarea id="inbox-msg" class="admin-textarea tinggi" placeholder="Isi detail pesan notifikasi (Bisa klik enter...)"></textarea>
+        <input type="text" id="inbox-date" class="admin-input" placeholder="Tanggal (Contoh: 5/9/2026)">
+        
+        <div style="margin-bottom:12px; display:flex; align-items:center; gap:10px;">
+            <label style="font-size:13px; font-weight:bold; color:white;">Status Expired:</label>
+            <input type="checkbox" id="inbox-expired" style="width:18px; height:18px;">
+        </div>
+        <button class="admin-btn-save" style="background: var(--admin-edit);" onclick="kirimInboxKeSupabase()">Kirim ke Kotak Surat Publik</button>
+        
+        <div id="container-inbox-list" style="margin-top: 20px;"></div>
+      </div>
+
     </div>
   </div>
 
@@ -273,6 +292,7 @@
             ambilDataApp();
             ambilDataStore();
             ambilDataAnnouncement();
+            ambilDataInboxAdmin();
             muatStatusSosmedAdmin();
             resetSessionTimer();
         } else {
@@ -299,7 +319,11 @@
       if (page === 'home') titleEl.innerHTML = 'Web Admin <span class="admin-badge">DEV</span>';
       else if (page === 'appmod') titleEl.innerHTML = 'App Mod <span class="admin-badge">DEV</span>';
       else if (page === 'store') titleEl.innerHTML = 'Store Admin <span class="admin-badge">DEV</span>';
-      else if (page === 'pengaturan') { titleEl.innerHTML = 'Pengaturan <span class="admin-badge">DEV</span>'; muatAnnouncementAdmin(); }
+      else if (page === 'pengaturan') { 
+          titleEl.innerHTML = 'Pengaturan <span class="admin-badge">DEV</span>'; 
+          muatAnnouncementAdmin(); 
+          ambilDataInboxAdmin();
+      }
       else titleEl.innerHTML = 'Profile <span class="admin-badge">DEV</span>';
     }
 
@@ -376,19 +400,21 @@
             };
         } else if (tabel === 'store_products') {
             targetId = memoriStore[index].id;
+            let waClean = document.getElementById('upd-4').value.replace(/\n/g, '').replace(/<br\s*\/?>/mg, '');
             updateData = { 
                 nama_produk: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), 
                 deskripsi: document.getElementById('upd-2').value.replace(/\n/g, '<br>'), 
                 harga: document.getElementById('upd-3').value.replace(/\n/g, '<br>'), 
                 stock: document.getElementById('upd-stock').value, 
-                link_wa: document.getElementById('upd-4').value.replace(/\n/g, '<br>'), 
+                link_wa: waClean, 
                 img_url: document.getElementById('upd-5').value.replace(/\n/g, '<br>') 
             };
         }
 
         const { error } = await supabaseClient.from(tabel).update(updateData).eq('id', targetId);
-        if (error) { tampilkanAlert("Update Gagal: " + error.message, "error"); } 
-        else {
+        if (error) { 
+            tampilkanAlert("Update Gagal: " + error.message, "error"); 
+        } else {
             tampilkanAlert("Berhasil di-update!", "sukses");
             document.getElementById('editDataPopup').classList.add('hidden');
             if (tabel === 'web_saya') ambilDataWeb(); 
@@ -456,7 +482,8 @@
         const desc = document.getElementById('prod-desc').value.replace(/\n/g, '<br>');
         const price = document.getElementById('prod-price').value.replace(/\n/g, '<br>'); 
         const stock = document.getElementById('prod-stock').value; 
-        const wa = document.getElementById('prod-wa').value.replace(/\n/g, '<br>'); 
+        let waRaw = document.getElementById('prod-wa').value;
+        const wa = waRaw.replace(/\n/g, '').replace(/<br\s*\/?>/mg, ''); 
         const img = document.getElementById('prod-img').value.replace(/\n/g, '<br>');
         if(!nama || !price) return tampilkanAlert("Wajib diisi!", "error");
         const { error } = await supabaseClient.from('store_products').insert([{ nama_produk: nama, deskripsi: desc, harga: price, stock: stock, link_wa: wa, img_url: img }]);
@@ -483,7 +510,7 @@
         const { data } = await supabaseClient.from('announcements').select('*').order('id', { ascending: false });
         if (!data || data.length === 0) { container.innerHTML = '<p style="text-align:center; color:var(--tg-text-muted); font-size:12px;">Belum ada riwayat pengumuman.</p>'; return; }
         container.innerHTML = '<h4 style="font-size:13px; color:var(--tg-accent); margin-bottom:10px; border-top:1px solid rgba(255,255,255,0.05); padding-top:15px;">Riwayat Pengumuman:</h4>';
-        data.forEach((anc, idx) => {
+        data.forEach((anc) => {
             container.innerHTML += `
                 <div class="mod-box-item" style="margin: 10px 0; padding: 12px; background: rgba(0,0,0,0.15);">
                     <div style="font-size:13px; color:#fff; font-weight:bold; margin-bottom:4px;"><i class="fas fa-bullhorn" style="color:var(--tg-accent);"></i> ${anc.title || 'Info'} (${anc.type})</div>
@@ -516,6 +543,55 @@
             document.getElementById('anc-body').value = (data.body || '').replace(/<br\s*\/?>/mg, "\n");
             document.getElementById('anc-type').value = data.type || 'info';
             document.getElementById('anc-active').checked = data.active;
+        }
+    }
+
+    async function kirimInboxKeSupabase() {
+        const judul = document.getElementById('inbox-title').value.replace(/\n/g, '<br>');
+        const pesan = document.getElementById('inbox-msg').value.replace(/\n/g, '<br>');
+        const tanggal = document.getElementById('inbox-date').value || new Date().toLocaleDateString('id-ID');
+        const expired = document.getElementById('inbox-expired').checked;
+
+        if(!judul || !pesan) return tampilkanAlert("Judul & Pesan wajib diisi!", "error");
+
+        const { error } = await supabaseClient.from('web_inbox').insert([{ judul: judul, pesan: pesan, tanggal: tanggal, is_expired: expired }]);
+        if(!error) {
+            tampilkanAlert("Notifikasi terkirim ke publik!", "sukses");
+            document.getElementById('inbox-title').value = '';
+            document.getElementById('inbox-msg').value = '';
+            ambilDataInboxAdmin();
+        } else {
+            tampilkanAlert("Gagal mengirim: " + error.message, "error");
+        }
+    }
+
+    async function ambilDataInboxAdmin() {
+        const container = document.getElementById('container-inbox-list');
+        if(!container) return;
+        const { data } = await supabaseClient.from('web_inbox').select('*').order('id', { ascending: false });
+        if (!data || data.length === 0) { container.innerHTML = '<p style="text-align:center; color:var(--tg-text-muted); font-size:12px;">Belum ada riwayat kotak surat.</p>'; return; }
+        container.innerHTML = '<h4 style="font-size:13px; color:var(--admin-edit); margin-bottom:10px; border-top:1px solid rgba(255,255,255,0.05); padding-top:15px;">Riwayat Kotak Surat:</h4>';
+        data.forEach((box) => {
+            container.innerHTML += `
+                <div class="mod-box-item" style="margin: 10px 0; padding: 12px; background: rgba(0,0,0,0.15);">
+                    <div style="font-size:13px; color:#fff; font-weight:bold; margin-bottom:4px;"><i class="fas fa-envelope" style="color:var(--admin-edit);"></i> ${box.judul}</div>
+                    <div style="font-size:12.5px; color:var(--tg-text-muted); line-height:1.4;">${box.pesan}</div>
+                    <div class="admin-action-bar" style="margin-top:8px; padding-top:8px; gap:6px;">
+                        <button class="btn-admin delete" style="padding:6px; font-size:11px;" onclick="hapusInboxAdmin(${box.id})"><i class="fas fa-trash"></i> Hapus Notif</button>
+                    </div>
+                </div>`;
+        });
+    }
+
+    async function hapusInboxAdmin(id) {
+        if(confirm("Yakin ingin menghapus notifikasi ini dari publik?")) {
+            const { error } = await supabaseClient.from('web_inbox').delete().eq('id', id);
+            if(!error) {
+                tampilkanAlert("Notifikasi berhasil dihapus!", "sukses");
+                ambilDataInboxAdmin();
+            } else {
+                tampilkanAlert("Gagal menghapus: " + error.message, "error");
+            }
         }
     }
 
