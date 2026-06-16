@@ -34,18 +34,18 @@
     .admin-form-card { background: rgba(23, 33, 43, 0.9); margin: 10px 15px 20px 15px; padding: 20px; border-radius: 18px; border: 1px solid var(--admin-add); display: none; }
     .admin-form-title { font-size: 15px; font-weight: bold; color: var(--admin-add); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
     
-    /* INPUT & TEXTAREA SUPORT ENTER PARAGRAF BARU */
-    .admin-input, .admin-textarea { width: 100%; padding: 12px 15px; margin-bottom: 12px; border-radius: 10px; background: var(--tg-bg); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 14px; outline: none; font-family: inherit; }
-    .admin-textarea { resize: none; height: 100px; }
-    .admin-input:focus, .admin-textarea:focus { border-color: var(--tg-accent); }
+    /* SEMUA INPUT SEKARANG MEMAKAI TEXTAREA BIAR BISA DI-ENTER BEBAS */
+    .admin-textarea { width: 100%; padding: 12px 15px; margin-bottom: 12px; border-radius: 10px; background: var(--tg-bg); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 14px; outline: none; font-family: inherit; resize: none; height: 50px; transition: border-color 0.3s, height 0.3s; }
+    .admin-textarea.tinggi { height: 100px; }
+    .admin-textarea:focus { border-color: var(--tg-accent); }
     .admin-btn-save { width: 100%; padding: 12px; background: var(--admin-add); color: white; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; }
     
     .mod-box-item { background: rgba(23, 33, 43, 0.8); margin: 12px 15px; padding: 18px; border-radius: 18px; border: 1px solid rgba(255, 255, 255, 0.08); }
     .mod-box-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .mod-box-title-group { display: flex; align-items: center; gap: 12px; }
     .mod-box-icon { width: 48px; height: 48px; background: rgba(255,255,255,0.05); border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 24px; }
-    .mod-box-name { font-size: 16px; font-weight: 700; color: #ffffff; }
-    .mod-box-size { font-size: 12px; font-weight: 700; color: var(--tg-accent); background: rgba(255,255,255, 0.05); padding: 4px 10px; border-radius: 8px; }
+    .mod-box-name { font-size: 16px; font-weight: 700; color: #ffffff; word-break: break-word; line-height: 1.3; }
+    .mod-box-size { font-size: 12px; font-weight: 700; color: var(--tg-accent); background: rgba(255,255,255, 0.05); padding: 4px 10px; border-radius: 8px; flex-shrink: 0; }
     .mod-box-desc { font-size: 13.5px; color: var(--tg-text-muted); line-height: 1.5; word-break: break-word; }
     .admin-action-bar { display: flex; gap: 8px; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; }
     .btn-admin { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; font-size: 13px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
@@ -62,7 +62,7 @@
     .nav-sliding-indicator { position: absolute; top: 50%; left: 0; transform: translateY(-50%) translateX(0); height: 54px; width: 20%; z-index: 2; transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); pointer-events: none; }
     .nav-sliding-indicator::before { content: ''; position: absolute; top: 0; left: 5px; right: 5px; bottom: 0; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 18px; }
 
-    /* GLASSMORPHISM POPUP ALERT & MODAL EDIT */
+    /* POPUP EDITS */
     .glass-popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 99999; display: flex; align-items: center; justify-content: center; }
     .glass-popup-overlay.hidden { display: none !important; }
     .glass-popup-card { background: rgba(23, 33, 43, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.12); padding: 25px; border-radius: 24px; text-align: center; max-width: 340px; width: 90%; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
@@ -81,6 +81,13 @@
     .theme-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 15px; }
     .theme-dot { height: 50px; border-radius: 14px; cursor: pointer; border: 2px solid transparent; transition: transform 0.2s; }
     .theme-dot.selected { border-color: #ffffff; transform: scale(1.05); }
+
+    /* VIP PROFILE RGB CARD STYLE */
+    @keyframes rgbGlow { 0% { color: #ff0000; text-shadow: 0 0 10px #ff0000; } 33% { color: #00ff00; text-shadow: 0 0 10px #00ff00; } 66% { color: #0000ff; text-shadow: 0 0 10px #0000ff; } 100% { color: #ff0000; text-shadow: 0 0 10px #ff0000; } }
+    .vip-card { background: linear-gradient(145deg, #1f2937, #111827); border: 1px solid rgba(255,215,0,0.4); padding: 25px; border-radius: 20px; text-align: center; margin: 15px; position: relative; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; }
+    .vip-badge { position: absolute; top: 10px; right: 10px; background: gold; color: black; font-size: 10px; font-weight: 900; padding: 3px 8px; border-radius: 5px; text-transform: uppercase; z-index: 3; }
+    .vip-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.25; pointer-events: none; object-fit: cover; z-index: 1; }
+    .rgb-text { animation: rgbGlow 3s linear infinite; font-size: 22px; font-weight: 900; margin-bottom: 5px; position: relative; z-index: 2; }
 
     .sosmed-toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: rgba(0,0,0,0.2); border-radius: 12px; margin-bottom: 8px; font-size: 14px; font-weight: bold; }
     .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
@@ -136,8 +143,8 @@
     </div>
     <div class="admin-form-card" id="web-form">
         <div class="admin-form-title"><i class="fas fa-globe"></i> Input Web Baru</div>
-        <input type="text" id="web-title" class="admin-input" placeholder="Nama Web (Contoh: QRIS Generator)">
-        <input type="text" id="web-url" class="admin-input" placeholder="Link Website (Contoh: https://...)">
+        <textarea id="web-title" class="admin-textarea" placeholder="Nama Web (Bisa klik enter paragraf baru...)"></textarea>
+        <textarea id="web-url" class="admin-textarea" placeholder="Link Website (Contoh: https://...)"></textarea>
         <button class="admin-btn-save" onclick="simpanWebKeSupabase()">Simpan Ke Database</button>
     </div>
     <div id="container-web-list"></div>
@@ -149,11 +156,11 @@
     </div>
     <div class="admin-form-card" id="app-form">
         <div class="admin-form-title"><i class="fas fa-folder-plus"></i> Input Aplikasi Baru</div>
-        <input type="text" id="app-title" class="admin-input" placeholder="Nama Aplikasi Mod">
-        <textarea id="app-desc" class="admin-textarea" placeholder="Deskripsi Singkat Fitur Mod (Bisa klik enter paragraf baru...)"></textarea>
-        <input type="text" id="app-size" class="admin-input" placeholder="Ukuran File (Contoh: 65 MB)">
-        <input type="text" id="app-url" class="admin-input" placeholder="Link Download File">
-        <input type="text" id="app-img" class="admin-input" placeholder="Link Ikon ImgBB (Opsional)">
+        <textarea id="app-title" class="admin-textarea" placeholder="Nama Aplikasi Mod (Bisa klik enter...)"></textarea>
+        <textarea id="app-desc" class="admin-textarea jawaban tinggi" placeholder="Deskripsi Singkat Fitur Mod (Bisa klik enter...)"></textarea>
+        <textarea id="app-size" class="admin-textarea" placeholder="Ukuran File (Contoh: 65 MB)"></textarea>
+        <textarea id="app-url" class="admin-textarea" placeholder="Link Download File"></textarea>
+        <textarea id="app-img" class="admin-textarea" placeholder="Link Ikon ImgBB (Opsional)"></textarea>
         <button class="admin-btn-save" onclick="simpanAppKeSupabase()">Simpan Ke Database</button>
     </div>
     <div id="container-app-list"></div>
@@ -165,12 +172,12 @@
     </div>
     <div class="admin-form-card" id="store-form">
         <div class="admin-form-title"><i class="fas fa-shopping-bag"></i> Input Produk Store Baru</div>
-        <input type="text" id="prod-title" class="admin-input" placeholder="Nama Aplikasi Premium">
-        <textarea id="prod-desc" class="admin-textarea" placeholder="Deskripsi Masa Aktif & Detail (Bisa klik enter paragraf baru...)"></textarea>
-        <input type="text" id="prod-price" class="admin-input" placeholder="Harga Jual">
-        <input type="text" id="prod-stock" class="admin-input" placeholder="Jumlah Stock / Ketersediaan">
-        <input type="text" id="prod-wa" class="admin-input" placeholder="Link Order WA">
-        <input type="text" id="prod-img" class="admin-input" placeholder="Link Gambar Produk (Opsional)">
+        <textarea id="prod-title" class="admin-textarea" placeholder="Nama Aplikasi Premium (Bisa klik enter...)"></textarea>
+        <textarea id="prod-desc" class="admin-textarea tinggi" placeholder="Deskripsi Masa Aktif & Detail (Bisa klik enter...)"></textarea>
+        <textarea id="prod-price" class="admin-textarea" placeholder="Harga Jual"></textarea>
+        <textarea id="prod-stock" class="admin-textarea" placeholder="Jumlah Stock / Ketersediaan"></textarea>
+        <textarea id="prod-wa" class="admin-textarea" placeholder="Link Order WA"></textarea>
+        <textarea id="prod-img" class="admin-textarea" placeholder="Link Gambar Produk (Opsional)"></textarea>
         <button class="admin-btn-save" onclick="simpanStoreKeSupabase()">Simpan Ke Database</button>
     </div>
     <div id="container-store-list"></div>
@@ -190,9 +197,9 @@
 
       <div class="settings-card">
         <div style="font-size:15px; font-weight:bold; color:var(--admin-add); margin-bottom: 15px;"><i class="fas fa-bullhorn"></i> Manajemen Announcement</div>
-        <input type="text" id="anc-title" class="admin-input" placeholder="Judul Pengumuman (Contoh: Info, Maintenance)">
-        <textarea id="anc-body" class="admin-textarea" placeholder="Isi detail text pengumuman (Bisa klik enter paragraf baru...)"></textarea>
-        <select id="anc-type" class="admin-input" style="background: var(--tg-bg);">
+        <textarea id="anc-title" class="admin-textarea" placeholder="Judul Pengumuman (Bisa klik enter...)"></textarea>
+        <textarea id="anc-body" class="admin-textarea tinggi" placeholder="Isi detail text pengumuman (Bisa klik enter...)"></textarea>
+        <select id="anc-type" class="admin-textarea" style="background: var(--tg-bg); height:45px; padding:5px 12px;">
             <option value="info">Info (Biru)</option>
             <option value="warning">Warning (Kuning)</option>
             <option value="promo">Promo (Hijau)</option>
@@ -208,7 +215,17 @@
   </div>
 
   <div class="page-content" id="page-profil">
-    <div style="padding: 20px 15px;">
+    <div class="vip-card">
+        <div class="vip-badge">Developer VIP</div>
+        <video autoplay loop muted playsinline webkit-playsinline class="vip-video"><source src="banner-profile.mp4" type="video/mp4"></video>
+        <div style="position: relative; z-index: 2;">
+            <img src="profile.jpg" style="width:90px; height:90px; border-radius:50%; border: 3px solid gold; margin-bottom:10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+            <div class="rgb-text">Rizky Kurniawan</div>
+            <div style="color:var(--tg-text-muted); font-size:12px; margin-bottom:10px;">Super Administrator System</div>
+        </div>
+    </div>
+
+    <div style="padding: 0 15px;">
         <h3 style="font-size:14px; color:var(--tg-accent); margin-bottom:10px;"><i class="fas fa-cogs"></i> Kontrol Tampil Sosmed (Publik)</h3>
         <p style="font-size:11px; color:var(--tg-text-muted); margin-bottom:15px;">Hidup/matikan tombol sosmed yang akan tampil di halaman web publik pengunjung.</p>
         
@@ -220,7 +237,7 @@
     </div>
   </div>
 
-  <<div class="bottom-nav-wrapper">
+  <div class="bottom-nav-wrapper">
     <div class="nav-sliding-indicator" id="indicator"></div>
     <div class="nav-item active" onclick="switchNav('home', 0, this)"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span class="nav-label">Home</span></div>
     <div class="nav-item" onclick="switchNav('appmod', 1, this)"><svg viewBox="0 0 24 24"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg><span class="nav-label">App Mod</span></div>
@@ -234,7 +251,6 @@
     const SUPABASE_KEY = "sb_publishable_vqUvkJX5XNx5_D75lCnJzw_KPeFSim9"; 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Variabel Penampung Data Memori Lokal
     let memoriWeb = [];
     let memoriApp = [];
     let memoriStore = [];
@@ -292,7 +308,7 @@
         else { form.style.display = 'block'; btn.innerHTML = '<i class="fas fa-times-circle"></i> Batalkan Input'; }
     }
 
-    // MEMPERBAIKI POPUP EDIT & LOGIKA PARAGRAF BARU UNTUK EDIT DATA
+    // FORM EDIT DATA BERKEMAMPUAN PARAGRAF ENTER DUA-DUANYA
     function bukaPopupEdit(index, tabel) {
         document.getElementById('edit-id').value = index;
         document.getElementById('edit-table').value = tabel;
@@ -302,26 +318,35 @@
         let innerH = '';
         if (tabel === 'web_saya') {
             let data = memoriWeb[index];
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama Web</label><input type="text" id="upd-1" class="admin-input" value="${data.nama_web.replace(/"/g, '&quot;')}">`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Web</label><input type="text" id="upd-2" class="admin-input" value="${data.link_web.replace(/"/g, '&quot;')}">`;
+            let namaAsli = (data.nama_web || '').replace(/<br\s*\/?>/mg, "\n");
+            let linkAsli = (data.link_web || '').replace(/<br\s*\/?>/mg, "\n");
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama Web</label><textarea id="upd-1" class="admin-textarea">${namaAsli}</textarea>`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Web</label><textarea id="upd-2" class="admin-textarea">${linkAsli}</textarea>`;
         } else if (tabel === 'app_mods') {
             let data = memoriApp[index];
-            // Merubah tag <br> kembali menjadi enter asli saat teks diedit di textarea
+            let namaAsli = (data.nama_app || '').replace(/<br\s*\/?>/mg, "\n");
             let descAsli = (data.deskripsi || '').replace(/<br\s*\/?>/mg, "\n");
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama App</label><input type="text" id="upd-1" class="admin-input" value="${data.nama_app.replace(/"/g, '&quot;')}">`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Deskripsi</label><textarea id="upd-2" class="admin-textarea">${descAsli}</textarea>`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Ukuran File</label><input type="text" id="upd-3" class="admin-input" value="${(data.ukuran || '').replace(/"/g, '&quot;')}">`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Download</label><input type="text" id="upd-4" class="admin-input" value="${(data.link_download || '').replace(/"/g, '&quot;')}">`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Ikon</label><input type="text" id="upd-5" class="admin-input" value="${(data.img_url || '').replace(/"/g, '&quot;')}">`;
+            let sizeAsli = (data.ukuran || '').replace(/<br\s*\/?>/mg, "\n");
+            let linkAsli = (data.link_download || '').replace(/<br\s*\/?>/mg, "\n");
+            let imgAsli = (data.img_url || '').replace(/<br\s*\/?>/mg, "\n");
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama App</label><textarea id="upd-1" class="admin-textarea">${namaAsli}</textarea>`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Deskripsi</label><textarea id="upd-2" class="admin-textarea tinggi">${descAsli}</textarea>`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Ukuran File</label><textarea id="upd-3" class="admin-textarea">${sizeAsli}</textarea>`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Download</label><textarea id="upd-4" class="admin-textarea">${linkAsli}</textarea>`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Ikon</label><textarea id="upd-5" class="admin-textarea">${imgAsli}</textarea>`;
         } else if (tabel === 'store_products') {
             let data = memoriStore[index];
+            let namaAsli = (data.nama_produk || '').replace(/<br\s*\/?>/mg, "\n");
             let descAsli = (data.deskripsi || '').replace(/<br\s*\/?>/mg, "\n");
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama Produk</label><input type="text" id="upd-1" class="admin-input" value="${data.nama_produk.replace(/"/g, '&quot;')}">`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Deskripsi</label><textarea id="upd-2" class="admin-textarea">${descAsli}</textarea>`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Harga Jual</label><input type="text" id="upd-3" class="admin-input" value="${data.harga.replace(/"/g, '&quot;')}">`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Stock Produk</label><input type="text" id="upd-stock" class="admin-input" value="${(data.stock || '')}">`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link WA</label><input type="text" id="upd-4" class="admin-input" value="${data.link_wa.replace(/"/g, '&quot;')}">`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Gambar</label><input type="text" id="upd-5" class="admin-input" value="${(data.img_url || '').replace(/"/g, '&quot;')}">`;
+            let hargaAsli = (data.harga || '').replace(/<br\s*\/?>/mg, "\n");
+            let linkAsli = (data.link_wa || '').replace(/<br\s*\/?>/mg, "\n");
+            let imgAsli = (data.img_url || '').replace(/<br\s*\/?>/mg, "\n");
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama Produk</label><textarea id="upd-1" class="admin-textarea">${namaAsli}</textarea>`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Deskripsi</label><textarea id="upd-2" class="admin-textarea tinggi">${descAsli}</textarea>`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Harga Jual</label><textarea id="upd-3" class="admin-textarea">${hargaAsli}</textarea>`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Stock Produk</label><input type="text" id="upd-stock" class="admin-input" style="width:100%; padding:12px; background:var(--tg-bg); border:1px solid rgba(255,255,255,0.1); color:white; border-radius:10px;" value="${(data.stock || '')}">`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link WA</label><textarea id="upd-4" class="admin-textarea">${linkAsli}</textarea>`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Gambar</label><textarea id="upd-5" class="admin-textarea">${imgAsli}</textarea>`;
         }
         fieldsContainer.innerHTML = innerH;
         document.getElementById('editDataPopup').classList.remove('hidden');
@@ -335,16 +360,29 @@
 
         if (tabel === 'web_saya') {
             targetId = memoriWeb[index].id;
-            updateData = { nama_web: document.getElementById('upd-1').value, link_web: document.getElementById('upd-2').value };
+            updateData = { 
+                nama_web: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), 
+                link_web: document.getElementById('upd-2').value.replace(/\n/g, '<br>') 
+            };
         } else if (tabel === 'app_mods') {
             targetId = memoriApp[index].id;
-            // Merubah enter \n menjadi <br> agar web publik mengerti enter baris baru
-            let descFormatted = document.getElementById('upd-2').value.replace(/\n/g, '<br>');
-            updateData = { nama_app: document.getElementById('upd-1').value, deskripsi: descFormatted, ukuran: document.getElementById('upd-3').value, link_download: document.getElementById('upd-4').value, img_url: document.getElementById('upd-5').value };
+            updateData = { 
+                nama_app: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), 
+                deskripsi: document.getElementById('upd-2').value.replace(/\n/g, '<br>'), 
+                ukuran: document.getElementById('upd-3').value.replace(/\n/g, '<br>'), 
+                link_download: document.getElementById('upd-4').value.replace(/\n/g, '<br>'), 
+                img_url: document.getElementById('upd-5').value.replace(/\n/g, '<br>') 
+            };
         } else if (tabel === 'store_products') {
             targetId = memoriStore[index].id;
-            let descFormatted = document.getElementById('upd-2').value.replace(/\n/g, '<br>');
-            updateData = { nama_produk: document.getElementById('upd-1').value, deskripsi: descFormatted, harga: document.getElementById('upd-3').value, stock: document.getElementById('upd-stock').value, link_wa: document.getElementById('upd-4').value, img_url: document.getElementById('upd-5').value };
+            updateData = { 
+                nama_produk: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), 
+                deskripsi: document.getElementById('upd-2').value.replace(/\n/g, '<br>'), 
+                harga: document.getElementById('upd-3').value.replace(/\n/g, '<br>'), 
+                stock: document.getElementById('upd-stock').value, 
+                link_wa: document.getElementById('upd-4').value.replace(/\n/g, '<br>'), 
+                img_url: document.getElementById('upd-5').value.replace(/\n/g, '<br>') 
+            };
         }
 
         const { error } = await supabaseClient.from(tabel).update(updateData).eq('id', targetId);
@@ -358,7 +396,7 @@
         }
     }
 
-    // CRUD WEBSITE SAYA
+    // DATA OPERATIONS WEBSITE
     async function ambilDataWeb() {
         const { data } = await supabaseClient.from('web_saya').select('*').order('id', { ascending: false });
         if (data) { memoriWeb = data; renderListWeb(); }
@@ -370,14 +408,15 @@
         });
     }
     async function simpanWebKeSupabase() {
-        const nama = document.getElementById('web-title').value; const url = document.getElementById('web-url').value;
+        const nama = document.getElementById('web-title').value.replace(/\n/g, '<br>'); 
+        const url = document.getElementById('web-url').value.replace(/\n/g, '<br>');
         if(!nama || !url) return tampilkanAlert("Wajib diisi!", "error");
         const { error } = await supabaseClient.from('web_saya').insert([{ nama_web: nama, link_web: url }]);
         if (!error) { tampilkanAlert("Tersimpan!", "sukses"); toggleForm('web-form', 'btn-show-web', 'Web Saya'); ambilDataWeb(); }
     }
     async function hapusWeb(id) { if(confirm("Yakin mau hapus data ini?")) { await supabaseClient.from('web_saya').delete().eq('id', id); ambilDataWeb(); } }
 
-    // CRUD APLIKASI MOD
+    // DATA OPERATIONS APP MOD
     async function ambilDataApp() {
         const { data } = await supabaseClient.from('app_mods').select('*').order('id', { ascending: false });
         if (data) { memoriApp = data; renderListApp(); }
@@ -385,23 +424,23 @@
     function renderListApp() {
         const container = document.getElementById('container-app-list'); container.innerHTML = '';
         memoriApp.forEach((app, idx) => {
-            let iconHtml = app.img_url ? `<img src="${app.img_url}" onerror="this.outerHTML='📱'" style="width:100%; height:100%; object-fit:cover;">` : '📱';
+            let iconHtml = app.img_url ? `<img src="${app.img_url.replace(/<br\s*\/?>/mg, '')}" onerror="this.outerHTML='📱'" style="width:100%; height:100%; object-fit:cover;">` : '📱';
             container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header"><div class="mod-box-title-group"><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${app.nama_app}</div></div><div class="mod-box-size">${app.ukuran || 'N/A'}</div></div><div class="mod-box-desc">${app.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'app_mods')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusApp(${app.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
         });
     }
     async function simpanAppKeSupabase() {
-        const nama = document.getElementById('app-title').value; 
-        // Mengubah enter \n di form input baru menjadi <br> sebelum masuk database
-        let descRaw = document.getElementById('app-desc').value;
-        let descFormatted = descRaw.replace(/\n/g, '<br>');
-        const size = document.getElementById('app-size').value; const url = document.getElementById('app-url').value; const img = document.getElementById('app-img').value;
+        const nama = document.getElementById('app-title').value.replace(/\n/g, '<br>'); 
+        const desc = document.getElementById('app-desc').value.replace(/\n/g, '<br>');
+        const size = document.getElementById('app-size').value.replace(/\n/g, '<br>'); 
+        const url = document.getElementById('app-url').value.replace(/\n/g, '<br>'); 
+        const img = document.getElementById('app-img').value.replace(/\n/g, '<br>');
         if(!nama || !url) return tampilkanAlert("Wajib diisi!", "error");
-        const { error } = await supabaseClient.from('app_mods').insert([{ nama_app: nama, deskripsi: descFormatted, ukuran: size, link_download: url, img_url: img }]);
+        const { error } = await supabaseClient.from('app_mods').insert([{ nama_app: nama, deskripsi: desc, ukuran: size, link_download: url, img_url: img }]);
         if (!error) { tampilkanAlert("Tersimpan!", "sukses"); toggleForm('app-form', 'btn-show-app', 'App Mod'); ambilDataApp(); }
     }
     async function hapusApp(id) { if(confirm("Yakin mau hapus data ini?")) { await supabaseClient.from('app_mods').delete().eq('id', id); ambilDataApp(); } }
 
-    // CRUD STORE PRODUCTS
+    // DATA OPERATIONS STORE
     async function ambilDataStore() {
         const { data } = await supabaseClient.from('store_products').select('*').order('id', { ascending: false });
         if (data) { memoriStore = data; renderListStore(); }
@@ -409,27 +448,29 @@
     function renderListStore() {
         const container = document.getElementById('container-store-list'); container.innerHTML = '';
         memoriStore.forEach((prod, idx) => {
-            let iconHtml = prod.img_url ? `<img src="${prod.img_url}" onerror="this.outerHTML='🛍️'" style="width:100%; height:100%; object-fit:cover;">` : '🛍️';
+            let iconHtml = prod.img_url ? `<img src="${prod.img_url.replace(/<br\s*\/?>/mg, '')}" onerror="this.outerHTML='🛍️'" style="width:100%; height:100%; object-fit:cover;">` : '🛍️';
             let stockBadge = prod.stock ? `<span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px; font-size:10px; margin-left:5px; color:#fff;">Stock: ${prod.stock}</span>` : '';
             container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header"><div class="mod-box-title-group"><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${prod.nama_produk}</div></div><div class="mod-box-size" style="color:#00ff7f; background:none;">${prod.harga}${stockBadge}</div></div><div class="mod-box-desc">${prod.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'store_products')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusStore(${prod.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
         });
     }
     async function simpanStoreKeSupabase() {
-        const nama = document.getElementById('prod-title').value; 
-        let descRaw = document.getElementById('prod-desc').value;
-        let descFormatted = descRaw.replace(/\n/g, '<br>');
-        const price = document.getElementById('prod-price').value; const stock = document.getElementById('prod-stock').value; const wa = document.getElementById('prod-wa').value; const img = document.getElementById('prod-img').value;
+        const nama = document.getElementById('prod-title').value.replace(/\n/g, '<br>'); 
+        const desc = document.getElementById('prod-desc').value.replace(/\n/g, '<br>');
+        const price = document.getElementById('prod-price').value.replace(/\n/g, '<br>'); 
+        const stock = document.getElementById('prod-stock').value; 
+        const wa = document.getElementById('prod-wa').value.replace(/\n/g, '<br>'); 
+        const img = document.getElementById('prod-img').value.replace(/\n/g, '<br>');
         if(!nama || !price) return tampilkanAlert("Wajib diisi!", "error");
-        const { error } = await supabaseClient.from('store_products').insert([{ nama_produk: nama, deskripsi: descFormatted, harga: price, stock: stock, link_wa: wa, img_url: img }]);
+        const { error } = await supabaseClient.from('store_products').insert([{ nama_produk: nama, deskripsi: desc, harga: price, stock: stock, link_wa: wa, img_url: img }]);
         if (!error) { tampilkanAlert("Tersimpan!", "sukses"); toggleForm('store-form', 'btn-show-store', 'Store'); ambilDataStore(); }
     }
     async function hapusStore(id) { if(confirm("Yakin mau hapus data ini?")) { await supabaseClient.from('store_products').delete().eq('id', id); ambilDataStore(); } }
 
-    // CRUD ANNOUNCEMENT DENGAN FITUR PARAGRAF ENTER
+    // OPERATIONS ANNOUNCEMENT
     async function simpanAnnouncementKeSupabase() {
-        const title = document.getElementById('anc-title').value;
-        let bodyRaw = document.getElementById('anc-body').value;
-        let bodyFormatted = bodyRaw.replace(/\n/g, '<br>');
+        const title = document.getElementById('anc-title').value.replace(/\n/g, '<br>');
+        const bodyRaw = document.getElementById('anc-body').value;
+        const bodyFormatted = bodyRaw.replace(/\n/g, '<br>');
         const type = document.getElementById('anc-type').value;
         const active = document.getElementById('anc-active').checked;
         
@@ -440,7 +481,7 @@
         else { tampilkanAlert("Gagal memperbarui: " + error.message, "error"); }
     }
 
-    // TEMA & SOSMED TOGGLE
+    // THEME & SOSMED VISIBILITY
     function gantiTemaAdmin(color, el) {
         document.querySelectorAll('.theme-dot').forEach(e => e.classList.remove('selected'));
         el.classList.add('selected'); document.documentElement.style.setProperty('--tg-accent', color);
