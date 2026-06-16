@@ -35,6 +35,12 @@
     .admin-form-card { background: rgba(23, 33, 43, 0.9); margin: 10px 15px 20px 15px; padding: 20px; border-radius: 18px; border: 1px solid var(--admin-add); display: none; }
     .admin-form-title { font-size: 15px; font-weight: bold; color: var(--admin-add); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
     .admin-input { width: 100%; padding: 12px 15px; margin-bottom: 12px; border-radius: 10px; background: var(--tg-bg); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 14px; outline: none; }
+    /* ANNOUNCEMENT */
+    .announcement-card { background: rgba(23,33,43,0.9); margin: 12px 15px; padding: 18px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.08); }
+    .announcement-preview { background: rgba(255,193,7,0.1); border: 1px solid rgba(255,193,7,0.3); border-radius: 12px; padding: 14px; margin-top: 10px; display: none; }
+    .announcement-preview.show { display: block; }
+    .announcement-badge { display: inline-block; background: #f59e0b; color: #000; font-size: 10px; font-weight: bold; padding: 2px 8px; border-radius: 6px; margin-bottom: 8px; }
+    .announcement-text-preview { font-size: 13px; color: #fff; line-height: 1.5; white-space: pre-wrap; }
     .admin-btn-save { width: 100%; padding: 12px; background: var(--admin-add); color: white; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; }
     
     .mod-box-item { background: rgba(23, 33, 43, 0.8); margin: 12px 15px; padding: 18px; border-radius: 18px; border: 1px solid rgba(255, 255, 255, 0.08); }
@@ -94,23 +100,6 @@
     .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
     input:checked + .slider { background-color: var(--admin-add); }
     input:checked + .slider:before { transform: translateX(20px); }
-
-    /* GLASSMORPHISM CONFIRM POPUP */
-    .glass-confirm-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 999999; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s ease; }
-    .glass-confirm-card { background: rgba(23, 33, 43, 0.92); border: 1px solid rgba(255,255,255,0.15); border-radius: 24px; padding: 28px 24px 20px 24px; max-width: 320px; width: 88%; box-shadow: 0 20px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.1); text-align: center; }
-    .glass-confirm-icon { font-size: 40px; margin-bottom: 14px; }
-    .glass-confirm-title { font-size: 17px; font-weight: 800; color: #fff; margin-bottom: 8px; }
-    .glass-confirm-msg { font-size: 13px; color: var(--tg-text-muted); margin-bottom: 22px; line-height: 1.5; }
-    .glass-confirm-btns { display: flex; gap: 10px; }
-    .glass-confirm-btn { flex: 1; padding: 13px; border: none; border-radius: 14px; font-weight: 700; font-size: 14px; cursor: pointer; transition: transform 0.1s, opacity 0.1s; }
-    .glass-confirm-btn:active { transform: scale(0.96); opacity: 0.8; }
-    .glass-confirm-cancel { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; }
-    .glass-confirm-ok { background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; box-shadow: 0 4px 15px rgba(239,68,68,0.4); }
-
-    /* SCROLL TO TOP BUTTON */
-    .scroll-top-btn { position: fixed; bottom: 100px; right: 18px; width: 44px; height: 44px; background: rgba(255,255,255,0.08); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2); border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15); transition: opacity 0.3s, transform 0.3s; opacity: 0; pointer-events: none; color: rgba(255,255,255,0.8); font-size: 16px; }
-    .scroll-top-btn.visible { opacity: 1; pointer-events: all; }
-    .scroll-top-btn:active { transform: scale(0.92); }
   </style>
 </head>
 <body>
@@ -164,8 +153,8 @@
     </div>
     <div class="admin-form-card" id="web-form">
         <div class="admin-form-title"><i class="fas fa-globe"></i> Input Web Baru</div>
-        <input type="text" id="web-title" class="admin-input" placeholder="Nama Web (Contoh: QRIS Generator)">
-        <input type="text" id="web-url" class="admin-input" placeholder="Link Website (Contoh: https://...)">
+        <input type="text" id="web-title" class="admin-input" placeholder="Nama Web (Contoh: QRIS Generator)" enterkeyhint="next">
+        <input type="text" id="web-url" class="admin-input" placeholder="Link Website (Contoh: https://...)" enterkeyhint="done">
         <button class="admin-btn-save" onclick="simpanWebKeSupabase()">Simpan Ke Database</button>
     </div>
     <div id="container-web-list"></div>
@@ -178,11 +167,11 @@
     </div>
     <div class="admin-form-card" id="app-form">
         <div class="admin-form-title"><i class="fas fa-folder-plus"></i> Input Aplikasi Baru</div>
-        <input type="text" id="app-title" class="admin-input" placeholder="Nama Aplikasi Mod">
-        <input type="text" id="app-desc" class="admin-input" placeholder="Deskripsi Singkat Fitur Mod">
-        <input type="text" id="app-size" class="admin-input" placeholder="Ukuran File (Contoh: 65 MB)">
-        <input type="text" id="app-url" class="admin-input" placeholder="Link Download File">
-        <input type="text" id="app-img" class="admin-input" placeholder="Link Ikon ImgBB (Opsional)">
+        <input type="text" id="app-title" class="admin-input" placeholder="Nama Aplikasi Mod" enterkeyhint="next">
+        <input type="text" id="app-desc" class="admin-input" placeholder="Deskripsi Singkat Fitur Mod" enterkeyhint="next">
+        <input type="text" id="app-size" class="admin-input" placeholder="Ukuran File (Contoh: 65 MB)" enterkeyhint="next">
+        <input type="text" id="app-url" class="admin-input" placeholder="Link Download File" enterkeyhint="next">
+        <input type="text" id="app-img" class="admin-input" placeholder="Link Ikon ImgBB (Opsional)" enterkeyhint="done">
         <button class="admin-btn-save" onclick="simpanAppKeSupabase()">Simpan Ke Database</button>
     </div>
     <div id="container-app-list"></div>
@@ -195,13 +184,13 @@
     </div>
     <div class="admin-form-card" id="store-form">
         <div class="admin-form-title"><i class="fas fa-shopping-bag"></i> Input Produk Store Baru</div>
-        <input type="text" id="prod-title" class="admin-input" placeholder="Nama Aplikasi Premium">
-        <input type="text" id="prod-desc" class="admin-input" placeholder="Deskripsi Masa Aktif">
-        <input type="text" id="prod-price" class="admin-input" placeholder="Harga Jual">
+        <input type="text" id="prod-title" class="admin-input" placeholder="Nama Aplikasi Premium" enterkeyhint="next">
+        <input type="text" id="prod-desc" class="admin-input" placeholder="Deskripsi Masa Aktif" enterkeyhint="next">
+        <input type="text" id="prod-price" class="admin-input" placeholder="Harga Jual" enterkeyhint="next">
         <!-- 2. STOCK PRODUK -->
-        <input type="text" id="prod-stock" class="admin-input" placeholder="Jumlah Stock / Ketersediaan">
-        <input type="text" id="prod-wa" class="admin-input" placeholder="Link Order WA">
-        <input type="text" id="prod-img" class="admin-input" placeholder="Link Gambar Produk (Opsional)">
+        <input type="text" id="prod-stock" class="admin-input" placeholder="Jumlah Stock / Ketersediaan" enterkeyhint="next">
+        <input type="text" id="prod-wa" class="admin-input" placeholder="Link Order WA" enterkeyhint="next">
+        <input type="text" id="prod-img" class="admin-input" placeholder="Link Gambar Produk (Opsional)" enterkeyhint="done">
         <button class="admin-btn-save" onclick="simpanStoreKeSupabase()">Simpan Ke Database</button>
     </div>
     <div id="container-store-list"></div>
@@ -222,6 +211,39 @@
           <div class="theme-dot" style="background-color: #ff1e1e;" onclick="gantiTemaAdmin('#ff1e1e', this)"></div>
           <div class="theme-dot" style="background-color: #660eba;" onclick="gantiTemaAdmin('#660eba', this)"></div>
         </div>
+      </div>
+
+      <!-- ANNOUNCEMENT CARD -->
+      <div class="announcement-card">
+        <div style="font-size:15px; font-weight:bold; color:#f59e0b; margin-bottom:14px;"><i class="fas fa-bullhorn"></i> Pengumuman Web Publik</div>
+        <p style="font-size:11px; color:var(--tg-text-muted); margin-bottom:14px;">Kirim pengumuman yang akan tampil di web publik. Kosongkan untuk menyembunyikan.</p>
+        
+        <label style="font-size:12px; color:var(--tg-text-muted); font-weight:bold; display:block; margin-bottom:6px;">Judul Pengumuman</label>
+        <input type="text" id="ann-title" class="admin-input" placeholder="Contoh: Maintenance, Promo, Info" enterkeyhint="next" oninput="previewAnnouncement()">
+        
+        <label style="font-size:12px; color:var(--tg-text-muted); font-weight:bold; display:block; margin-bottom:6px;">Isi Pesan</label>
+        <textarea id="ann-body" class="admin-input" placeholder="Tulis pesan pengumuman di sini..." rows="4" style="resize:none; font-family:inherit;" oninput="previewAnnouncement()"></textarea>
+
+        <label style="font-size:12px; color:var(--tg-text-muted); font-weight:bold; display:block; margin-bottom:6px;">Tipe</label>
+        <select id="ann-type" class="admin-input" onchange="previewAnnouncement()">
+          <option value="info">ℹ️ Info</option>
+          <option value="warning">⚠️ Peringatan</option>
+          <option value="promo">🎉 Promo</option>
+          <option value="maintenance">🔧 Maintenance</option>
+        </select>
+
+        <div class="announcement-preview" id="ann-preview">
+          <div class="announcement-badge" id="ann-badge">INFO</div>
+          <div style="font-size:14px; font-weight:bold; color:#fff; margin-bottom:4px;" id="ann-preview-title"></div>
+          <div class="announcement-text-preview" id="ann-preview-body"></div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:14px;">
+          <button class="admin-btn-save" style="background:#f59e0b;" onclick="kirimAnnouncement()"><i class="fas fa-paper-plane"></i> Kirim ke Publik</button>
+          <button class="admin-btn-save" style="background:#ef4444; flex:0.4;" onclick="hapusAnnouncement()"><i class="fas fa-trash"></i></button>
+        </div>
+
+        <div id="ann-status" style="margin-top:10px; font-size:12px; color:var(--tg-text-muted); text-align:center;"></div>
       </div>
     </div>
   </div>
@@ -255,11 +277,6 @@
         <div class="sosmed-toggle-row"><i class="fas fa-bolt"></i> Sociabuzz <label class="switch"><input type="checkbox" id="tg-socia" onchange="simpanSosmed()"><span class="slider"></span></label></div>
     </div>
   </div>
-
-  <!-- SCROLL TO TOP BUTTON -->
-  <button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToTop()">
-    <i class="fas fa-chevron-up"></i>
-  </button>
 
   <div class="bottom-nav-wrapper">
     <div class="nav-sliding-indicator" id="indicator"></div>
@@ -320,7 +337,7 @@
       if (page === 'home') { titleEl.innerHTML = 'Web Admin <span class="admin-badge">DEV</span>'; ambilDataWeb(); }
       else if (page === 'appmod') { titleEl.innerHTML = 'App Mod <span class="admin-badge">DEV</span>'; ambilDataApp(); }
       else if (page === 'store') { titleEl.innerHTML = 'Store Admin <span class="admin-badge">DEV</span>'; ambilDataStore(); }
-      else if (page === 'pengaturan') titleEl.innerHTML = 'Pengaturan <span class="admin-badge">DEV</span>';
+      else if (page === 'pengaturan') { titleEl.innerHTML = 'Pengaturan <span class="admin-badge">DEV</span>'; muatAnnouncementAdmin(); }
       else { titleEl.innerHTML = 'Profile <span class="admin-badge">DEV</span>'; muatStatusSosmedAdmin(); }
     }
     function toggleForm(formId, btnId, namaMenu) {
@@ -393,7 +410,7 @@
             container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header" style="margin-bottom:0;"><div class="mod-box-title-group"><div class="mod-box-icon" style="font-size:20px; width:40px; height:40px;"><i class="fas fa-globe"></i></div><div class="mod-box-name">${web.nama_web}</div></div></div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${web.id}, 'web_saya', JSON.parse(decodeURIComponent(escape(atob('${dataStr}')))))"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusWeb(${web.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
         });
     }
-    async function hapusWeb(id) { glassConfirm("Hapus Web?", "Data ini akan dihapus permanen dari database.", async () => { await supabaseClient.from('web_saya').delete().eq('id', id); ambilDataWeb(); }); }
+    async function hapusWeb(id) { if(confirm("Hapus?")) { await supabaseClient.from('web_saya').delete().eq('id', id); ambilDataWeb(); } }
 
     // FUNGSI CRUD APP
     async function simpanAppKeSupabase() {
@@ -412,7 +429,7 @@
             container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header"><div class="mod-box-title-group"><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${app.nama_app}</div></div><div class="mod-box-size">${app.ukuran || 'N/A'}</div></div><div class="mod-box-desc">${app.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${app.id}, 'app_mods', JSON.parse(decodeURIComponent(escape(atob('${dataStr}')))))"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusApp(${app.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
         });
     }
-    async function hapusApp(id) { glassConfirm("Hapus App?", "Data ini akan dihapus permanen dari database.", async () => { await supabaseClient.from('app_mods').delete().eq('id', id); ambilDataApp(); }); }
+    async function hapusApp(id) { if(confirm("Hapus?")) { await supabaseClient.from('app_mods').delete().eq('id', id); ambilDataApp(); } }
 
     // FUNGSI CRUD STORE
     async function simpanStoreKeSupabase() {
@@ -432,9 +449,63 @@
             container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header"><div class="mod-box-title-group"><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${prod.nama_produk}</div></div><div class="mod-box-size" style="color:#00ff7f; background:none;">${prod.harga}${stockBadge}</div></div><div class="mod-box-desc">${prod.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${prod.id}, 'store_products', JSON.parse(decodeURIComponent(escape(atob('${dataStr}')))))"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusStore(${prod.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
         });
     }
-    async function hapusStore(id) { glassConfirm("Hapus Produk?", "Produk ini akan dihapus permanen dari database.", async () => { await supabaseClient.from('store_products').delete().eq('id', id); ambilDataStore(); }); }
+    async function hapusStore(id) { if(confirm("Hapus?")) { await supabaseClient.from('store_products').delete().eq('id', id); ambilDataStore(); } }
 
     // FUNGSI TEMA WARNA
+    // ANNOUNCEMENT FUNCTIONS
+    function previewAnnouncement() {
+        const title = document.getElementById('ann-title').value;
+        const body = document.getElementById('ann-body').value;
+        const type = document.getElementById('ann-type').value;
+        const preview = document.getElementById('ann-preview');
+        const badge = document.getElementById('ann-badge');
+        const colors = { info: '#3390ec', warning: '#f59e0b', promo: '#10b981', maintenance: '#ef4444' };
+        const labels = { info: 'ℹ️ INFO', warning: '⚠️ PERINGATAN', promo: '🎉 PROMO', maintenance: '🔧 MAINTENANCE' };
+        if (title || body) {
+            preview.classList.add('show');
+            badge.textContent = labels[type];
+            badge.style.background = colors[type];
+            document.getElementById('ann-preview-title').textContent = title;
+            document.getElementById('ann-preview-body').textContent = body;
+        } else {
+            preview.classList.remove('show');
+        }
+    }
+
+    async function kirimAnnouncement() {
+        const title = document.getElementById('ann-title').value.trim();
+        const body = document.getElementById('ann-body').value.trim();
+        const type = document.getElementById('ann-type').value;
+        if (!title || !body) return tampilkanAlert("Judul dan isi wajib diisi!", "error");
+        const status = document.getElementById('ann-status');
+        status.textContent = 'Mengirim...';
+        const { error } = await supabaseClient.from('announcements').upsert([{ id: 1, title, body, type, active: true, updated_at: new Date().toISOString() }]);
+        if (!error) { tampilkanAlert("Pengumuman berhasil dikirim!", "sukses"); status.textContent = '✅ Aktif di web publik'; }
+        else { tampilkanAlert("Gagal: " + error.message, "error"); status.textContent = ''; }
+    }
+
+    async function hapusAnnouncement() {
+        glassConfirm("Hapus Pengumuman?", "Pengumuman akan disembunyikan dari web publik.", async () => {
+            await supabaseClient.from('announcements').upsert([{ id: 1, active: false, title: '', body: '', type: 'info', updated_at: new Date().toISOString() }]);
+            document.getElementById('ann-title').value = '';
+            document.getElementById('ann-body').value = '';
+            document.getElementById('ann-preview').classList.remove('show');
+            document.getElementById('ann-status').textContent = '🔕 Pengumuman disembunyikan';
+            tampilkanAlert("Pengumuman dihapus!", "sukses");
+        });
+    }
+
+    async function muatAnnouncementAdmin() {
+        const { data } = await supabaseClient.from('announcements').select('*').eq('id', 1).single();
+        if (data && data.active) {
+            document.getElementById('ann-title').value = data.title || '';
+            document.getElementById('ann-body').value = data.body || '';
+            document.getElementById('ann-type').value = data.type || 'info';
+            document.getElementById('ann-status').textContent = '✅ Aktif di web publik';
+            previewAnnouncement();
+        }
+    }
+
     function gantiTemaAdmin(color, el) {
         document.querySelectorAll('.theme-dot').forEach(e => e.classList.remove('selected'));
         el.classList.add('selected');
@@ -476,48 +547,12 @@
         if (savedTheme) { document.documentElement.style.setProperty('--tg-accent', savedTheme); }
     }
       function logoutAdmin() {
-        glassConfirm("Yakin mau logout?", "Kamu akan keluar dari sesi admin.", () => {
-            document.getElementById('loginLockOverlay').classList.remove('hidden');
-            document.getElementById('adminPinInput').value = '';
-            document.getElementById('adminPinInput').focus();
-        });
+    if(confirm("Yakin mau logout?")) {
+        document.getElementById('loginLockOverlay').classList.remove('hidden');
+        document.getElementById('adminPinInput').value = '';
+        document.getElementById('adminPinInput').focus();
+    }
       }
-
-      // GLASSMORPHISM CONFIRM
-      function glassConfirm(judul, pesan, onOk) {
-        const overlay = document.createElement('div');
-        overlay.className = 'glass-confirm-overlay';
-        overlay.innerHTML = `
-          <div class="glass-confirm-card">
-            <div class="glass-confirm-icon">🗑️</div>
-            <div class="glass-confirm-title">${judul}</div>
-            <div class="glass-confirm-msg">${pesan}</div>
-            <div class="glass-confirm-btns">
-              <button class="glass-confirm-btn glass-confirm-cancel" id="gcCancel">Batal</button>
-              <button class="glass-confirm-btn glass-confirm-ok" id="gcOk">Hapus</button>
-            </div>
-          </div>`;
-        document.body.appendChild(overlay);
-        overlay.querySelector('#gcCancel').onclick = () => overlay.remove();
-        overlay.querySelector('#gcOk').onclick = () => { overlay.remove(); onOk(); };
-        overlay.onclick = (e) => { if(e.target === overlay) overlay.remove(); };
-      }
-
-      // SCROLL TO TOP
-      function scrollToTop() {
-        const active = document.querySelector('.page-content.active');
-        if (active) active.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-      document.querySelectorAll('.page-content').forEach(el => {
-        el.addEventListener('scroll', () => {
-          const btn = document.getElementById('scrollTopBtn');
-          if (el.scrollTop > 150 && el.classList.contains('active')) {
-            btn.classList.add('visible');
-          } else {
-            btn.classList.remove('visible');
-          }
-        });
-      });
 
       let sessionTimer;
 
