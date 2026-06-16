@@ -441,11 +441,13 @@
         const { error } = await supabaseClient.from('web_saya').insert([{ nama_web: nama, link_web: url }]);
         if (!error) { tampilkanAlert("Tersimpan!", "sukses"); toggleForm('web-form', 'btn-show-web', 'Web Saya'); ambilDataWeb(); }
     }
-    async function hapusWeb(id) { if(confirm("Yakin mau hapus data ini?")) { await supabaseClient.from('web_saya').delete().eq('id', id); ambilDataWeb(); }
-                                // Tambahkan ini di dalam verifikasiLoginAdmin
-await supabaseClient.from('web_inbox').select('id').limit(1); // Ini pancingan biar API langsung deteksi tabel
-ambilDataWeb();
-}
+        async function hapusWeb(id) { 
+        if(confirm("Yakin mau hapus data ini?")) { 
+            await supabaseClient.from('web_saya').delete().eq('id', id); 
+            ambilDataWeb(); 
+        } 
+    }
+
     
     async function ambilDataApp() {
         const { data } = await supabaseClient.from('app_mods').select('*').order('id', { ascending: false });
