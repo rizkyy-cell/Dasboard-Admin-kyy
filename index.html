@@ -34,7 +34,6 @@
     .admin-form-card { background: rgba(23, 33, 43, 0.9); margin: 10px 15px 20px 15px; padding: 20px; border-radius: 18px; border: 1px solid var(--admin-add); display: none; }
     .admin-form-title { font-size: 15px; font-weight: bold; color: var(--admin-add); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
     
-    /* SEMUA INPUT SEKARANG MEMAKAI TEXTAREA BIAR BISA DI-ENTER BEBAS */
     .admin-textarea { width: 100%; padding: 12px 15px; margin-bottom: 12px; border-radius: 10px; background: var(--tg-bg); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 14px; outline: none; font-family: inherit; resize: none; height: 50px; transition: border-color 0.3s, height 0.3s; }
     .admin-textarea.tinggi { height: 100px; }
     .admin-textarea:focus { border-color: var(--tg-accent); }
@@ -82,7 +81,6 @@
     .theme-dot { height: 50px; border-radius: 14px; cursor: pointer; border: 2px solid transparent; transition: transform 0.2s; }
     .theme-dot.selected { border-color: #ffffff; transform: scale(1.05); }
 
-    /* VIP PROFILE RGB CARD STYLE */
     @keyframes rgbGlow { 0% { color: #ff0000; text-shadow: 0 0 10px #ff0000; } 33% { color: #00ff00; text-shadow: 0 0 10px #00ff00; } 66% { color: #0000ff; text-shadow: 0 0 10px #0000ff; } 100% { color: #ff0000; text-shadow: 0 0 10px #ff0000; } }
     .vip-card { background: linear-gradient(145deg, #1f2937, #111827); border: 1px solid rgba(255,215,0,0.4); padding: 25px; border-radius: 20px; text-align: center; margin: 15px; position: relative; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; }
     .vip-badge { position: absolute; top: 10px; right: 10px; background: gold; color: black; font-size: 10px; font-weight: 900; padding: 3px 8px; border-radius: 5px; text-transform: uppercase; z-index: 3; }
@@ -210,6 +208,9 @@
             <input type="checkbox" id="anc-active" checked style="width:18px; height:18px;">
         </div>
         <button class="admin-btn-save" style="background: var(--tg-accent);" onclick="simpanAnnouncementKeSupabase()">Publish Pengumuman Baru</button>
+        
+        <!-- WADAH RIWAYAT ANNOUNCEMENT YANG SUDAH DISTERILKAN DARI BUG -->
+        <div id="container-announcement-list" style="margin-top: 20px;"></div>
       </div>
     </div>
   </div>
@@ -271,6 +272,7 @@
             ambilDataWeb();
             ambilDataApp();
             ambilDataStore();
+            ambilDataAnnouncement();
             muatStatusSosmedAdmin();
             resetSessionTimer();
         } else {
@@ -297,7 +299,7 @@
       if (page === 'home') titleEl.innerHTML = 'Web Admin <span class="admin-badge">DEV</span>';
       else if (page === 'appmod') titleEl.innerHTML = 'App Mod <span class="admin-badge">DEV</span>';
       else if (page === 'store') titleEl.innerHTML = 'Store Admin <span class="admin-badge">DEV</span>';
-      else if (page === 'pengaturan') titleEl.innerHTML = 'Pengaturan <span class="admin-badge">DEV</span>';
+      else if (page === 'pengaturan') { titleEl.innerHTML = 'Pengaturan <span class="admin-badge">DEV</span>'; muatAnnouncementAdmin(); }
       else titleEl.innerHTML = 'Profile <span class="admin-badge">DEV</span>';
     }
 
@@ -308,7 +310,6 @@
         else { form.style.display = 'block'; btn.innerHTML = '<i class="fas fa-times-circle"></i> Batalkan Input'; }
     }
 
-    // FORM EDIT DATA BERKEMAMPUAN PARAGRAF ENTER DUA-DUANYA
     function bukaPopupEdit(index, tabel) {
         document.getElementById('edit-id').value = index;
         document.getElementById('edit-table').value = tabel;
@@ -396,7 +397,6 @@
         }
     }
 
-    // DATA OPERATIONS WEBSITE
     async function ambilDataWeb() {
         const { data } = await supabaseClient.from('web_saya').select('*').order('id', { ascending: false });
         if (data) { memoriWeb = data; renderListWeb(); }
@@ -416,7 +416,6 @@
     }
     async function hapusWeb(id) { if(confirm("Yakin mau hapus data ini?")) { await supabaseClient.from('web_saya').delete().eq('id', id); ambilDataWeb(); } }
 
-    // DATA OPERATIONS APP MOD
     async function ambilDataApp() {
         const { data } = await supabaseClient.from('app_mods').select('*').order('id', { ascending: false });
         if (data) { memoriApp = data; renderListApp(); }
@@ -440,7 +439,6 @@
     }
     async function hapusApp(id) { if(confirm("Yakin mau hapus data ini?")) { await supabaseClient.from('app_mods').delete().eq('id', id); ambilDataApp(); } }
 
-    // DATA OPERATIONS STORE
     async function ambilDataStore() {
         const { data } = await supabaseClient.from('store_products').select('*').order('id', { ascending: false });
         if (data) { memoriStore = data; renderListStore(); }
@@ -466,7 +464,6 @@
     }
     async function hapusStore(id) { if(confirm("Yakin mau hapus data ini?")) { await supabaseClient.from('store_products').delete().eq('id', id); ambilDataStore(); } }
 
-    // OPERATIONS ANNOUNCEMENT
     async function simpanAnnouncementKeSupabase() {
         const title = document.getElementById('anc-title').value.replace(/\n/g, '<br>');
         const bodyRaw = document.getElementById('anc-body').value;
@@ -476,12 +473,52 @@
         
         if(!bodyRaw) return tampilkanAlert("Isi teks pengumuman tidak boleh kosong!", "error");
         
-        const { error } = await supabaseClient.from('announcements').update({ title: title, body: bodyFormatted, type: type, active: active, updated_at: new Date() }).eq('id', 1);
-        if (!error) { tampilkanAlert("Pengumuman berhasil diperbarui di Web Publik!", "sukses"); } 
+        const { error } = await supabaseClient.from('announcements').upsert([{ id: 1, title: title, body: bodyFormatted, type: type, active: active, updated_at: new Date() }]);
+        if (!error) { tampilkanAlert("Pengumuman berhasil diperbarui di Web Publik!", "sukses"); ambilDataAnnouncement(); } 
         else { tampilkanAlert("Gagal memperbarui: " + error.message, "error"); }
     }
 
-    // THEME & SOSMED VISIBILITY
+    async function ambilDataAnnouncement() {
+        const container = document.getElementById('container-announcement-list');
+        const { data } = await supabaseClient.from('announcements').select('*').order('id', { ascending: false });
+        if (!data || data.length === 0) { container.innerHTML = '<p style="text-align:center; color:var(--tg-text-muted); font-size:12px;">Belum ada riwayat pengumuman.</p>'; return; }
+        container.innerHTML = '<h4 style="font-size:13px; color:var(--tg-accent); margin-bottom:10px; border-top:1px solid rgba(255,255,255,0.05); padding-top:15px;">Riwayat Pengumuman:</h4>';
+        data.forEach((anc, idx) => {
+            container.innerHTML += `
+                <div class="mod-box-item" style="margin: 10px 0; padding: 12px; background: rgba(0,0,0,0.15);">
+                    <div style="font-size:13px; color:#fff; font-weight:bold; margin-bottom:4px;"><i class="fas fa-bullhorn" style="color:var(--tg-accent);"></i> ${anc.title || 'Info'} (${anc.type})</div>
+                    <div style="font-size:12.5px; color:var(--tg-text-muted); line-height:1.4;">${anc.body}</div>
+                    <div class="admin-action-bar" style="margin-top:8px; padding-top:8px; gap:6px;">
+                        <button class="btn-admin delete" style="padding:6px; font-size:11px;" onclick="hapusAnnouncement(${anc.id})"><i class="fas fa-trash"></i> Hapus Dari Publik</button>
+                    </div>
+                </div>`;
+        });
+    }
+
+    async function hapusAnnouncement(id) {
+        if(confirm("Yakin ingin menghapus pengumuman ini dari publik?")) {
+            const { error } = await supabaseClient.from('announcements').delete().eq('id', id);
+            if(!error) {
+                tampilkanAlert("Pengumuman berhasil dihapus!", "sukses");
+                document.getElementById('anc-title').value = '';
+                document.getElementById('anc-body').value = '';
+                ambilDataAnnouncement();
+            } else {
+                tampilkanAlert("Gagal menghapus: " + error.message, "error");
+            }
+        }
+    }
+
+    async function muatAnnouncementAdmin() {
+        const { data } = await supabaseClient.from('announcements').select('*').eq('id', 1).single();
+        if (data) {
+            document.getElementById('anc-title').value = (data.title || '').replace(/<br\s*\/?>/mg, "\n");
+            document.getElementById('anc-body').value = (data.body || '').replace(/<br\s*\/?>/mg, "\n");
+            document.getElementById('anc-type').value = data.type || 'info';
+            document.getElementById('anc-active').checked = data.active;
+        }
+    }
+
     function gantiTemaAdmin(color, el) {
         document.querySelectorAll('.theme-dot').forEach(e => e.classList.remove('selected'));
         el.classList.add('selected'); document.documentElement.style.setProperty('--tg-accent', color);
