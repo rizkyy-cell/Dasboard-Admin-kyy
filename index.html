@@ -377,7 +377,7 @@
         document.getElementById('editDataPopup').classList.remove('hidden');
     }
 
-    async function eksekusiUpdateSupabase() {
+        async function eksekusiUpdateSupabase() {
         const index = document.getElementById('edit-id').value;
         const tabel = document.getElementById('edit-table').value;
         let updateData = {};
@@ -427,6 +427,7 @@
         const { data } = await supabaseClient.from('web_saya').select('*').order('id', { ascending: false });
         if (data) { memoriWeb = data; renderListWeb(); }
     }
+
     function renderListWeb() {
         const container = document.getElementById('container-web-list'); container.innerHTML = '';
         memoriWeb.forEach((web, idx) => {
