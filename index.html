@@ -377,51 +377,65 @@
         document.getElementById('editDataPopup').classList.remove('hidden');
     }
 
-        async function eksekusiUpdateSupabase() {
-        const index = document.getElementById('edit-id').value;
-        const tabel = document.getElementById('edit-table').value;
-        let updateData = {};
-        let targetId = 0;
 
-        if (tabel === 'web_saya') {
-            targetId = memoriWeb[index].id;
-            updateData = { 
-                nama_web: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), 
-                link_web: document.getElementById('upd-2').value.replace(/\n/g, '<br>') 
-            };
-        } else if (tabel === 'app_mods') {
-            targetId = memoriApp[index].id;
-            updateData = { 
-                nama_app: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), 
-                deskripsi: document.getElementById('upd-2').value.replace(/\n/g, '<br>'), 
-                ukuran: document.getElementById('upd-3').value.replace(/\n/g, '<br>'), 
-                link_download: document.getElementById('upd-4').value.replace(/\n/g, '<br>'), 
-                img_url: document.getElementById('upd-5').value.replace(/\n/g, '<br>') 
-            };
-        } else if (tabel === 'store_products') {
-            targetId = memoriStore[index].id;
-            let waClean = document.getElementById('upd-4').value.replace(/\n/g, '').replace(/<br\s*\/?>/mg, '');
-            updateData = { 
-                nama_produk: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), 
-                deskripsi: document.getElementById('upd-2').value.replace(/\n/g, '<br>'), 
-                harga: document.getElementById('upd-3').value.replace(/\n/g, '<br>'), 
-                stock: document.getElementById('upd-stock').value, 
-                link_wa: waClean, 
-                img_url: document.getElementById('upd-5').value.replace(/\n/g, '<br>') 
-            };
-        }
-
-        const { error } = await supabaseClient.from(tabel).update(updateData).eq('id', targetId);
-        if (error) { 
-            tampilkanAlert("Update Gagal: " + error.message, "error"); 
-        } else {
-            tampilkanAlert("Berhasil di-update!", "sukses");
-            document.getElementById('editDataPopup').classList.add('hidden');
-            if (tabel === 'web_saya') ambilDataWeb(); 
-            else if (tabel === 'app_mods') ambilDataApp(); 
-            else if (tabel === 'store_products') ambilDataStore();
-        }
+    const { error } = await supabaseClient.from(tabel).update(updateData).eq('id', targetId);
+    if (error) { 
+        tampilkanAlert("Update Gagal: " + error.message, "error"); 
+    } else {
+        tampilkanAlert("Berhasil di-update!", "sukses");
+        document.getElementById('editDataPopup').classList.add('hidden');
+        if (tabel === 'web_saya') ambilDataWeb(); 
+        else if (tabel === 'app_mods') ambilDataApp(); 
+        else if (tabel === 'store_products') ambilDataStore();
     }
+}
+    async function eksekusiUpdateSupabase() {
+    const index = document.getElementById('edit-id').value;
+    const tabel = document.getElementById('edit-table').value;
+    let updateData = {};
+    let targetId = 0;
+
+    if (tabel === 'web_saya') {
+        targetId = memoriWeb[index].id;
+        updateData = { 
+            nama_web: document.getElementById('upd-2').value.replace(/\n/g, '<br>'), 
+            link_web: document.getElementById('upd-3').value.replace(/\n/g, '<br>') 
+        };
+    } else if (tabel === 'app_mods') {
+        targetId = memoriApp[index].id;
+        // KODE BARU: Menyelaraskan nama properti dengan kolom database Supabase Anda
+        updateData = { 
+            nama: document.getElementById('upd-2').value.replace(/\n/g, '<br>'), 
+            deskripsi: document.getElementById('upd-3').value.replace(/\n/g, '<br>'), 
+            ukuran: document.getElementById('upd-4').value.replace(/\n/g, '<br>'), 
+            link: document.getElementById('upd-5').value.replace(/\n/g, '<br>'), 
+            gambar: document.getElementById('upd-6').value.replace(/\n/g, '<br>') 
+        };
+    } else if (tabel === 'store_products') {
+        targetId = memoriStore[index].id;
+        let waClean = document.getElementById('upd-5').value.replace(/\n/g, '').replace(/<br\s*\/?>/mg, '');
+        updateData = { 
+            nama_produk: document.getElementById('upd-2').value.replace(/\n/g, '<br>'), 
+            deskripsi: document.getElementById('upd-3').value.replace(/\n/g, '<br>'), 
+            harga: document.getElementById('upd-4').value.replace(/\n/g, '<br>'), 
+            stock: document.getElementById('upd-stock').value, 
+            link_wa: waClean, 
+            img_url: document.getElementById('upd-6').value.replace(/\n/g, '<br>') 
+        };
+    }
+
+    const { error } = await supabaseClient.from(tabel).update(updateData).eq('id', targetId);
+    if (error) { 
+        tampilkanAlert("Update Gagal: " + error.message, "error"); 
+    } else {
+        tampilkanAlert("Berhasil di-update!", "sukses");
+        document.getElementById('editDataPopup').classList.add('hidden');
+        if (tabel === 'web_saya') ambilDataWeb(); 
+        else if (tabel === 'app_mods') ambilDataApp(); 
+        else if (tabel === 'store_products') ambilDataStore();
+    }
+}
+
 
     async function ambilDataWeb() {
         const { data } = await supabaseClient.from('web_saya').select('*').order('id', { ascending: false });
