@@ -764,7 +764,43 @@
     document.addEventListener('click', resetSessionTimer);
     document.addEventListener('keypress', resetSessionTimer);
 
-        // Fungsi baru untuk mengambil data dari tabel admin_logs dan menampilkannya ke dua kotak visual
+            // Fungsi pembaca perangkat agar teks tidak ngawur/panjang
+    function formatPerangkat(ua) {
+        if (!ua) return "Perangkat Tidak Diketahui";
+        
+        // Deteksi jika dibuka lewat aplikasi/Acode/WebView tertentu yang kaku
+        if (ua.includes("Infinix")) {
+            const match = ua.match(/Infinix\s([^;)]+)/);
+            return match ? match[0] : "Perangkat Infinix";
+        }
+        
+        // Deteksi HP Android umum lewat struktur standar
+        const regexAndroid = /\(([^)]+)\)/;
+        const match = ua.match(regexAndroid);
+        if (match && match[1]) {
+            const bagianDalamKurung = match[1]; // Contoh: "Linux; Android 10; K" atau "Linux; Android 10; Infinix X6853"
+            const komponen = bagianDalamKurung.split(';').map(item => item.trim());
+            
+            // Cari komponen yang bukan kata sandi privasi (Linux, Android, K)
+            const perangkatAsli = komponen.find(item => 
+                !item.startsWith("Linux") && 
+                !item.startsWith("Android") && 
+                item !== "K" && 
+                item !== "U"
+            );
+            
+            if (perangkatAsli) return perangkatAsli;
+        }
+        
+        // Fallback jika tetap tersembunyi oleh Chrome Mobile
+        if (ua.includes("Mobile Safari")) {
+            return "Android Mobile";
+        }
+        
+        return "Web Browser Perangkat";
+    }
+
+    // Fungsi utama load log dengan tampilan rapi
     async function muatLogKeamanan() {
         try {
             const { data: logs, error } = await supabaseClient
@@ -778,7 +814,6 @@
                 const suksesLogs = logs.filter(l => l.status === "SUKSES");
                 const gagalLogs = logs.filter(l => l.status === "GAGAL");
 
-                // Update Counter Angka di atas kotak
                 document.getElementById('count-sukses').innerText = `${suksesLogs.length} Login`;
                 document.getElementById('count-gagal').innerText = `${gagalLogs.length} Percobaan`;
 
@@ -788,7 +823,7 @@
                     containerSukses.innerHTML = suksesLogs.map(l => `
                         <div class="log-item">
                             <div class="log-time"><i class="far fa-clock"></i> ${new Date(l.waktu).toLocaleString('id-ID')}</div>
-                            <div class="log-device"><i class="fas fa-mobile-alt"></i> ${l.info_device}</div>
+                            <div class="log-device"><i class="fas fa-mobile-alt"></i> ${formatPerangkat(l.info_device)}</div>
                         </div>
                     `).join('');
                 } else {
@@ -801,7 +836,7 @@
                     containerGagal.innerHTML = gagalLogs.map(l => `
                         <div class="log-item" style="border-left: 2px solid var(--admin-delete);">
                             <div class="log-time" style="color: #fca5a5;"><i class="far fa-clock"></i> ${new Date(l.waktu).toLocaleString('id-ID')}</div>
-                            <div class="log-device"><i class="fas fa-mobile-alt"></i> ${l.info_device}</div>
+                            <div class="log-device"><i class="fas fa-mobile-alt"></i> ${formatPerangkat(l.info_device)}</div>
                             <div style="margin-top: 4px; font-size: 10px; color: var(--tg-text-muted);">Mencoba PIN: <span class="log-pin">${l.attempt_pin}</span></div>
                         </div>
                     `).join('');
