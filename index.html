@@ -347,19 +347,21 @@
             let linkAsli = (data.link_web || '').replace(/<br\s*\/?>/mg, "\n");
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama Web</label><textarea id="upd-1" class="admin-textarea">${namaAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Web</label><textarea id="upd-2" class="admin-textarea">${linkAsli}</textarea>`;
-        } else if (tabel === 'app_mods') {
-            let data = memoriApp[index];
-            let namaAsli = (data.nama_app || '').replace(/<br\s*\/?>/mg, "\n");
-            let descAsli = (data.deskripsi || '').replace(/<br\s*\/?>/mg, "\n");
-            let sizeAsli = (data.ukuran || '').replace(/<br\s*\/?>/mg, "\n");
-            let linkAsli = (data.link_download || '').replace(/<br\s*\/?>/mg, "\n");
-            let imgAsli = (data.img_url || '').replace(/<br\s*\/?>/mg, "\n");
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama App</label><textarea id="upd-1" class="admin-textarea">${namaAsli}</textarea>`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Deskripsi</label><textarea id="upd-2" class="admin-textarea tinggi">${descAsli}</textarea>`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Ukuran File</label><textarea id="upd-3" class="admin-textarea">${sizeAsli}</textarea>`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Download</label><textarea id="upd-4" class="admin-textarea">${linkAsli}</textarea>`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Ikon</label><textarea id="upd-5" class="admin-textarea">${imgAsli}</textarea>`;
-        } else if (tabel === 'store_products') {
+            } else if (tabel === 'app_mods') {
+        let data = memoriApp[index];
+        let namaAsli = (data.nama || '').replace(/<br\s*\/?>/mg, "\n");
+        let descAsli = (data.deskripsi || '').replace(/<br\s*\/?>/mg, "\n");
+        let ukuranAsli = (data.ukuran || '').replace(/<br\s*\/?>/mg, "\n");
+        let linkAsli = (data.link || '').replace(/<br\s*\/?>/mg, "\n");
+        let imgAsli = (data.gambar || '').replace(/<br\s*\/?>/mg, "\n");
+
+        innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama Aplikasi</label><textarea id="upd-2" class="admin-textarea">${namaAsli}</textarea>`;
+        innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Deskripsi</label><textarea id="upd-3" class="admin-textarea tinggi">${descAsli}</textarea>`;
+        innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Ukuran File</label><textarea id="upd-4" class="admin-textarea">${ukuranAsli}</textarea>`;
+        innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Download</label><textarea id="upd-5" class="admin-textarea">${linkAsli}</textarea>`;
+        innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Gambar</label><textarea id="upd-6" class="admin-textarea">${imgAsli}</textarea>`;
+    }
+ else if (tabel === 'store_products') {
             let data = memoriStore[index];
             let namaAsli = (data.nama_produk || '').replace(/<br\s*\/?>/mg, "\n");
             let descAsli = (data.deskripsi || '').replace(/<br\s*\/?>/mg, "\n");
@@ -468,12 +470,35 @@
         if (data) { memoriApp = data; renderListApp(); }
     }
     function renderListApp() {
-        const container = document.getElementById('container-app-list'); container.innerHTML = '';
-        memoriApp.forEach((app, idx) => {
-            let iconHtml = app.img_url ? `<img src="${app.img_url.replace(/<br\s*\/?>/mg, '')}" onerror="this.outerHTML='📱'" style="width:100%; height:100%; object-fit:cover;">` : '📱';
-            container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header"><div class="mod-box-title-group"><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${app.nama_app}</div></div><div class="mod-box-size">${app.ukuran || 'N/A'}</div></div><div class="mod-box-desc">${app.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'app_mods')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusApp(${app.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
-        });
+    const container = document.getElementById('list-app-mod');
+    container.innerHTML = '';
+    
+    if (memoriApp.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--tg-text-muted);">Tidak ada data aplikasi mod.</div>';
+        return;
     }
+    
+    memoriApp.forEach((app, index) => {
+        // Menggunakan properti kolom database Anda yang benar: app.gambar
+        let iconHtml = app.gambar ? `<img src="${app.gambar.replace(/<br\s*\/?>/mg, '')}" onerror="this.outerHTML='📱'" style="width:100%; height:100%; object-fit:cover;">` : '📱';
+        
+        let itemHtml = `
+            <div class="admin-item-box">
+                <div class="admin-item-icon">${iconHtml}</div>
+                <div class="admin-item-info">
+                    <div class="admin-item-title">${app.nama || 'Tanpa Nama'}</div>
+                    <div class="admin-item-sub">Size: ${app.ukuran || '-'}</div>
+                </div>
+                <div class="admin-item-actions">
+                    <button class="btn-action edit" onclick="bukaPopupEdit(${index}, 'app_mods')"><i class="fas fa-edit"></i></button>
+                    <button class="btn-action delete" onclick="hapusDataSupabase(${index}, 'app_mods')"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+        `;
+        container.innerHTML += itemHtml;
+    });
+}
+
     async function simpanAppKeSupabase() {
         const nama = document.getElementById('app-title').value.replace(/\n/g, '<br>'); 
         const desc = document.getElementById('app-desc').value.replace(/\n/g, '<br>');
