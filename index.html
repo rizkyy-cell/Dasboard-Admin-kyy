@@ -105,10 +105,14 @@
   <div id="loginLockOverlay" class="glass-popup-overlay">
     <div class="glass-popup-card">
         <form onsubmit="event.preventDefault(); verifikasiLoginAdmin();">
+            <input type="text" name="username" value="admin" style="display:none;" autocomplete="username">
+            
             <div style="font-size: 42px; color: var(--tg-accent); margin-bottom: 12px;"><i class="fas fa-user-shield"></i></div>
             <div class="popup-title">Developer Verification</div>
             <div style="font-size: 13px; color: var(--tg-text-muted); margin-bottom: 20px;">Masukkan PIN Keamanan Admin DEV</div>
-            <input type="password" id="adminPinInput" class="pin-input" maxlength="6" placeholder="******" pattern="\d*" inputmode="numeric" autocomplete="current-password" required>
+            
+            <input type="password" name="password" id="adminPinInput" class="pin-input" maxlength="6" placeholder="******" pattern="\d*" inputmode="numeric" autocomplete="current-password" required>
+            
             <button type="submit" class="btn-unlock">Verifikasi Masuk</button>
         </form>
     </div>
