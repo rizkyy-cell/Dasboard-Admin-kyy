@@ -240,7 +240,7 @@
     </div>
   </div>
 
-  <div class="page-content" id="page-profil">
+    <div class="page-content" id="page-profil">
     <div class="vip-card">
         <div class="vip-badge">Developer VIP</div>
         <video autoplay loop muted playsinline webkit-playsinline class="vip-video"><source src="banner-profile.mp4" type="video/mp4"></video>
@@ -252,6 +252,100 @@
     </div>
 
     <div style="padding: 0 15px;">
+        <!-- START: SECURITY LOGS DASHBOARD BY GEMINI -->
+        <style>
+            .logs-wrapper {
+                margin-top: 10px;
+                margin-bottom: 25px;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+            .glass-log-card {
+                background: rgba(23, 33, 43, 0.4);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 16px;
+                padding: 16px;
+                color: var(--tg-text);
+            }
+            .glass-log-card.border-success {
+                border-left: 4px solid var(--admin-add);
+            }
+            .glass-log-card.border-danger {
+                border-left: 4px solid var(--admin-delete);
+            }
+            .log-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 12px;
+                font-size: 14px;
+                font-weight: 600;
+            }
+            .log-counter {
+                font-size: 11px;
+                padding: 2px 8px;
+                border-radius: 20px;
+                font-weight: bold;
+            }
+            .counter-success { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+            .counter-danger { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+            .log-list {
+                max-height: 180px;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .log-item {
+                padding: 8px;
+                background: rgba(255, 255, 255, 0.03);
+                border-radius: 8px;
+                font-size: 11px;
+                border: 1px solid rgba(255, 255, 255, 0.02);
+            }
+            .log-time {
+                font-weight: 600;
+                color: var(--tg-text-muted);
+                margin-bottom: 2px;
+            }
+            .log-device {
+                color: var(--tg-text);
+                word-break: break-all;
+            }
+            .log-pin {
+                color: var(--admin-edit);
+                font-weight: bold;
+            }
+        </style>
+
+        <div class="logs-wrapper">
+            <!-- PANEL ATAS: LOG BERHASIL -->
+            <div class="glass-log-card border-success">
+                <div class="log-header">
+                    <span><i class="fas fa-shield-alt" style="color: var(--admin-add); margin-right: 6px;"></i> Log Login Berhasil</span>
+                    <span id="count-sukses" class="log-counter counter-success">0 Login</span>
+                </div>
+                <div id="list-sukses" class="log-list">
+                    <div style="text-align: center; color: var(--tg-text-muted); font-size: 11px; padding: 10px;">Belum ada riwayat masuk</div>
+                </div>
+            </div>
+
+            <!-- PANEL BAWAH: LOG GAGAL -->
+            <div class="glass-log-card border-danger">
+                <div class="log-header">
+                    <span><i class="fas fa-exclamation-triangle" style="color: var(--admin-delete); margin-right: 6px;"></i> Percobaan Akses Gagal</span>
+                    <span id="count-gagal" class="log-counter counter-danger">0 Percobaan</span>
+                </div>
+                <div id="list-gagal" class="log-list">
+                    <div style="text-align: center; color: var(--tg-text-muted); font-size: 11px; padding: 10px;">Aman. Tidak ada aktivitas mencurigakan</div>
+                </div>
+            </div>
+        </div>
+        <!-- END: SECURITY LOGS DASHBOARD BY GEMINI -->
+
         <h3 style="font-size:14px; color:var(--tg-accent); margin-bottom:10px;"><i class="fas fa-cogs"></i> Kontrol Tampil Sosmed (Publik)</h3>
         <p style="font-size:11px; color:var(--tg-text-muted); margin-bottom:15px;">Hidup/matikan tombol sosmed yang akan tampil di halaman web publik pengunjung.</p>
         
@@ -282,30 +376,53 @@
     let memoriStore = [];
 
     async function verifikasiLoginAdmin() {
-        const inputPin = document.getElementById('adminPinInput').value;
-        if (!inputPin) return tampilkanAlert("PIN tidak boleh kosong!", "error");
+    const inputPin = document.getElementById('adminPinInput').value;
+    if (!inputPin) return tampilkanAlert("PIN tidak boleh kosong!", "error");
+    
+    // Ambil sidik jari perangkat secara otomatis
+    const infoDevice = navigator.userAgent;
+
+    const res = await fetch('/api/verify-pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: inputPin })
+    });
+    
+    if (res.ok) {
+        // 1. Catat aktivitas SUKSES ke Supabase
+        await supabaseClient.from('admin_logs').insert([{
+            status: "SUKSES",
+            info_device: infoDevice,
+            attempt_pin: null
+        }]);
+
+        tampilkanAlert("Akses Admin Diterima!", "sukses");
+        document.getElementById('loginLockOverlay').classList.add('hidden');
+        ambilDataWeb();
+        ambilDataApp();
+        ambilDataStore();
+        ambilDataAnnouncement();
+        ambilDataInboxAdmin();
+        muatStatusSosmedAdmin();
+        resetSessionTimer();
         
-        const res = await fetch('/api/verify-pin', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pin: inputPin })
-        });
+        // Refresh data tabel log (akan kita buat fungsinya di Langkah 3)
+        if (typeof muatLogKeamanan === 'function') muatLogKeamanan();
+    } else {
+        // 2. Catat aktivitas GAGAL ke Supabase beserta PIN yang dicoba dimasukkan
+        await supabaseClient.from('admin_logs').insert([{
+            status: "GAGAL",
+            info_device: infoDevice,
+            attempt_pin: inputPin
+        }]);
+
+        tampilkanAlert("PIN Salah! Akses Ditolak.", "error");
+        document.getElementById('adminPinInput').value = '';
         
-        if (res.ok) {
-            tampilkanAlert("Akses Admin Diterima!", "sukses");
-            document.getElementById('loginLockOverlay').classList.add('hidden');
-            ambilDataWeb();
-            ambilDataApp();
-            ambilDataStore();
-            ambilDataAnnouncement();
-            ambilDataInboxAdmin();
-            muatStatusSosmedAdmin();
-            resetSessionTimer();
-        } else {
-            tampilkanAlert("PIN Salah! Akses Ditolak.", "error");
-            document.getElementById('adminPinInput').value = '';
-        }
+        // Refresh data tabel log (akan kita buat fungsinya di Langkah 3)
+        if (typeof muatLogKeamanan === 'function') muatLogKeamanan();
     }
+}
 
     function tampilkanAlert(pesan, jenis = 'sukses') {
         const toast = document.getElementById('custom-toast');
@@ -647,10 +764,64 @@
     document.addEventListener('click', resetSessionTimer);
     document.addEventListener('keypress', resetSessionTimer);
 
+        // Fungsi baru untuk mengambil data dari tabel admin_logs dan menampilkannya ke dua kotak visual
+    async function muatLogKeamanan() {
+        try {
+            const { data: logs, error } = await supabaseClient
+                .from('admin_logs')
+                .select('*')
+                .order('waktu', { ascending: false });
+
+            if (error) throw error;
+
+            if (logs) {
+                const suksesLogs = logs.filter(l => l.status === "SUKSES");
+                const gagalLogs = logs.filter(l => l.status === "GAGAL");
+
+                // Update Counter Angka di atas kotak
+                document.getElementById('count-sukses').innerText = `${suksesLogs.length} Login`;
+                document.getElementById('count-gagal').innerText = `${gagalLogs.length} Percobaan`;
+
+                // Cetak data ke tabel Sukses (Atas)
+                const containerSukses = document.getElementById('list-sukses');
+                if(suksesLogs.length > 0) {
+                    containerSukses.innerHTML = suksesLogs.map(l => `
+                        <div class="log-item">
+                            <div class="log-time"><i class="far fa-clock"></i> ${new Date(l.waktu).toLocaleString('id-ID')}</div>
+                            <div class="log-device"><i class="fas fa-mobile-alt"></i> ${l.info_device}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    containerSukses.innerHTML = `<div style="text-align: center; color: var(--tg-text-muted); font-size: 11px; padding: 10px;">Belum ada riwayat masuk</div>`;
+                }
+
+                // Cetak data ke tabel Gagal (Bawah)
+                const containerGagal = document.getElementById('list-gagal');
+                if(gagalLogs.length > 0) {
+                    containerGagal.innerHTML = gagalLogs.map(l => `
+                        <div class="log-item" style="border-left: 2px solid var(--admin-delete);">
+                            <div class="log-time" style="color: #fca5a5;"><i class="far fa-clock"></i> ${new Date(l.waktu).toLocaleString('id-ID')}</div>
+                            <div class="log-device"><i class="fas fa-mobile-alt"></i> ${l.info_device}</div>
+                            <div style="margin-top: 4px; font-size: 10px; color: var(--tg-text-muted);">Mencoba PIN: <span class="log-pin">${l.attempt_pin}</span></div>
+                        </div>
+                    `).join('');
+                } else {
+                    containerGagal.innerHTML = `<div style="text-align: center; color: var(--tg-text-muted); font-size: 11px; padding: 10px;">Aman. Tidak ada aktivitas mencurigakan</div>`;
+                }
+            }
+        } catch (err) {
+            console.error("Gagal memuat sistem pengawasan keamanan:", err);
+        }
+    }
+
+    // Fungsi load bawaan sistem yang sudah dimodifikasi agar otomatis memanggil fungsi log di atas
     window.onload = function() {
         document.getElementById('adminPinInput').focus();
         let savedTheme = localStorage.getItem('adminThemeColor');
         if (savedTheme) { document.documentElement.style.setProperty('--tg-accent', savedTheme); }
+        
+        // Menjalankan penarikan data log pengawasan dari database Supabase secara otomatis
+        muatLogKeamanan();
     }
   </script>
 </body>
