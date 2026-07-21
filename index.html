@@ -64,15 +64,149 @@
     .nav-sliding-indicator { position: absolute; top: 50%; left: 0; transform: translateY(-50%) translateX(0); height: 54px; width: 20%; z-index: 2; transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); pointer-events: none; }
     .nav-sliding-indicator::before { content: ''; position: absolute; top: 0; left: 5px; right: 5px; bottom: 0; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 18px; }
 
-    /* POPUP EDITS */
-    .glass-popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 99999; display: flex; align-items: center; justify-content: center; }
-    .glass-popup-overlay.hidden { display: none !important; }
-    .glass-popup-card { background: rgba(23, 33, 43, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.12); padding: 25px; border-radius: 24px; text-align: center; max-width: 340px; width: 90%; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
-    .popup-title { font-size: 18px; font-weight: 800; color: white; margin-bottom: 15px; }
-    
-    .pin-input { text-align: center; font-size: 24px; letter-spacing: 12px; font-weight: bold; color: var(--tg-accent); background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 10px; width: 100%; outline: none; margin-bottom: 15px; }
-    .btn-unlock { width: 100%; padding: 12px; background: var(--tg-accent); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 14px; cursor: pointer; }
+    /* --- Lamp Animate Form --- */
+.demo-container {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    background: #1a1a20;
+    padding: 3rem 2rem;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    min-height: 380px;
+    gap: 2rem;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.5s ease;
+}
 
+.lamp-container {
+    position: relative;
+    width: 180px;
+    height: 240px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    flex-shrink: 0;
+}
+
+.lamp { position: relative; width: 120px; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
+.shade { position: absolute; top: 20px; width: 130px; height: 65px; background-color: #2a2a32; border-radius: 65px 65px 0 0; z-index: 2; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+.stand { width: 8px; height: 130px; background-color: #3a3a45; z-index: 1; transition: background-color 0.5s ease; }
+.base { width: 90px; height: 10px; background-color: #3a3a45; border-radius: 5px; z-index: 1; transition: background-color 0.5s ease; }
+
+.pull-chain { position: absolute; top: 85px; right: 35px; display: flex; flex-direction: column; align-items: center; cursor: pointer; z-index: 3; transform-origin: top center; }
+.pull-chain.clicked { animation: pullAnimation 0.4s ease-in-out; }
+.chain-segment { width: 2px; height: 60px; background-color: #666; transition: background-color 0.5s ease; }
+.pull-end { width: 14px; height: 18px; background-color: #444; border-radius: 8px; transition: background-color 0.5s ease, transform 0.2s ease; }
+.pull-chain:hover .pull-end { transform: scale(1.15); }
+
+@keyframes pullAnimation { 0% { transform: translateY(0); } 50% { transform: translateY(14px); } 75% { transform: translateY(-3px); } 100% { transform: translateY(0); } }
+
+.lamp-container.on .shade {
+    background-color: #ffffff;
+    box-shadow: 0 -10px 30px rgba(255, 255, 200, 0.5), 0 0 80px 25px rgba(255, 230, 150, 0.8), 0 0 150px 60px rgba(255, 220, 100, 0.4);
+    animation: glowPulse 3s infinite alternate ease-in-out;
+}
+
+.lamp-container.on .stand, .lamp-container.on .base { background-color: #d1d1d1; }
+.lamp-container.on .chain-segment { background-color: #aaa; }
+.lamp-container.on .pull-end { background-color: #ffd700; box-shadow: 0 0 10px #ffd700; }
+
+@keyframes glowPulse {
+    0% { box-shadow: 0 -10px 30px rgba(255, 255, 200, 0.5), 0 0 70px 20px rgba(255, 230, 150, 0.7), 0 0 130px 50px rgba(255, 220, 100, 0.3); }
+    100% { box-shadow: 0 -10px 35px rgba(255, 255, 210, 0.6), 0 0 90px 30px rgba(255, 235, 160, 0.9), 0 0 160px 70px rgba(255, 225, 110, 0.5); }
+}
+
+.login-form-container { z-index: 2; width: 100%; max-width: 280px; }
+.login-form {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 2rem;
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    width: 100%;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    opacity: 0.25;
+    transform: scale(0.96);
+    transition: opacity 0.6s ease, transform 0.6s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+}
+
+.lamp-container.on ~ .login-form-container .login-form {
+    opacity: 1;
+    transform: scale(1);
+    border-color: rgba(255, 235, 170, 0.25);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 220, 120, 0.15);
+}
+
+.login-form h2 { text-align: center; margin-bottom: 1.5rem; font-size: 1.5rem; color: #ffffff; font-weight: 500; }
+.form-group { margin-bottom: 1.2rem; }
+.form-group label { display: block; font-size: 0.8rem; margin-bottom: 0.4rem; color: rgba(255, 255, 255, 0.6); }
+.form-group input {
+    width: 100%;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.85rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.form-group input:disabled { cursor: not-allowed; opacity: 0.4; }
+.form-group input:not(:disabled):focus { border-color: #f3d078; background: rgba(255, 255, 255, 0.1); box-shadow: 0 0 8px rgba(243, 208, 120, 0.3); }
+.form-group input::placeholder { color: rgba(255, 255, 255, 0.25); }
+
+.login-btn {
+    width: 100%;
+    padding: 10px;
+    background: linear-gradient(135deg, #f3d078 0%, #c89d36 100%);
+    border: none;
+    border-radius: 20px;
+    color: #121216;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(200, 157, 54, 0.3);
+}
+
+.login-btn:disabled { cursor: not-allowed; opacity: 0.3; box-shadow: none; background: #555; color: #888; }
+.login-btn:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(243, 208, 120, 0.5); }
+
+@media (max-width: 650px) {
+    .demo-container { flex-direction: column; padding: 2rem 1.2rem; min-height: auto; gap: 1.5rem; }
+    .lamp-container { height: 200px; transform: scale(0.9); }
+    .login-form-container { max-width: 100%; }
+    .login-form { padding: 1.5rem 1.2rem; }
+}
+
+.glass-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.glass-popup-overlay.hidden { display: none !important; }
+
+.main-wrapper { display: flex; justify-content: center; align-items: center; width: 100%; max-width: 750px; }
+    
     .popup-actions { display: flex; gap: 10px; margin-top: 15px; }
     .btn-popup { flex: 1; padding: 12px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 14px; }
     .btn-no { background: rgba(255, 255, 255, 0.08); color: #fff; border: 1px solid rgba(255,255,255,0.1); }
@@ -103,20 +237,35 @@
 <body>
 
   <div id="loginLockOverlay" class="glass-popup-overlay">
-    <div class="glass-popup-card">
-        <form onsubmit="event.preventDefault(); verifikasiLoginAdmin();">
-            <input type="text" name="username" value="admin" style="display:none;" autocomplete="username">
-            
-            <div style="font-size: 42px; color: var(--tg-accent); margin-bottom: 12px;"><i class="fas fa-user-shield"></i></div>
-            <div class="popup-title">Developer Verification</div>
-            <div style="font-size: 13px; color: var(--tg-text-muted); margin-bottom: 20px;">Masukkan PIN Keamanan Admin DEV</div>
-            
-            <input type="password" name="password" id="adminPinInput" class="pin-input" maxlength="6" placeholder="******" pattern="\d*" inputmode="numeric" autocomplete="current-password" required>
-            
-            <button type="submit" class="btn-unlock">Verifikasi Masuk</button>
-        </form>
+    <div class="main-wrapper">
+        <div class="demo-container">
+            <div class="lamp-container off" id="lamp-container">
+                <div class="lamp">
+                    <div class="shade"></div>
+                    <div class="stand"></div>
+                    <div class="base"></div>
+                </div>
+                <div class="pull-chain" id="pull-chain" title="Nyalakan lampu untuk login">
+                    <div class="chain-segment"></div>
+                    <div class="pull-end"></div>
+                </div>
+            </div>
+
+            <div class="login-form-container">
+                <div class="login-form">
+                    <h2>Developer Verification</h2>
+                    <form onsubmit="return false;">
+                        <div class="form-group">
+                            <label>PIN Admin</label>
+                            <input type="password" id="adminPinInput" placeholder="Nyalakan lampu dulu..." disabled maxlength="6" pattern="\d*" inputmode="numeric">
+                        </div>
+                        <button class="login-btn" id="login-btn" type="button" disabled onclick="verifikasiLoginAdmin()">Verifikasi Masuk</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
+  </div>
 
   <div id="editDataPopup" class="glass-popup-overlay hidden">
     <div class="glass-popup-card" style="text-align: left; max-height: 80vh; overflow-y: auto;">
@@ -866,7 +1015,40 @@
         
         // Menjalankan penarikan data log pengawasan dari database Supabase secara otomatis
         muatLogKeamanan();
+
+        // === LAMP TOGGLE SCRIPT ===
+        const lampContainer = document.getElementById('lamp-container');
+        const pullChain = document.getElementById('pull-chain');
+        const pinInput = document.getElementById('adminPinInput');
+        const loginBtn = document.getElementById('login-btn');
+
+        if (pullChain) {
+            pullChain.addEventListener('click', function() {
+                console.log('Pull chain clicked!');
+                pullChain.classList.add('clicked');
+                setTimeout(() => pullChain.classList.remove('clicked'), 400);
+
+                const isOff = lampContainer.classList.contains('off');
+                
+                if (isOff) {
+                    lampContainer.classList.remove('off');
+                    lampContainer.classList.add('on');
+                    pinInput.disabled = false;
+                    loginBtn.disabled = false;
+                    pinInput.placeholder = "Masukkan PIN";
+                    pinInput.focus();
+                } else {
+                    lampContainer.classList.remove('on');
+                    lampContainer.classList.add('off');
+                    pinInput.disabled = true;
+                    loginBtn.disabled = true;
+                    pinInput.placeholder = "Nyalakan lampu dulu...";
+                    pinInput.value = '';
+                }
+            });
+        }
     }
+    
   </script>
 </body>
 </html>
