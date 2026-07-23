@@ -804,22 +804,6 @@ async function simpanAppKeSupabase() {
     }
 }
 
-
-// 3. Eksekusi Update ke Supabase
-// Perbarui payload pada `eksekusiUpdateSupabase()` ketika `tabel === 'app_mods'`:
-else if (tabel === 'app_mods') {
-    targetId = memoriApp[index].id;
-    payload = { 
-        nama_app: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), 
-        deskripsi: document.getElementById('upd-2').value.replace(/\n/g, '<br>'), 
-        ukuran: document.getElementById('upd-3').value.replace(/\n/g, '<br>'), 
-        link_download: document.getElementById('upd-4').value.replace(/\n/g, '<br>'), 
-        img_url: document.getElementById('upd-5').value.replace(/\n/g, '<br>'),
-        dev_name: document.getElementById('upd-6').value.trim(),
-        dev_link: document.getElementById('upd-7').value.trim()
-    };
-}
-
     function renderListStore() {
         const container = document.getElementById('container-store-list'); container.innerHTML = '';
         memoriStore.forEach((prod, idx) => {
