@@ -253,13 +253,13 @@
 
             <div class="login-form-container">
                 <div class="login-form">
-                    <h2>Developer Verification</h2>
+                    <h2>Login Developer Verification</h2>
                     <form onsubmit="return false;">
                         <div class="form-group">
-                            <label>PIN Admin</label>
+                            <label>PIN </label>
                             <input type="password" id="adminPinInput" placeholder="Nyalakan lampu dulu..." disabled maxlength="6" pattern="\d*" inputmode="numeric">
                         </div>
-                        <button class="login-btn" id="login-btn" type="button" disabled onclick="verifikasiLoginAdmin()">Verifikasi Masuk</button>
+                        <button class="login-btn" id="login-btn" type="button" disabled onclick="verifikasiLoginAdmin()">Sign-in</button>
                     </form>
                 </div>
             </div>
@@ -280,7 +280,7 @@
     </div>
   </div>
 
-  <div id="custom-toast" style="position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 14px 24px; border-radius: 14px; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 10px; box-shadow: 0 8px 30px rgba(16, 185, 129, 0.3); z-index: 99999; transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+  <div id="custom-toast" style="position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 14px 24px; border-radius: 14px; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 10px; box-shadow: 0 8px 30px rgba(16, 185, 129, 0.3); z-index: 99999; transition: top 0.4s cubic-bezier(0.175, 0.885p1, 0.32, 1.275);">
     <i class="fas fa-check-circle" id="toast-icon"></i> <span id="toast-message">Sukses!</span>
   </div>
 
@@ -312,14 +312,18 @@
         <i class="fas fa-plus-circle"></i> Tambah App Mod Baru
     </div>
     <div class="admin-form-card" id="app-form">
-        <div class="admin-form-title"><i class="fas fa-folder-plus"></i> Input Aplikasi Baru</div>
-        <textarea id="app-title" class="admin-textarea" placeholder="Nama Aplikasi Mod (Bisa klik enter...)"></textarea>
-        <textarea id="app-desc" class="admin-textarea jawaban tinggi" placeholder="Deskripsi Singkat Fitur Mod (Bisa klik enter...)"></textarea>
-        <textarea id="app-size" class="admin-textarea" placeholder="Ukuran File (Contoh: 65 MB)"></textarea>
-        <textarea id="app-url" class="admin-textarea" placeholder="Link Download File"></textarea>
-        <textarea id="app-img" class="admin-textarea" placeholder="Link Ikon ImgBB (Opsional)"></textarea>
-        <button class="admin-btn-save" onclick="simpanAppKeSupabase()">Simpan Ke Database</button>
-    </div>
+    <div class="admin-form-title"><i class="fas fa-folder-plus"></i> Input Aplikasi Baru</div>
+    <textarea id="app-title" class="admin-textarea" placeholder="Nama Aplikasi Mod (Bisa klik enter...)"></textarea>
+    <textarea id="app-desc" class="admin-textarea jawaban tinggi" placeholder="Deskripsi Singkat Fitur Mod (Bisa klik enter...)"></textarea>
+    <textarea id="app-size" class="admin-textarea" placeholder="Ukuran File (Contoh: 65 MB)"></textarea>
+    <textarea id="app-url" class="admin-textarea" placeholder="Link Download File"></textarea>
+    <textarea id="app-img" class="admin-textarea" placeholder="Link Ikon ImgBB (Opsional)"></textarea>
+    <!-- TAMBAHAN INPUT PENGEMBANG -->
+    <textarea id="app-dev-name" class="admin-textarea" placeholder="Nama Display Modder (Contoh: @rezky._kurniawan25)"></textarea>
+    <textarea id="app-dev-link" class="admin-textarea" placeholder="Link Tujuan Modder (Contoh: https://t.me/...)"></textarea>
+    <button class="admin-btn-save" onclick="simpanAppKeSupabase()">Simpan Ke Database</button>
+</div>
+
     <div id="container-app-list"></div>
   </div>
 
@@ -485,7 +489,7 @@
             <!-- PANEL BAWAH: LOG GAGAL -->
             <div class="glass-log-card border-danger">
                 <div class="log-header">
-                    <span><i class="fas fa-exclamation-triangle" style="color: var(--admin-delete); margin-right: 6px;"></i> Percobaan Akses Gagal</span>
+                    <span><i class="fas fa-exclamation-triangle" style="color: var(--admin-delete); margin-right: 6px;"></i>Login Attempt Failed</span>
                     <span id="count-gagal" class="log-counter counter-danger">0 Percobaan</span>
                 </div>
                 <div id="list-gagal" class="log-list">
@@ -628,19 +632,19 @@
             let linkAsli = (data.link_web || '').replace(/<br\s*\/?>/mg, "\n");
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama Web</label><textarea id="upd-1" class="admin-textarea">${namaAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Web</label><textarea id="upd-2" class="admin-textarea">${linkAsli}</textarea>`;
-        } else if (tabel === 'app_mods') {
-            let data = memoriApp[index];
-            let namaAsli = (data.nama_app || '').replace(/<br\s*\/?>/mg, "\n");
-            let descAsli = (data.deskripsi || '').replace(/<br\s*\/?>/mg, "\n");
-            let sizeAsli = (data.ukuran || '').replace(/<br\s*\/?>/mg, "\n");
-            let linkAsli = (data.link_download || '').replace(/<br\s*\/?>/mg, "\n");
-            let imgAsli = (data.img_url || '').replace(/<br\s*\/?>/mg, "\n");
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama App</label><textarea id="upd-1" class="admin-textarea">${namaAsli}</textarea>`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Deskripsi</label><textarea id="upd-2" class="admin-textarea tinggi">${descAsli}</textarea>`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Ukuran File</label><textarea id="upd-3" class="admin-textarea">${sizeAsli}</textarea>`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Download</label><textarea id="upd-4" class="admin-textarea">${linkAsli}</textarea>`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Ikon</label><textarea id="upd-5" class="admin-textarea">${imgAsli}</textarea>`;
-        } else if (tabel === 'store_products') {
+                            } else if (tabel === 'app_mods') {
+        targetId = memoriApp[index].id;
+        payload = { 
+            nama_app: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), 
+            deskripsi: document.getElementById('upd-2').value.replace(/\n/g, '<br>'), 
+            ukuran: document.getElementById('upd-3').value.replace(/\n/g, '<br>'), 
+            link_download: document.getElementById('upd-4').value.replace(/\n/g, '<br>'), 
+            img_url: document.getElementById('upd-5').value.replace(/\n/g, '<br>'),
+            dev_name: document.getElementById('upd-6').value.trim(),
+            dev_link: document.getElementById('upd-7').value.trim()
+        };
+          
+    } else if (tabel === 'store_products') {
             let data = memoriStore[index];
             let namaAsli = (data.nama_produk || '').replace(/<br\s*\/?>/mg, "\n");
             let descAsli = (data.deskripsi || '').replace(/<br\s*\/?>/mg, "\n");
@@ -668,12 +672,17 @@
     if (tabel === 'web_saya') {
         targetId = memoriWeb[index].id;
         payload = { nama_web: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), link_web: document.getElementById('upd-2').value.replace(/\n/g, '<br>') };
-    } else if (tabel === 'app_mods') {
+        } else if (tabel === 'app_mods') {
         targetId = memoriApp[index].id;
-        payload = { nama_app: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), deskripsi: document.getElementById('upd-2').value.replace(/\n/g, '<br>'), ukuran: document.getElementById('upd-3').value.replace(/\n/g, '<br>'), link_download: document.getElementById('upd-4').value.replace(/\n/g, '<br>'), img_url: document.getElementById('upd-5').value.replace(/\n/g, '<br>') };
-    } else if (tabel === 'store_products') {
-        targetId = memoriStore[index].id;
-        payload = { nama_produk: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), deskripsi: document.getElementById('upd-2').value.replace(/\n/g, '<br>'), harga: document.getElementById('upd-3').value.replace(/\n/g, '<br>'), stock: document.getElementById('upd-stock').value, link_wa: document.getElementById('upd-4').value, img_url: document.getElementById('upd-5').value.replace(/\n/g, '<br>') };
+        payload = { 
+            nama_app: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), 
+            deskripsi: document.getElementById('upd-2').value.replace(/\n/g, '<br>'), 
+            ukuran: document.getElementById('upd-3').value.replace(/\n/g, '<br>'), 
+            link_download: document.getElementById('upd-4').value.replace(/\n/g, '<br>'), 
+            img_url: document.getElementById('upd-5').value.replace(/\n/g, '<br>'),
+            dev_name: document.getElementById('upd-6').value.trim(),
+            dev_link: document.getElementById('upd-7').value.trim()
+        };
     }
 
     // Eksekusi SQL RPC: bypass RLS dan langsung eksekusi di server[span_4](start_span)[span_4](end_span)
@@ -732,22 +741,84 @@
             container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header"><div class="mod-box-title-group"><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${app.nama_app}</div></div><div class="mod-box-size">${app.ukuran || 'N/A'}</div></div><div class="mod-box-desc">${app.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'app_mods')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusApp(${app.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
         });
     }
-    async function simpanAppKeSupabase() {
-        const nama = document.getElementById('app-title').value.replace(/\n/g, '<br>'); 
-        const desc = document.getElementById('app-desc').value.replace(/\n/g, '<br>');
-        const size = document.getElementById('app-size').value.replace(/\n/g, '<br>'); 
-        const url = document.getElementById('app-url').value.replace(/\n/g, '<br>'); 
-        const img = document.getElementById('app-img').value.replace(/\n/g, '<br>');
-        if(!nama || !url) return tampilkanAlert("Wajib diisi!", "error");
-        const { error } = await supabaseClient.from('app_mods').insert([{ nama_app: nama, deskripsi: desc, ukuran: size, link_download: url, img_url: img }]);
-        if (!error) { tampilkanAlert("Tersimpan!", "sukses"); toggleForm('app-form', 'btn-show-app', 'App Mod'); ambilDataApp(); }
-    }
-    async function hapusApp(id) { if(confirm("Yakin mau hapus data ini?")) { await supabaseClient.from('app_mods').delete().eq('id', id); ambilDataApp(); } }
+    // 1. Simpan Data Baru
+// 1. Simpan App Baru ke Supabase (Versi Fix)
+async function simpanAppKeSupabase() {
+    const nama = document.getElementById('app-title').value.replace(/\n/g, '<br>'); 
+    const desc = document.getElementById('app-desc').value.replace(/\n/g, '<br>');
+    const size = document.getElementById('app-size').value.replace(/\n/g, '<br>'); 
+    const url = document.getElementById('app-url').value.replace(/\n/g, '<br>'); 
+    const img = document.getElementById('app-img').value.replace(/\n/g, '<br>');
+    const devName = document.getElementById('app-dev-name').value.trim();
+    const devLink = document.getElementById('app-dev-link').value.trim();
 
-    async function ambilDataStore() {
-        const { data } = await supabaseClient.from('store_products').select('*').order('id', { ascending: false });
-        if (data) { memoriStore = data; renderListStore(); }
+    if(!nama || !url) return tampilkanAlert("Wajib diisi!", "error");
+
+    const { error } = await supabaseClient.from('app_mods').insert([{ 
+        nama_app: nama, 
+        deskripsi: desc, 
+        ukuran: size, 
+        link_download: url, 
+        img_url: img,
+        dev_name: devName,
+        dev_link: devLink
+    }]);
+
+    if (!error) { 
+        tampilkanAlert("Tersimpan!", "sukses"); 
+        // Reset form
+        document.getElementById('app-title').value = '';
+        document.getElementById('app-desc').value = '';
+        document.getElementById('app-size').value = '';
+        document.getElementById('app-url').value = '';
+        document.getElementById('app-img').value = '';
+        document.getElementById('app-dev-name').value = '';
+        document.getElementById('app-dev-link').value = '';
+        
+        toggleForm('app-form', 'btn-show-app', 'App Mod'); 
+        ambilDataApp(); 
+    } else {
+        tampilkanAlert("Gagal menyimpan: " + error.message, "error");
     }
+}
+
+
+// 2. Tampilkan Field Edit untuk Modder pada Modal Edit
+// Tambahkan baris ini pada fungsi bukaPopupEdit(index, tabel) di bagian `else if (tabel === 'app_mods')`:
+else if (tabel === 'app_mods') {
+    let data = memoriApp[index];
+    let namaAsli = (data.nama_app || '').replace(/<br\s*\/?>/mg, "\n");
+    let descAsli = (data.deskripsi || '').replace(/<br\s*\/?>/mg, "\n");
+    let sizeAsli = (data.ukuran || '').replace(/<br\s*\/?>/mg, "\n");
+    let linkAsli = (data.link_download || '').replace(/<br\s*\/?>/mg, "\n");
+    let imgAsli = (data.img_url || '').replace(/<br\s*\/?>/mg, "\n");
+    let devNameAsli = (data.dev_name || '');
+    let devLinkAsli = (data.dev_link || '');
+
+    innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama App</label><textarea id="upd-1" class="admin-textarea">${namaAsli}</textarea>`;
+    innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Deskripsi</label><textarea id="upd-2" class="admin-textarea tinggi">${descAsli}</textarea>`;
+    innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Ukuran File</label><textarea id="upd-3" class="admin-textarea">${sizeAsli}</textarea>`;
+    innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Download</label><textarea id="upd-4" class="admin-textarea">${linkAsli}</textarea>`;
+    innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Ikon</label><textarea id="upd-5" class="admin-textarea">${imgAsli}</textarea>`;
+    innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Display Modder</label><textarea id="upd-6" class="admin-textarea">${devNameAsli}</textarea>`;
+    innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Modder</label><textarea id="upd-7" class="admin-textarea">${devLinkAsli}</textarea>`;
+}
+
+// 3. Eksekusi Update ke Supabase
+// Perbarui payload pada `eksekusiUpdateSupabase()` ketika `tabel === 'app_mods'`:
+else if (tabel === 'app_mods') {
+    targetId = memoriApp[index].id;
+    payload = { 
+        nama_app: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), 
+        deskripsi: document.getElementById('upd-2').value.replace(/\n/g, '<br>'), 
+        ukuran: document.getElementById('upd-3').value.replace(/\n/g, '<br>'), 
+        link_download: document.getElementById('upd-4').value.replace(/\n/g, '<br>'), 
+        img_url: document.getElementById('upd-5').value.replace(/\n/g, '<br>'),
+        dev_name: document.getElementById('upd-6').value.trim(),
+        dev_link: document.getElementById('upd-7').value.trim()
+    };
+}
+
     function renderListStore() {
         const container = document.getElementById('container-store-list'); container.innerHTML = '';
         memoriStore.forEach((prod, idx) => {
@@ -1035,7 +1106,7 @@
                     lampContainer.classList.add('on');
                     pinInput.disabled = false;
                     loginBtn.disabled = false;
-                    pinInput.placeholder = "Masukkan PIN";
+                    pinInput.placeholder = "Input PIN";
                     pinInput.focus();
                 } else {
                     lampContainer.classList.remove('on');
