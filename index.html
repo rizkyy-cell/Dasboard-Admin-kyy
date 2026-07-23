@@ -805,27 +805,6 @@ async function simpanAppKeSupabase() {
 }
 
 
-// 2. Tampilkan Field Edit untuk Modder pada Modal Edit
-// Tambahkan baris ini pada fungsi bukaPopupEdit(index, tabel) di bagian `else if (tabel === 'app_mods')`:
-else if (tabel === 'app_mods') {
-    let data = memoriApp[index];
-    let namaAsli = (data.nama_app || '').replace(/<br\s*\/?>/mg, "\n");
-    let descAsli = (data.deskripsi || '').replace(/<br\s*\/?>/mg, "\n");
-    let sizeAsli = (data.ukuran || '').replace(/<br\s*\/?>/mg, "\n");
-    let linkAsli = (data.link_download || '').replace(/<br\s*\/?>/mg, "\n");
-    let imgAsli = (data.img_url || '').replace(/<br\s*\/?>/mg, "\n");
-    let devNameAsli = (data.dev_name || '');
-    let devLinkAsli = (data.dev_link || '');
-
-    innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama App</label><textarea id="upd-1" class="admin-textarea">${namaAsli}</textarea>`;
-    innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Deskripsi</label><textarea id="upd-2" class="admin-textarea tinggi">${descAsli}</textarea>`;
-    innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Ukuran File</label><textarea id="upd-3" class="admin-textarea">${sizeAsli}</textarea>`;
-    innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Download</label><textarea id="upd-4" class="admin-textarea">${linkAsli}</textarea>`;
-    innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Ikon</label><textarea id="upd-5" class="admin-textarea">${imgAsli}</textarea>`;
-    innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Display Modder</label><textarea id="upd-6" class="admin-textarea">${devNameAsli}</textarea>`;
-    innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Modder</label><textarea id="upd-7" class="admin-textarea">${devLinkAsli}</textarea>`;
-}
-
 // 3. Eksekusi Update ke Supabase
 // Perbarui payload pada `eksekusiUpdateSupabase()` ketika `tabel === 'app_mods'`:
 else if (tabel === 'app_mods') {
