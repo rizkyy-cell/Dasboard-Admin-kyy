@@ -280,7 +280,8 @@
     </div>
   </div>
 
-  <div id="custom-toast" style="position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 14px 24px; border-radius: 14px; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 10px; box-shadow: 0 8px 30px rgba(16, 185, 129, 0.3); z-index: 99999; transition: top 0.4s cubic-bezier(0.175, 0.885p1, 0.32, 1.275);">
+  <div id="custom-toast" style="position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 14px 24px; border-radius: 14px; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 10px; box-shadow: 0 8px 30px rgba(16, 185, 129, 0.3); z-index: 99999; transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+
     <i class="fas fa-check-circle" id="toast-icon"></i> <span id="toast-message">Sukses!</span>
   </div>
 
@@ -619,7 +620,7 @@
         else { form.style.display = 'block'; btn.innerHTML = '<i class="fas fa-times-circle"></i> Batalkan Input'; }
     }
 
-    function bukaPopupEdit(index, tabel) {
+        function bukaPopupEdit(index, tabel) {
         document.getElementById('edit-id').value = index;
         document.getElementById('edit-table').value = tabel;
         const fieldsContainer = document.getElementById('dynamic-edit-fields');
@@ -632,19 +633,24 @@
             let linkAsli = (data.link_web || '').replace(/<br\s*\/?>/mg, "\n");
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama Web</label><textarea id="upd-1" class="admin-textarea">${namaAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Web</label><textarea id="upd-2" class="admin-textarea">${linkAsli}</textarea>`;
-                            } else if (tabel === 'app_mods') {
-        targetId = memoriApp[index].id;
-        payload = { 
-            nama_app: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), 
-            deskripsi: document.getElementById('upd-2').value.replace(/\n/g, '<br>'), 
-            ukuran: document.getElementById('upd-3').value.replace(/\n/g, '<br>'), 
-            link_download: document.getElementById('upd-4').value.replace(/\n/g, '<br>'), 
-            img_url: document.getElementById('upd-5').value.replace(/\n/g, '<br>'),
-            dev_name: document.getElementById('upd-6').value.trim(),
-            dev_link: document.getElementById('upd-7').value.trim()
-        };
-          
-    } else if (tabel === 'store_products') {
+        } else if (tabel === 'app_mods') {
+            let data = memoriApp[index];
+            let namaAsli = (data.nama_app || '').replace(/<br\s*\/?>/mg, "\n");
+            let descAsli = (data.deskripsi || '').replace(/<br\s*\/?>/mg, "\n");
+            let sizeAsli = (data.ukuran || '').replace(/<br\s*\/?>/mg, "\n");
+            let linkAsli = (data.link_download || '').replace(/<br\s*\/?>/mg, "\n");
+            let imgAsli = (data.img_url || '').replace(/<br\s*\/?>/mg, "\n");
+            let devNameAsli = (data.dev_name || '');
+            let devLinkAsli = (data.dev_link || '');
+
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama App</label><textarea id="upd-1" class="admin-textarea">${namaAsli}</textarea>`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Deskripsi</label><textarea id="upd-2" class="admin-textarea tinggi">${descAsli}</textarea>`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Ukuran File</label><textarea id="upd-3" class="admin-textarea">${sizeAsli}</textarea>`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Download</label><textarea id="upd-4" class="admin-textarea">${linkAsli}</textarea>`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Ikon</label><textarea id="upd-5" class="admin-textarea">${imgAsli}</textarea>`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Display Modder</label><textarea id="upd-6" class="admin-textarea">${devNameAsli}</textarea>`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Modder</label><textarea id="upd-7" class="admin-textarea">${devLinkAsli}</textarea>`;
+        } else if (tabel === 'store_products') {
             let data = memoriStore[index];
             let namaAsli = (data.nama_produk || '').replace(/<br\s*\/?>/mg, "\n");
             let descAsli = (data.deskripsi || '').replace(/<br\s*\/?>/mg, "\n");
@@ -662,47 +668,63 @@
         document.getElementById('editDataPopup').classList.remove('hidden');
     }
 
-        async function eksekusiUpdateSupabase() {
-    const index = parseInt(document.getElementById('edit-id').value, 10);
-    const tabel = document.getElementById('edit-table').value;
-    let payload = {};
-    let targetId = 0;
 
-    // Mapping ID dan Data
-    if (tabel === 'web_saya') {
-        targetId = memoriWeb[index].id;
-        payload = { nama_web: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), link_web: document.getElementById('upd-2').value.replace(/\n/g, '<br>') };
+            async function eksekusiUpdateSupabase() {
+        const index = parseInt(document.getElementById('edit-id').value, 10);
+        const tabel = document.getElementById('edit-table').value;
+        let payload = {};
+        let targetId = 0;
+
+        // Mapping ID dan Data
+        if (tabel === 'web_saya') {
+            targetId = memoriWeb[index].id;
+            payload = { 
+                nama_web: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), 
+                link_web: document.getElementById('upd-2').value.replace(/\n/g, '<br>') 
+            };
         } else if (tabel === 'app_mods') {
-        targetId = memoriApp[index].id;
-        payload = { 
-            nama_app: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), 
-            deskripsi: document.getElementById('upd-2').value.replace(/\n/g, '<br>'), 
-            ukuran: document.getElementById('upd-3').value.replace(/\n/g, '<br>'), 
-            link_download: document.getElementById('upd-4').value.replace(/\n/g, '<br>'), 
-            img_url: document.getElementById('upd-5').value.replace(/\n/g, '<br>'),
-            dev_name: document.getElementById('upd-6').value.trim(),
-            dev_link: document.getElementById('upd-7').value.trim()
-        };
+            targetId = memoriApp[index].id;
+            payload = { 
+                nama_app: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), 
+                deskripsi: document.getElementById('upd-2').value.replace(/\n/g, '<br>'), 
+                ukuran: document.getElementById('upd-3').value.replace(/\n/g, '<br>'), 
+                link_download: document.getElementById('upd-4').value.replace(/\n/g, '<br>'), 
+                img_url: document.getElementById('upd-5').value.replace(/\n/g, '<br>'),
+                dev_name: document.getElementById('upd-6').value.trim(),
+                dev_link: document.getElementById('upd-7').value.trim()
+            };
+        } else if (tabel === 'store_products') {
+            targetId = memoriStore[index].id;
+            payload = { 
+                nama_produk: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), 
+                deskripsi: document.getElementById('upd-2').value.replace(/\n/g, '<br>'), 
+                harga: document.getElementById('upd-3').value.replace(/\n/g, '<br>'), 
+                stock: document.getElementById('upd-stock').value, 
+                link_wa: document.getElementById('upd-4').value, 
+                img_url: document.getElementById('upd-5').value.replace(/\n/g, '<br>') 
+            };
+        }
+
+        // Eksekusi SQL RPC ke Supabase
+        const { error } = await supabaseClient.rpc('update_table_data', {
+            tbl_name: tabel,
+            row_id: targetId,
+            new_data: payload
+        });
+
+        if (error) {
+            tampilkanAlert("Error SQL: " + error.message, "error");
+        } else {
+            tampilkanAlert("Berhasil diperbarui!", "sukses");
+            document.getElementById('editDataPopup').classList.add('hidden');
+            
+            // Refresh lokal state
+            if (tabel === 'web_saya') ambilDataWeb(); 
+            else if (tabel === 'app_mods') ambilDataApp(); 
+            else if (tabel === 'store_products') ambilDataStore();
+        }
     }
 
-    // Eksekusi SQL RPC: bypass RLS dan langsung eksekusi di server[span_4](start_span)[span_4](end_span)
-    const { error } = await supabaseClient.rpc('update_table_data', {
-        tbl_name: tabel,
-        row_id: targetId,
-        new_data: payload
-    });
-
-    if (error) {
-        tampilkanAlert("Error SQL: " + error.message, "error");
-    } else {
-        tampilkanAlert("Berhasil diperbarui!", "sukses");
-        document.getElementById('editDataPopup').classList.add('hidden');
-        // Refresh lokal state[span_5](start_span)[span_5](end_span)
-        if (tabel === 'web_saya') ambilDataWeb(); 
-        else if (tabel === 'app_mods') ambilDataApp(); 
-        else if (tabel === 'store_products') ambilDataStore();
-    }
-}
 
     async function ambilDataWeb() {
         const { data } = await supabaseClient.from('web_saya').select('*').order('id', { ascending: false });
