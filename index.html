@@ -202,6 +202,68 @@
     align-items: center;
     justify-content: center;
 }
+    .glass-popup-card{
+
+    width:100%;
+    max-width:520px;
+
+    max-height:88vh;
+
+    background:#17212b;
+
+    border-radius:28px 28px 0 0;
+
+    overflow:hidden;
+
+    display:flex;
+    flex-direction:column;
+
+    transform:translateY(100%);
+
+    transition:.35s;
+
+}
+
+.glass-popup-overlay.show .glass-popup-card{
+
+    transform:translateY(0);
+
+}
+
+.sheet-body{
+
+    padding:20px;
+
+    overflow-y:auto;
+
+    flex:1;
+
+}
+
+.sheet-handle{
+
+    width:55px;
+    height:6px;
+
+    background:#777;
+
+    border-radius:999px;
+
+    margin:12px auto;
+
+}
+
+.popup-title{
+
+    font-size:18px;
+
+    font-weight:bold;
+
+    text-align:center;
+
+    margin-bottom:20px;
+
+}
 
 .glass-popup-overlay.hidden { display: none !important; }
 
@@ -268,16 +330,39 @@
   </div>
 
   <div id="editDataPopup" class="glass-popup-overlay hidden">
-    <div class="glass-popup-card" style="text-align: left; max-height: 80vh; overflow-y: auto;">
-      <div class="popup-title" style="text-align: center;"><i class="fas fa-edit"></i> Edit Data Server</div>
-      <input type="hidden" id="edit-id">
-      <input type="hidden" id="edit-table">
-      <div id="dynamic-edit-fields"></div>
-      <div class="popup-actions">
-        <button class="btn-popup btn-no" onclick="document.getElementById('editDataPopup').classList.add('hidden')">Batal</button>
-        <button class="btn-popup btn-yes" onclick="eksekusiUpdateSupabase()">Simpan</button>
-      </div>
+
+    <div class="glass-popup-card">
+
+        <div class="sheet-handle"></div>
+
+        <div class="sheet-body">
+
+            <div class="popup-title">
+                <i class="fas fa-edit"></i>
+                Edit Data Server
+            </div>
+
+            <input type="hidden" id="edit-id">
+            <input type="hidden" id="edit-table">
+
+            <div id="dynamic-edit-fields"></div>
+
+            <div class="popup-actions">
+                <button class="btn-popup btn-no"
+                    onclick="tutupPopupEdit()">
+                    Batal
+                </button>
+
+                <button class="btn-popup btn-yes"
+                    onclick="eksekusiUpdateSupabase()">
+                    Simpan
+                </button>
+            </div>
+
+        </div>
+
     </div>
+
   </div>
 
   <div id="custom-toast" style="position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 14px 24px; border-radius: 14px; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 10px; box-shadow: 0 8px 30px rgba(16, 185, 129, 0.3); z-index: 99999; transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
@@ -665,10 +750,26 @@
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Gambar</label><textarea id="upd-5" class="admin-textarea">${imgAsli}</textarea>`;
         }
         fieldsContainer.innerHTML = innerH;
-        document.getElementById('editDataPopup').classList.remove('hidden');
-    }
+        const popup=document.getElementById("editDataPopup");
 
+popup.classList.remove("hidden");
 
+requestAnimationFrame(()=>{
+    popup.classList.add("show");
+});
+
+          function tutupPopupEdit(){
+
+    const popup=document.getElementById("editDataPopup");
+
+    popup.classList.remove("show");
+
+    setTimeout(()=>{
+        popup.classList.add("hidden");
+    },300);
+
+          }
+    
             async function eksekusiUpdateSupabase() {
         const index = parseInt(document.getElementById('edit-id').value, 10);
         const tabel = document.getElementById('edit-table').value;
@@ -716,7 +817,7 @@
             tampilkanAlert("Error SQL: " + error.message, "error");
         } else {
             tampilkanAlert("Berhasil diperbarui!", "sukses");
-            document.getElementById('editDataPopup').classList.add('hidden');
+            tutupPopupEdit();
             
             // Refresh lokal state
             if (tabel === 'web_saya') ambilDataWeb(); 
