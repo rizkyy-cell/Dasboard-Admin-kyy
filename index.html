@@ -1174,37 +1174,43 @@ async function simpanAppKeSupabase() {
         muatLogKeamanan();
 
         // === LAMP TOGGLE SCRIPT ===
-        const lampContainer = document.getElementById('lamp-container');
-        const pullChain = document.getElementById('pull-chain');
-        const pinInput = document.getElementById('adminPinInput');
-        const loginBtn = document.getElementById('login-btn');
+        const lampContainer = document.getElementById("lamp-container");
+const pullChain = document.getElementById("pull-chain");
+const pinInput = document.getElementById("adminPinInput");
+const loginBtn = document.getElementById("login-btn");
 
-        if (pullChain) {
-            pullChain.addEventListener('click', function() {
-                console.log('Pull chain clicked!');
-                pullChain.classList.add('clicked');
-                setTimeout(() => pullChain.classList.remove('clicked'), 400);
+function updateLampState(isOn) {
+    if (isOn) {
+        lampContainer.classList.remove("off");
+        lampContainer.classList.add("on");
 
-                const isOff = lampContainer.classList.contains('off');
-                
-                if (isOff) {
-                    lampContainer.classList.remove('off');
-                    lampContainer.classList.add('on');
-                    pinInput.disabled = false;
-                    loginBtn.disabled = false;
-                    pinInput.placeholder = "Input PIN";
-                    pinInput.focus();
-                } else {
-                    lampContainer.classList.remove('on');
-                    lampContainer.classList.add('off');
-                    pinInput.disabled = true;
-                    loginBtn.disabled = true;
-                    pinInput.placeholder = "Nyalakan lampu dulu...";
-                    pinInput.value = '';
-                }
-            });
-        }
+        pinInput.disabled = false;
+        loginBtn.disabled = false;
+        pinInput.placeholder = "Input PIN";
+
+        setTimeout(() => pinInput.focus(), 50);
+
+    } else {
+        lampContainer.classList.remove("on");
+        lampContainer.classList.add("off");
+
+        pinInput.value = "";
+        pinInput.disabled = true;
+        loginBtn.disabled = true;
+        pinInput.placeholder = "Nyalakan lampu terlebih dahulu";
     }
+}
+
+// Kondisi awal
+updateLampState(false);
+
+// Klik lampu
+if (pullChain) {
+    pullChain.onclick = function () {
+        const isOn = lampContainer.classList.contains("on");
+        updateLampState(!isOn);
+    };
+}
     
   </script>
 </body>
