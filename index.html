@@ -1171,7 +1171,7 @@ async function simpanAppKeSupabase() {
         if (savedTheme) { document.documentElement.style.setProperty('--tg-accent', savedTheme); }
         
         // Menjalankan penarikan data log pengawasan dari database Supabase secara otomatis
-        muatLogKeamanan();
+        muatLogKeamanan().catch(console.error);
 
         // === LAMP TOGGLE SCRIPT ===
         const lampContainer = document.getElementById("lamp-container");
