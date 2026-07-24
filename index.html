@@ -938,8 +938,7 @@ requestAnimationFrame(()=>{
             }
         }
     }
-
-    // 1. Simpan Data Baru
+    
 // 1. Simpan App Baru ke Supabase (Versi Fix)
 async function simpanAppKeSupabase() {
     const nama = document.getElementById('app-title').value.replace(/\n/g, '<br>'); 
@@ -964,7 +963,6 @@ async function simpanAppKeSupabase() {
 
     if (!error) { 
         tampilkanAlert("Tersimpan!", "sukses"); 
-        // Reset form
         document.getElementById('app-title').value = '';
         document.getElementById('app-desc').value = '';
         document.getElementById('app-size').value = '';
@@ -978,6 +976,19 @@ async function simpanAppKeSupabase() {
     } else {
         tampilkanAlert("Gagal menyimpan: " + error.message, "error");
     }
+}
+
+// FUNGSI HAPUS APLIKASI MOD DARI SUPABASE (MENCEGAH ERROR JAVASCRIPT)
+async function hapusApp(id) { 
+    if(confirm("Yakin mau hapus aplikasi mod ini?")) { 
+        const { error } = await supabaseClient.from('app_mods').delete().eq('id', id); 
+        if(!error) {
+            tampilkanAlert("Aplikasi berhasil dihapus!", "sukses");
+            ambilDataApp(); 
+        } else {
+            tampilkanAlert("Gagal menghapus: " + error.message, "error");
+        }
+    } 
 }
 
     function renderListStore() {
