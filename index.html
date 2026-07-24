@@ -866,13 +866,79 @@ requestAnimationFrame(()=>{
         const { data } = await supabaseClient.from('app_mods').select('*').order('id', { ascending: false });
         if (data) { memoriApp = data; renderListApp(); }
     }
-    function renderListApp() {
-        const container = document.getElementById('container-app-list'); container.innerHTML = '';
+    
+        function renderListApp() {
+        const container = document.getElementById('container-app-list'); 
+        if (!container) return;
+        container.innerHTML = '';
+        
         memoriApp.forEach((app, idx) => {
-            let iconHtml = app.img_url ? `<img src="${app.img_url.replace(/<br\s*\/?>/mg, '')}" onerror="this.outerHTML='📱'" style="width:100%; height:100%; object-fit:cover;">` : '📱';
-            container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header"><div class="mod-box-title-group"><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${app.nama_app}</div></div><div class="mod-box-size">${app.ukuran || 'N/A'}</div></div><div class="mod-box-desc">${app.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'app_mods')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusApp(${app.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
+            let iconHtml = app.img_url ? `<img src="${app.img_url.replace(/<br\s*\/?>/mg, '')}" onerror="this.outerHTML='📱'" style="width:100%; height:100%; object-fit:cover; border-radius:12px;">` : '📱';
+            
+            // Batasi deskripsi hingga 100 karakter
+            let fullDesc = app.deskripsi || 'Tidak ada deskripsi.';
+            let isLong = fullDesc.length > 100;
+            let shortDesc = isLong ? fullDesc.substring(0, 100) + '...' : fullDesc;
+
+            // Data Modder dari Supabase
+            let devName = app.dev_name ? app.dev_name : '@rezky._kurniawan25';
+            let devLink = app.dev_link ? app.dev_link : 'https://t.me/rizky_kurniawan25';
+
+            container.innerHTML += `
+                <div class="mod-box-item">
+                    <div class="mod-box-header">
+                        <div class="mod-box-title-group">
+                            <div class="mod-box-icon">${iconHtml}</div>
+                            <div class="mod-box-name">${app.nama_app}</div>
+                        </div>
+                        <div class="mod-box-size">${app.ukuran || 'N/A'}</div>
+                    </div>
+
+                    <!-- INFO PENGEMBANG MOD -->
+                    <div style="margin-bottom: 6px; font-size: 12px;">
+                        <span style="color: var(--tg-text-muted);">Pengembang Mod: </span>
+                        <a href="${devLink}" target="_blank" style="color: var(--tg-accent); font-weight: bold; text-decoration: underline;">${devName}</a>
+                    </div>
+
+                    <!-- DESKRIPSI RINGKAS (DEFAULT MUNCUL) -->
+                    <div class="mod-box-desc" id="admin-short-desc-${idx}">
+                        ${shortDesc}
+                        ${isLong ? `<span onclick="toggleReadMoreAdmin(${idx})" style="color:var(--tg-accent); font-weight:bold; cursor:pointer; margin-left:4px;">Read more</span>` : ''}
+                    </div>
+
+                    <!-- DESKRIPSI LENGKAP (DEFAULT SEMBUNYI) -->
+                    <div class="mod-box-desc" id="admin-full-desc-${idx}" style="display:none;">
+                        ${fullDesc}
+                        <div style="margin-top: 10px;">
+                            <span onclick="toggleReadMoreAdmin(${idx})" style="color:var(--tg-accent); font-weight:bold; cursor:pointer;">Read less</span>
+                        </div>
+                    </div>
+
+                    <!-- TOMBOL EDIT & HAPUS ADMIN -->
+                    <div class="admin-action-bar">
+                        <button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'app_mods')"><i class="fas fa-edit"></i> Edit</button>
+                        <button class="btn-admin delete" onclick="hapusApp(${app.id})"><i class="fas fa-trash"></i> Hapus</button>
+                    </div>
+                </div>`;
         });
     }
+
+    // FUNGSI TOGGLE READ MORE / READ LESS DI WEB ADMIN DEV
+    function toggleReadMoreAdmin(index) {
+        const shortElem = document.getElementById(`admin-short-desc-${index}`);
+        const fullElem = document.getElementById(`admin-full-desc-${index}`);
+
+        if (shortElem && fullElem) {
+            if (fullElem.style.display === 'none') {
+                shortElem.style.display = 'none';
+                fullElem.style.display = 'block';
+            } else {
+                shortElem.style.display = 'block';
+                fullElem.style.display = 'none';
+            }
+        }
+    }
+
     // 1. Simpan Data Baru
 // 1. Simpan App Baru ke Supabase (Versi Fix)
 async function simpanAppKeSupabase() {
