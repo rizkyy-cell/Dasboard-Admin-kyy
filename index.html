@@ -294,6 +294,31 @@
     .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
     input:checked + .slider { background-color: var(--admin-add); }
     input:checked + .slider:before { transform: translateX(20px); }
+
+    /* STYLING MODAL LIQUID GLASS */
+.glass-popup-card-custom {
+  background: linear-gradient(135deg, rgba(23, 33, 43, 0.90), rgba(14, 22, 33, 0.95)) !important;
+  backdrop-filter: blur(25px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), inset 0 1px 2px rgba(255, 255, 255, 0.15) !important;
+  border-radius: 24px !important;
+  padding: 25px !important;
+  width: 90% !important;
+  max-width: 330px !important;
+  text-align: center !important;
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.glass-modal-icon {
+  font-size: 36px;
+  color: #f59e0b;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 4px 10px rgba(245, 158, 11, 0.4));
+}
+
   </style>
 </head>
 <body>
@@ -364,6 +389,24 @@
     </div>
 
   </div>
+
+  <!-- MODAL KONFIRMASI LIQUID GLASS UNIVERSAL -->
+<div id="liquidConfirmModal" class="glass-popup-overlay hidden">
+  <div class="glass-popup-card-custom">
+    <div class="glass-modal-icon" id="confirmModalIcon">
+      <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <div class="popup-title" id="confirmModalTitle" style="margin-bottom: 8px;">Konfirmasi</div>
+    <div class="popup-desc" id="confirmModalMessage" style="font-size: 13.5px; color: var(--tg-text-muted); margin-bottom: 20px;">
+      Apakah Anda yakin?
+    </div>
+    <div class="popup-actions" style="display: flex; gap: 10px;">
+      <button class="btn-popup btn-no" id="btnConfirmBatal" style="flex: 1;">Batal</button>
+      <button class="btn-popup btn-yes" id="btnConfirmYa" style="flex: 1; background: #ef4444; color: white;">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
 
   <div id="custom-toast" style="position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 14px 24px; border-radius: 14px; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 10px; box-shadow: 0 8px 30px rgba(16, 185, 129, 0.3); z-index: 99999; transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
 
@@ -855,11 +898,18 @@ requestAnimationFrame(()=>{
         if (!error) { tampilkanAlert("Tersimpan!", "sukses"); toggleForm('web-form', 'btn-show-web', 'Web Saya'); ambilDataWeb(); }
     }
         async function hapusWeb(id) { 
-        if(confirm("Yakin mau hapus data ini?")) { 
+    tampilkanConfirmLiquidGlass(
+        "Hapus Web Saya", 
+        "Yakin mau hapus tautan web ini?", 
+        "fas fa-globe", 
+        "#ef4444", 
+        async function() {
             await supabaseClient.from('web_saya').delete().eq('id', id); 
+            tampilkanAlert("Web berhasil dihapus!", "sukses");
             ambilDataWeb(); 
-        } 
-    }
+        }
+    );
+        }
 
     
     async function ambilDataApp() {
@@ -980,17 +1030,22 @@ async function simpanAppKeSupabase() {
 
 // FUNGSI HAPUS APLIKASI MOD DARI SUPABASE (MENCEGAH ERROR JAVASCRIPT)
 async function hapusApp(id) { 
-    if(confirm("Yakin mau hapus aplikasi mod ini?")) { 
-        const { error } = await supabaseClient.from('app_mods').delete().eq('id', id); 
-        if(!error) {
-            tampilkanAlert("Aplikasi berhasil dihapus!", "sukses");
-            ambilDataApp(); 
-        } else {
-            tampilkanAlert("Gagal menghapus: " + error.message, "error");
+    tampilkanConfirmLiquidGlass(
+        "Hapus App Mod", 
+        "Yakin mau hapus aplikasi mod ini?", 
+        "fas fa-trash-alt", 
+        "#ef4444", 
+        async function() {
+            const { error } = await supabaseClient.from('app_mods').delete().eq('id', id); 
+            if(!error) {
+                tampilkanAlert("Aplikasi berhasil dihapus!", "sukses");
+                ambilDataApp(); 
+            } else {
+                tampilkanAlert("Gagal menghapus: " + error.message, "error");
+            }
         }
-    } 
+    );
 }
-
     function renderListStore() {
         const container = document.getElementById('container-store-list'); container.innerHTML = '';
         memoriStore.forEach((prod, idx) => {
@@ -1030,7 +1085,19 @@ async function ambilDataStore() {
         const { error } = await supabaseClient.from('store_products').insert([{ nama_produk: nama, deskripsi: desc, harga: price, stock: stock, link_wa: wa, img_url: img }]);
         if (!error) { tampilkanAlert("Tersimpan!", "sukses"); toggleForm('store-form', 'btn-show-store', 'Store'); ambilDataStore(); }
     }
-    async function hapusStore(id) { if(confirm("Yakin mau hapus data ini?")) { await supabaseClient.from('store_products').delete().eq('id', id); ambilDataStore(); } }
+    async function hapusStore(id) { 
+    tampilkanConfirmLiquidGlass(
+        "Hapus Produk Store", 
+        "Yakin mau hapus produk jualan ini?", 
+        "fas fa-shopping-bag", 
+        "#ef4444", 
+        async function() {
+            await supabaseClient.from('store_products').delete().eq('id', id); 
+            tampilkanAlert("Produk berhasil dihapus!", "sukses");
+            ambilDataStore(); 
+        }
+    );
+    }
 
     async function simpanAnnouncementKeSupabase() {
         const title = document.getElementById('anc-title').value.replace(/\n/g, '<br>');
@@ -1064,7 +1131,12 @@ async function ambilDataStore() {
     }
 
     async function hapusAnnouncement(id) {
-        if(confirm("Yakin ingin menghapus pengumuman ini dari publik?")) {
+    tampilkanConfirmLiquidGlass(
+        "Hapus Pengumuman", 
+        "Yakin ingin menghapus pengumuman ini dari publik?", 
+        "fas fa-bullhorn", 
+        "#ef4444", 
+        async function() {
             const { error } = await supabaseClient.from('announcements').delete().eq('id', id);
             if(!error) {
                 tampilkanAlert("Pengumuman berhasil dihapus!", "sukses");
@@ -1075,8 +1147,8 @@ async function ambilDataStore() {
                 tampilkanAlert("Gagal menghapus: " + error.message, "error");
             }
         }
+    );
     }
-
     async function muatAnnouncementAdmin() {
         const { data } = await supabaseClient.from('announcements').select('*').eq('id', 1).single();
         if (data) {
@@ -1125,7 +1197,12 @@ async function ambilDataStore() {
     }
 
     async function hapusInboxAdmin(id) {
-        if(confirm("Yakin ingin menghapus notifikasi ini dari publik?")) {
+    tampilkanConfirmLiquidGlass(
+        "Hapus Notifikasi", 
+        "Yakin ingin menghapus notifikasi ini dari publik?", 
+        "fas fa-envelope", 
+        "#ef4444", 
+        async function() {
             const { error } = await supabaseClient.from('web_inbox').delete().eq('id', id);
             if(!error) {
                 tampilkanAlert("Notifikasi berhasil dihapus!", "sukses");
@@ -1134,8 +1211,8 @@ async function ambilDataStore() {
                 tampilkanAlert("Gagal menghapus: " + error.message, "error");
             }
         }
+    );
     }
-
     function gantiTemaAdmin(color, el) {
         document.querySelectorAll('.theme-dot').forEach(e => e.classList.remove('selected'));
         el.classList.add('selected'); document.documentElement.style.setProperty('--tg-accent', color);
@@ -1161,13 +1238,20 @@ async function ambilDataStore() {
         }
     }
 
-    function logoutAdmin() {
-        if(confirm("Yakin mau logout?")) {
+    // 1. LOGOUT ADMIN
+function logoutAdmin() {
+    tampilkanConfirmLiquidGlass(
+        "Logout Admin", 
+        "Yakin mau logout dari Web Admin?", 
+        "fas fa-sign-out-alt", 
+        "#ef4444", 
+        function() {
             document.getElementById('loginLockOverlay').classList.remove('hidden');
             document.getElementById('adminPinInput').value = '';
             document.getElementById('adminPinInput').focus();
         }
-    }
+    );
+}
 
     let sessionTimer;
     function resetSessionTimer() {
@@ -1317,6 +1401,41 @@ if (pullChain) {
     };
 }
     }
+
+    // MESIN POP-UP KONFIRMASI LIQUID GLASS (MENGGANTIKAN CONFIRM BAWAAN)
+function tampilkanConfirmLiquidGlass(judul, pesan, ikonClass, warnaTombol, callbackAksi) {
+    const modal = document.getElementById('liquidConfirmModal');
+    const elTitle = document.getElementById('confirmModalTitle');
+    const elMsg = document.getElementById('confirmModalMessage');
+    const elIcon = document.getElementById('confirmModalIcon');
+    const btnYa = document.getElementById('btnConfirmYa');
+    const btnBatal = document.getElementById('btnConfirmBatal');
+
+    if (!modal) return;
+
+    if (elTitle) elTitle.innerText = judul;
+    if (elMsg) elMsg.innerText = pesan;
+    if (elIcon) elIcon.innerHTML = `<i class="${ikonClass || 'fas fa-exclamation-triangle'}"></i>`;
+    if (btnYa) btnYa.style.background = warnaTombol || '#ef4444';
+
+    modal.classList.remove('hidden');
+
+    // Reset Listener Tombol
+    const newBtnYa = btnYa.cloneNode(true);
+    const newBtnBatal = btnBatal.cloneNode(true);
+    btnYa.parentNode.replaceChild(newBtnYa, btnYa);
+    btnBatal.parentNode.replaceChild(newBtnBatal, btnBatal);
+
+    newBtnBatal.onclick = function() {
+        modal.classList.add('hidden');
+    };
+
+    newBtnYa.onclick = function() {
+        modal.classList.add('hidden');
+        if (typeof callbackAksi === 'function') callbackAksi();
+    };
+}
+
   </script>
 </body>
 </html>
