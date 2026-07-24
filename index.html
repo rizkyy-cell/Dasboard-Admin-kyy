@@ -681,22 +681,31 @@
     }
 
     function switchNav(page, index, el) {
-      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-      document.querySelectorAll('.page-content').forEach(content => content.classList.remove('active'));
-      document.getElementById('indicator').style.transform = `translateY(-50%) translateX(${index * 100}%)`;
-      if(el) el.classList.add('active'); document.getElementById('page-' + page).classList.add('active');
-      
-      const titleEl = document.getElementById('header-title');
-      if (page === 'home') titleEl.innerHTML = 'Web Admin <span class="admin-badge">DEV</span>';
-      else if (page === 'appmod') titleEl.innerHTML = 'App Mod <span class="admin-badge">DEV</span>';
-      else if (page === 'store') titleEl.innerHTML = 'Store Admin <span class="admin-badge">DEV</span>';
-      else if (page === 'pengaturan') { 
-          titleEl.innerHTML = 'Pengaturan <span class="admin-badge">DEV</span>'; 
-          muatAnnouncementAdmin(); 
-          ambilDataInboxAdmin();
-      }
-      else titleEl.innerHTML = 'Profile <span class="admin-badge">DEV</span>';
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    document.querySelectorAll('.page-content').forEach(content => content.classList.remove('active'));
+    document.getElementById('indicator').style.transform = `translateY(-50%) translateX(${index * 100}%)`;
+    if(el) el.classList.add('active'); 
+    document.getElementById('page-' + page).classList.add('active');
+    
+    const titleEl = document.getElementById('header-title');
+    if (page === 'home') {
+        titleEl.innerHTML = 'Web Admin <span class="admin-badge">DEV</span>';
+        ambilDataWeb();
+    } else if (page === 'appmod') {
+        titleEl.innerHTML = 'App Mod <span class="admin-badge">DEV</span>';
+        ambilDataApp();
+    } else if (page === 'store') { 
+        titleEl.innerHTML = 'Store Admin <span class="admin-badge">DEV</span>'; 
+        ambilDataStore(); // <-- MEMANGGIL TARIK DATA STORE SAAT TAB DIKLIK
+    } else if (page === 'pengaturan') { 
+        titleEl.innerHTML = 'Pengaturan <span class="admin-badge">DEV</span>'; 
+        muatAnnouncementAdmin(); 
+        ambilDataInboxAdmin();
+    } else {
+        titleEl.innerHTML = 'Profile <span class="admin-badge">DEV</span>';
     }
+}
+
 
     function toggleForm(formId, btnId, namaMenu) {
         const form = document.getElementById(formId);
@@ -857,79 +866,13 @@ requestAnimationFrame(()=>{
         const { data } = await supabaseClient.from('app_mods').select('*').order('id', { ascending: false });
         if (data) { memoriApp = data; renderListApp(); }
     }
-        function renderListApp() {
-        const container = document.getElementById('container-app-list'); 
-        if (!container) return;
-        container.innerHTML = '';
-        
+    function renderListApp() {
+        const container = document.getElementById('container-app-list'); container.innerHTML = '';
         memoriApp.forEach((app, idx) => {
             let iconHtml = app.img_url ? `<img src="${app.img_url.replace(/<br\s*\/?>/mg, '')}" onerror="this.outerHTML='📱'" style="width:100%; height:100%; object-fit:cover;">` : '📱';
-            
-            // Batas karakter deskripsi ringkas (100 karakter)
-            let fullDesc = app.deskripsi || 'Tidak ada deskripsi.';
-            let isLong = fullDesc.length > 100;
-            let shortDesc = isLong ? fullDesc.substring(0, 100) + '...' : fullDesc;
-
-            // Data Pengembang Mod
-            let devName = app.dev_name || '@rezky._kurniawan25';
-            let devLink = app.dev_link || 'https://t.me/rizky_kurniawan25';
-
-            container.innerHTML += `
-                <div class="mod-box-item">
-                    <div class="mod-box-header">
-                        <div class="mod-box-title-group">
-                            <div class="mod-box-icon">${iconHtml}</div>
-                            <div class="mod-box-name">${app.nama_app}</div>
-                        </div>
-                        <div class="mod-box-size">${app.ukuran || 'N/A'}</div>
-                    </div>
-
-                    <!-- 1. DETAIL PENGEMBANG MOD (SELALU MUNCUL DI ATAS) -->
-                    <div style="margin-bottom: 6px; font-size: 12px;">
-                        <span style="color: var(--tg-text-muted);">Pengembang Mod: </span>
-                        <a href="${devLink}" target="_blank" style="color: var(--tg-accent); font-weight: bold; text-decoration: underline;">${devName}</a>
-                    </div>
-
-                    <!-- 2. DESKRIPSI RINGKAS -->
-                    <div class="mod-box-desc" id="admin-short-desc-${idx}">
-                        ${shortDesc}
-                        ${isLong ? `<span onclick="toggleReadMoreAdmin(${idx})" style="color:var(--tg-accent); font-weight:bold; cursor:pointer; margin-left:4px;">Read more</span>` : ''}
-                    </div>
-
-                    <!-- 3. DESKRIPSI LENGKAP (HIDDEN SECARA DEFAULT) -->
-                    <div class="mod-box-desc" id="admin-full-desc-${idx}" style="display:none;">
-                        ${fullDesc}
-                        <div style="margin-top: 10px;">
-                            <span onclick="toggleReadMoreAdmin(${idx})" style="color:var(--tg-accent); font-weight:bold; cursor:pointer;">Read less</span>
-                        </div>
-                    </div>
-
-                    <!-- TOMBOL AKSES ADMIN -->
-                    <div class="admin-action-bar">
-                        <button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'app_mods')"><i class="fas fa-edit"></i> Edit</button>
-                        <button class="btn-admin delete" onclick="hapusApp(${app.id})"><i class="fas fa-trash"></i> Hapus</button>
-                    </div>
-                </div>`;
+            container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header"><div class="mod-box-title-group"><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${app.nama_app}</div></div><div class="mod-box-size">${app.ukuran || 'N/A'}</div></div><div class="mod-box-desc">${app.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'app_mods')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusApp(${app.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
         });
     }
-
-        // FUNGSI BUKA/TUTUP DESKRIPSI KHUSUS WEB ADMIN DEV
-    function toggleReadMoreAdmin(index) {
-        const shortElem = document.getElementById(`admin-short-desc-${index}`);
-        const fullElem = document.getElementById(`admin-full-desc-${index}`);
-
-        if (shortElem && fullElem) {
-            if (fullElem.style.display === 'none') {
-                shortElem.style.display = 'none';
-                fullElem.style.display = 'block';
-            } else {
-                shortElem.style.display = 'block';
-                fullElem.style.display = 'none';
-            }
-        }
-    }
-
-
     // 1. Simpan Data Baru
 // 1. Simpan App Baru ke Supabase (Versi Fix)
 async function simpanAppKeSupabase() {
@@ -979,6 +922,25 @@ async function simpanAppKeSupabase() {
             container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header"><div class="mod-box-title-group"><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${prod.nama_produk}</div></div><div class="mod-box-size" style="color:#00ff7f; background:none;">${prod.harga}${stockBadge}</div></div><div class="mod-box-desc">${prod.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'store_products')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusStore(${prod.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
         });
     }
+    
+    // FUNGSI TARIK DATA STORE DARI SUPABASE DENGAN URUTAN TERBARU
+async function ambilDataStore() {
+    const { data, error } = await supabaseClient
+        .from('store_products')
+        .select('*')
+        .order('id', { ascending: false });
+
+    if (data && !error) {
+        memoriStore = data;
+        renderListStore(); // Panggil render tampilan setelah data berhasil diambil
+    } else {
+        const container = document.getElementById('container-store-list');
+        if (container) {
+            container.innerHTML = `<p style="text-align:center; color:var(--tg-text-muted); padding:20px;">Gagal memuat data produk store.</p>`;
+        }
+    }
+}
+
     async function simpanStoreKeSupabase() {
         const nama = document.getElementById('prod-title').value.replace(/\n/g, '<br>'); 
         const desc = document.getElementById('prod-desc').value.replace(/\n/g, '<br>');
