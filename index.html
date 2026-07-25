@@ -1492,6 +1492,46 @@ function tampilkanConfirmLiquidGlass(judul, pesan, ikonClass, warnaTombol, callb
             tampilkanAlert("Terjadi kesalahan: " + err.message, "error");
         }
     }
+
+    async function loginFingerprint() {
+        try {
+            const resOptions = await fetch('/api/webauthn-login-options', { method: 'POST' });
+            const options = await resOptions.json();
+
+            if (options.message) {
+                return tampilkanAlert(options.message, "error");
+            }
+
+            const authResp = await SimpleWebAuthnBrowser.startAuthentication({ optionsJSON: options });
+
+            const resVerify = await fetch('/api/webauthn-login-verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(authResp)
+            });
+            const data = await resVerify.json();
+
+            if (data.verified) {
+                tampilkanAlert("Akses Admin Diterima!", "sukses");
+                document.getElementById('loginLockOverlay').classList.add('hidden');
+
+                ambilDataWeb();
+                ambilDataApp();
+                ambilDataStore();
+                ambilDataAnnouncement();
+                ambilDataInboxAdmin();
+                muatStatusSosmedAdmin();
+                resetSessionTimer();
+
+                await muatLogKeamanan();
+            } else {
+                tampilkanAlert("Verifikasi fingerprint gagal.", "error");
+            }
+        } catch (err) {
+            console.error(err);
+            tampilkanAlert("Fingerprint dibatalkan atau tidak didukung.", "error");
+        }
+    }
   </script>
 </body>
 </html>
