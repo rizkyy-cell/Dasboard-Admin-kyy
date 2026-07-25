@@ -1451,11 +1451,30 @@ function tampilkanConfirmLiquidGlass(judul, pesan, ikonClass, warnaTombol, callb
     // === WEBAUTHN FINGERPRINT ===
     async function daftarkanFingerprint() {
         try {
+            // STEP 1: Minta opsi registrasi dari server
             const resOptions = await fetch('/api/webauthn-register-options', { method: 'POST' });
+            if (!resOptions.ok) {
+                return tampilkanAlert(`Server error di step 1 (status ${resOptions.status})`, "error");
+            }
             const options = await resOptions.json();
+            console.log("OPTIONS DARI SERVER:", options); // buat debug
 
-            const attResp = await SimpleWebAuthnBrowser.startRegistration({ optionsJSON: options });
+            // Cek field wajib sebelum lanjut
+            if (!options.challenge || !options.user || !options.user.id) {
+                console.error("Options tidak lengkap:", options);
+                return tampilkanAlert("Data dari server tidak lengkap (cek console log)", "error");
+            }
 
+            // STEP 2: Munculkan prompt fingerprint/Face ID
+            let attResp;
+            try {
+                attResp = await SimpleWebAuthnBrowser.startRegistration({ optionsJSON: options });
+            } catch (errBrowser) {
+                console.error("GAGAL DI STEP BROWSER:", errBrowser);
+                return tampilkanAlert("Gagal di prompt fingerprint: " + errBrowser.message, "error");
+            }
+
+            // STEP 3: Kirim hasil scan ke server buat diverifikasi
             const resVerify = await fetch('/api/webauthn-register-verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1466,51 +1485,11 @@ function tampilkanConfirmLiquidGlass(judul, pesan, ikonClass, warnaTombol, callb
             if (data.verified) {
                 tampilkanAlert("Fingerprint berhasil didaftarkan!", "sukses");
             } else {
-                tampilkanAlert("Gagal mendaftarkan fingerprint.", "error");
+                tampilkanAlert("Gagal mendaftarkan fingerprint (verifikasi server ditolak).", "error");
             }
         } catch (err) {
-            console.error(err);
+            console.error("ERROR UMUM:", err);
             tampilkanAlert("Terjadi kesalahan: " + err.message, "error");
-        }
-    }
-
-    async function loginFingerprint() {
-        try {
-            const resOptions = await fetch('/api/webauthn-login-options', { method: 'POST' });
-            const options = await resOptions.json();
-
-            if (options.message) {
-                return tampilkanAlert(options.message, "error");
-            }
-
-            const authResp = await SimpleWebAuthnBrowser.startAuthentication({ optionsJSON: options });
-
-            const resVerify = await fetch('/api/webauthn-login-verify', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(authResp)
-            });
-            const data = await resVerify.json();
-
-            if (data.verified) {
-                tampilkanAlert("Akses Admin Diterima!", "sukses");
-                document.getElementById('loginLockOverlay').classList.add('hidden');
-
-                ambilDataWeb();
-                ambilDataApp();
-                ambilDataStore();
-                ambilDataAnnouncement();
-                ambilDataInboxAdmin();
-                muatStatusSosmedAdmin();
-                resetSessionTimer();
-
-                await muatLogKeamanan();
-            } else {
-                tampilkanAlert("Verifikasi fingerprint gagal.", "error");
-            }
-        } catch (err) {
-            console.error(err);
-            tampilkanAlert("Fingerprint dibatalkan atau tidak didukung.", "error");
         }
     }
   </script>
