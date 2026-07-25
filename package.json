@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
-    "@simplewebauthn/server": "^10.0.0"
+    "@simplewebauthn/server": "^13.0.0"
   }
 }
