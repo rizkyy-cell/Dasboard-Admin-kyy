@@ -13,6 +13,7 @@
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@simplewebauthn/browser@10/dist/bundle/index.umd.min.js"></script>
   
   <style>
     :root { --tg-bg: #0e1621; --tg-panel: #17212b; --tg-accent: #3390ec; --tg-text-muted: #7f91a4; --tg-text: #ffffff; --admin-add: #10b981; --admin-edit: #f59e0b; --admin-delete: #ef4444; }
@@ -347,6 +348,9 @@
                             <input type="password" id="adminPinInput" placeholder="Nyalakan lampu dulu..." disabled maxlength="6" pattern="\d*" inputmode="numeric">
                         </div>
                         <button class="login-btn" id="login-btn" type="button" disabled onclick="verifikasiLoginAdmin()">Sign-in</button>
+                        <button type="button" id="fingerprint-login-btn" style="width:100%; margin-top:10px; padding:10px; background:transparent; border:1px solid rgba(255,255,255,0.15); border-radius:20px; color:#fff; font-size:0.85rem; cursor:pointer;" onclick="loginFingerprint()">
+                            🔒 Masuk dengan Fingerprint
+                        </button>
                     </form>
                 </div>
             </div>
@@ -517,6 +521,14 @@
         <button class="admin-btn-save" style="background: var(--admin-edit);" onclick="kirimInboxKeSupabase()">Kirim ke Kotak Surat Publik</button>
         
         <div id="container-inbox-list" style="margin-top: 20px;"></div>
+      </div>
+
+      <div class="settings-card">
+        <div style="font-size:15px; font-weight:bold; color:var(--tg-accent); margin-bottom: 15px;"><i class="fas fa-fingerprint"></i> Keamanan Biometrik</div>
+        <p style="font-size:13px; color:var(--tg-text-muted); margin-bottom:12px;">Daftarkan fingerprint/Face ID HP kamu sebagai cara login tambahan selain PIN.</p>
+        <button type="button" onclick="daftarkanFingerprint()" style="width:100%; padding:10px 16px; background:linear-gradient(135deg, #f3d078 0%, #c89d36 100%); border:none; border-radius:20px; color:#121216; font-weight:600; cursor:pointer;">
+            🔒 Daftarkan Fingerprint
+        </button>
       </div>
 
     </div>
@@ -1436,6 +1448,71 @@ function tampilkanConfirmLiquidGlass(judul, pesan, ikonClass, warnaTombol, callb
     };
 }
 
+    // === WEBAUTHN FINGERPRINT ===
+    async function daftarkanFingerprint() {
+        try {
+            const resOptions = await fetch('/api/webauthn-register-options', { method: 'POST' });
+            const options = await resOptions.json();
+
+            const attResp = await SimpleWebAuthnBrowser.startRegistration({ optionsJSON: options });
+
+            const resVerify = await fetch('/api/webauthn-register-verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(attResp)
+            });
+            const data = await resVerify.json();
+
+            if (data.verified) {
+                tampilkanAlert("Fingerprint berhasil didaftarkan!", "sukses");
+            } else {
+                tampilkanAlert("Gagal mendaftarkan fingerprint.", "error");
+            }
+        } catch (err) {
+            console.error(err);
+            tampilkanAlert("Terjadi kesalahan: " + err.message, "error");
+        }
+    }
+
+    async function loginFingerprint() {
+        try {
+            const resOptions = await fetch('/api/webauthn-login-options', { method: 'POST' });
+            const options = await resOptions.json();
+
+            if (options.message) {
+                return tampilkanAlert(options.message, "error");
+            }
+
+            const authResp = await SimpleWebAuthnBrowser.startAuthentication({ optionsJSON: options });
+
+            const resVerify = await fetch('/api/webauthn-login-verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(authResp)
+            });
+            const data = await resVerify.json();
+
+            if (data.verified) {
+                tampilkanAlert("Akses Admin Diterima!", "sukses");
+                document.getElementById('loginLockOverlay').classList.add('hidden');
+
+                ambilDataWeb();
+                ambilDataApp();
+                ambilDataStore();
+                ambilDataAnnouncement();
+                ambilDataInboxAdmin();
+                muatStatusSosmedAdmin();
+                resetSessionTimer();
+
+                await muatLogKeamanan();
+            } else {
+                tampilkanAlert("Verifikasi fingerprint gagal.", "error");
+            }
+        } catch (err) {
+            console.error(err);
+            tampilkanAlert("Fingerprint dibatalkan atau tidak didukung.", "error");
+        }
+    }
   </script>
 </body>
 </html>
