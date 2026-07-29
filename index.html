@@ -427,11 +427,11 @@
     </header>
   </div>
 
-  <div class="page-content active" id="page-home">
+    <div class="page-content active" id="page-home">
     <div class="admin-add-trigger-box" id="btn-show-web" onclick="toggleForm('web-form', 'btn-show-web', 'Web Saya')">
         <i class="fas fa-plus-circle"></i> Tambah Web Saya Baru
     </div>
-        <div class="admin-form-card" id="web-form">
+    <div class="admin-form-card" id="web-form">
         <div class="admin-form-title"><i class="fas fa-globe"></i> Input Web Baru</div>
         <textarea id="web-title" class="admin-textarea" placeholder="Nama Web (Bisa klik enter paragraf baru...)"></textarea>
         <textarea id="web-url" class="admin-textarea" placeholder="Link Website (Contoh: https://...)"></textarea>
@@ -439,6 +439,8 @@
         <textarea id="web-category" class="admin-textarea" style="height: 45px;" placeholder="Kategori (Contoh: tools, lainnya, dll...)"></textarea>
         <button class="admin-btn-save" onclick="simpanWebKeSupabase()">Simpan Ke Database</button>
     </div>
+    <div id="container-web-list"></div>
+  </div>
 
   <div class="page-content" id="page-appmod">
     <div class="admin-add-trigger-box" id="btn-show-app" onclick="toggleForm('app-form', 'btn-show-app', 'App Mod')">
