@@ -348,8 +348,8 @@
                             <input type="password" id="adminPinInput" placeholder="Nyalakan lampu dulu..." disabled maxlength="6" pattern="\d*" inputmode="numeric">
                         </div>
                         <button class="login-btn" id="login-btn" type="button" disabled onclick="verifikasiLoginAdmin()">Sign-in</button>
-                        <button type="button" id="fingerprint-login-btn" style="width:100%; margin-top:10px; padding:10px; background:transparent; border:1px solid rgba(255,255,255,0.15); border-radius:20px; color:#fff; font-size:0.85rem; cursor:pointer;" onclick="loginFingerprint()">
-                            🔒 Masuk dengan Fingerprint
+                        <button type="button" id="fingerprint-login-btn" disabled style="width:100%; margin-top:10px; padding:10px; background:transparent; border:1px solid rgba(255,255,255,0.15); border-radius:20px; color:#fff; font-size:0.85rem; cursor:pointer;" onclick="loginFingerprint()">
+    🔒 Masuk dengan Fingerprint
                         </button>
                     </form>
                 </div>
@@ -431,14 +431,14 @@
     <div class="admin-add-trigger-box" id="btn-show-web" onclick="toggleForm('web-form', 'btn-show-web', 'Web Saya')">
         <i class="fas fa-plus-circle"></i> Tambah Web Saya Baru
     </div>
-    <div class="admin-form-card" id="web-form">
+        <div class="admin-form-card" id="web-form">
         <div class="admin-form-title"><i class="fas fa-globe"></i> Input Web Baru</div>
         <textarea id="web-title" class="admin-textarea" placeholder="Nama Web (Bisa klik enter paragraf baru...)"></textarea>
         <textarea id="web-url" class="admin-textarea" placeholder="Link Website (Contoh: https://...)"></textarea>
+        <!-- INPUT KATEGORI KETIK BEBAS -->
+        <textarea id="web-category" class="admin-textarea" style="height: 45px;" placeholder="Kategori (Contoh: tools, lainnya, dll...)"></textarea>
         <button class="admin-btn-save" onclick="simpanWebKeSupabase()">Simpan Ke Database</button>
     </div>
-    <div id="container-web-list"></div>
-  </div>
 
   <div class="page-content" id="page-appmod">
     <div class="admin-add-trigger-box" id="btn-show-app" onclick="toggleForm('app-form', 'btn-show-app', 'App Mod')">
@@ -529,10 +529,10 @@
         <button type="button" onclick="daftarkanFingerprint()" style="width:100%; padding:10px 16px; background:linear-gradient(135deg, #f3d078 0%, #c89d36 100%); border:none; border-radius:20px; color:#121216; font-weight:600; cursor:pointer;">
             🔒 Daftarkan Fingerprint
         </button>
+        <button type="button" onclick="hapusFingerprint()" style="width:100%; margin-top:10px; padding:10px 16px; background:transparent; border:1px solid var(--admin-delete); border-radius:20px; color:var(--admin-delete); font-weight:600; cursor:pointer;">
+            🗑️ Hapus Semua Fingerprint Terdaftar
+        </button>
       </div>
-
-    </div>
-  </div>
 
     <div class="page-content" id="page-profil">
     <div class="vip-card">
@@ -776,12 +776,15 @@
         fieldsContainer.innerHTML = '';
 
         let innerH = '';
-        if (tabel === 'web_saya') {
+                if (tabel === 'web_saya') {
             let data = memoriWeb[index];
             let namaAsli = (data.nama_web || '').replace(/<br\s*\/?>/mg, "\n");
             let linkAsli = (data.link_web || '').replace(/<br\s*\/?>/mg, "\n");
+            let katAsli = (data.kategori || 'lainnya');
+            
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama Web</label><textarea id="upd-1" class="admin-textarea">${namaAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Web</label><textarea id="upd-2" class="admin-textarea">${linkAsli}</textarea>`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Kategori</label><textarea id="upd-3" class="admin-textarea" style="height:45px;">${katAsli}</textarea>`;
         } else if (tabel === 'app_mods') {
             let data = memoriApp[index];
             let namaAsli = (data.nama_app || '').replace(/<br\s*\/?>/mg, "\n");
@@ -841,11 +844,12 @@ requestAnimationFrame(()=>{
         let targetId = 0;
 
         // Mapping ID dan Data
-        if (tabel === 'web_saya') {
+                if (tabel === 'web_saya') {
             targetId = memoriWeb[index].id;
             payload = { 
                 nama_web: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), 
-                link_web: document.getElementById('upd-2').value.replace(/\n/g, '<br>') 
+                link_web: document.getElementById('upd-2').value.replace(/\n/g, '<br>'),
+                kategori: document.getElementById('upd-3').value.trim().toLowerCase() 
             };
         } else if (tabel === 'app_mods') {
             targetId = memoriApp[index].id;
@@ -902,13 +906,33 @@ requestAnimationFrame(()=>{
             container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header" style="margin-bottom:0;"><div class="mod-box-title-group"><div class="mod-box-icon" style="font-size:20px; width:40px; height:40px;"><i class="fas fa-globe"></i></div><div class="mod-box-name">${web.nama_web}</div></div></div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'web_saya')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusWeb(${web.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
         });
     }
-    async function simpanWebKeSupabase() {
+        async function simpanWebKeSupabase() {
         const nama = document.getElementById('web-title').value.replace(/\n/g, '<br>'); 
         const url = document.getElementById('web-url').value.replace(/\n/g, '<br>');
+        let kategori = document.getElementById('web-category').value.trim().toLowerCase();
+        
+        if(!kategori) kategori = 'lainnya'; // Default jika kosong
+
         if(!nama || !url) return tampilkanAlert("Wajib diisi!", "error");
-        const { error } = await supabaseClient.from('web_saya').insert([{ nama_web: nama, link_web: url }]);
-        if (!error) { tampilkanAlert("Tersimpan!", "sukses"); toggleForm('web-form', 'btn-show-web', 'Web Saya'); ambilDataWeb(); }
+        
+        const { error } = await supabaseClient.from('web_saya').insert([{ 
+            nama_web: nama, 
+            link_web: url, 
+            kategori: kategori 
+        }]);
+
+        if (!error) { 
+            tampilkanAlert("Tersimpan!", "sukses"); 
+            document.getElementById('web-title').value = '';
+            document.getElementById('web-url').value = '';
+            document.getElementById('web-category').value = '';
+            toggleForm('web-form', 'btn-show-web', 'Web Saya'); 
+            ambilDataWeb(); 
+        } else {
+            tampilkanAlert("Gagal menyimpan: " + error.message, "error");
+        }
     }
+
         async function hapusWeb(id) { 
     tampilkanConfirmLiquidGlass(
         "Hapus Web Saya", 
@@ -1380,15 +1404,22 @@ const pullChain = document.getElementById("pull-chain");
 const pinInput = document.getElementById("adminPinInput");
 const loginBtn = document.getElementById("login-btn");
 
+// KODE BARU
 function updateLampState(isOn) {
+    // 1. Mengambil referensi elemen tombol fingerprint
+    const fingerprintBtn = document.getElementById("fingerprint-login-btn");
+
     if (isOn) {
         lampContainer.classList.remove("off");
         lampContainer.classList.add("on");
 
         pinInput.disabled = false;
         loginBtn.disabled = false;
-        pinInput.placeholder = "Input PIN";
+        
+        // Membuka kunci tombol fingerprint jika lampu ON
+        if (fingerprintBtn) fingerprintBtn.disabled = false; 
 
+        pinInput.placeholder = "Input PIN";
         setTimeout(() => pinInput.focus(), 50);
 
     } else {
@@ -1398,9 +1429,14 @@ function updateLampState(isOn) {
         pinInput.value = "";
         pinInput.disabled = true;
         loginBtn.disabled = true;
+        
+        // Mengunci tombol fingerprint jika lampu OFF
+        if (fingerprintBtn) fingerprintBtn.disabled = true; 
+
         pinInput.placeholder = "Nyalakan lampu terlebih dahulu";
     }
 }
+
 
 // Kondisi awal
 updateLampState(false);
@@ -1530,6 +1566,21 @@ function tampilkanConfirmLiquidGlass(judul, pesan, ikonClass, warnaTombol, callb
         } catch (err) {
             console.error(err);
             tampilkanAlert("Fingerprint dibatalkan atau tidak didukung.", "error");
+        }
+    }
+
+    async function hapusFingerprint() {
+        if (!confirm("Yakin hapus semua fingerprint terdaftar? Kamu cuma bisa login pakai PIN setelah ini.")) return;
+        try {
+            const res = await fetch('/api/webauthn-remove', { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                tampilkanAlert("Semua fingerprint berhasil dihapus.", "sukses");
+            } else {
+                tampilkanAlert("Gagal menghapus fingerprint.", "error");
+            }
+        } catch (err) {
+            tampilkanAlert("Terjadi kesalahan: " + err.message, "error");
         }
     }
   </script>
