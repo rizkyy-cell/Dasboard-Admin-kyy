@@ -43,25 +43,118 @@
     .admin-input { width: 100%; padding: 12px 15px; margin-bottom: 12px; border-radius: 10px; background: var(--tg-bg); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 14px; outline: none; font-family: inherit; }
     .admin-input:focus { border-color: var(--tg-accent); }
 
-    /* CUSTOM DROPDOWN KATEGORI */
-    .kategori-trigger { width: 100%; padding: 12px 15px; margin-bottom: 12px; border-radius: 10px; background: var(--tg-bg); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
-    .kategori-trigger.open { border-color: var(--tg-accent); }
-    .kategori-trigger i { color: var(--tg-text-muted); transition: transform 0.25s ease; }
+    /* CUSTOM DROPDOWN KATEGORI (SELECT-ONLY, LIQUID GLASS, SMOOTH) */
+    .kategori-trigger { width: 100%; padding: 12px 15px; margin-bottom: 12px; border-radius: 10px; background: var(--tg-bg); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; transition: border-color 0.3s ease, background 0.3s ease, transform 0.15s ease; }
+    .kategori-trigger:active { transform: scale(0.985); }
+    .kategori-trigger.open { border-color: var(--tg-accent); background: rgba(51, 144, 236, 0.08); }
+    .kategori-trigger i { color: var(--tg-text-muted); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s ease; }
     .kategori-trigger.open i { transform: rotate(180deg); color: var(--tg-accent); }
-    .kategori-dropdown-panel { position: fixed; z-index: 100000; background: rgba(23, 33, 43, 0.98); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); overflow: hidden; opacity: 0; transform: translateY(-8px); pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease; }
-    .kategori-dropdown-panel.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
-    .kategori-dropdown-list { max-height: 200px; overflow-y: auto; }
-    .kategori-dropdown-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; font-size: 14px; color: var(--tg-text); border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer; }
-    .kategori-dropdown-item:last-child { border-bottom: none; }
-    .kategori-dropdown-item.selected { color: var(--admin-add); font-weight: 700; }
+
+    .kategori-dropdown-panel {
+        position: fixed; z-index: 100000;
+        background: linear-gradient(135deg, rgba(30, 41, 53, 0.85), rgba(14, 22, 33, 0.9));
+        backdrop-filter: blur(28px) saturate(180%);
+        -webkit-backdrop-filter: blur(28px) saturate(180%);
+        border: 1px solid rgba(255,255,255,0.14);
+        border-top: 1px solid rgba(255,255,255,0.35);
+        border-radius: 16px;
+        box-shadow: 0 16px 45px rgba(0,0,0,0.55), inset 0 1px 1px rgba(255,255,255,0.12);
+        overflow: hidden;
+        opacity: 0; transform: translateY(-10px) scale(0.97);
+        pointer-events: none;
+        transform-origin: top center;
+        transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1), transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .kategori-dropdown-panel.show { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+    .kategori-dropdown-list { max-height: 240px; overflow-y: auto; padding: 6px; }
+    .kategori-dropdown-item {
+        display: flex; align-items: center; gap: 10px;
+        padding: 11px 12px; font-size: 14px; color: var(--tg-text);
+        cursor: pointer; border-radius: 10px;
+        transition: background 0.2s ease, transform 0.15s ease, opacity 0.25s ease;
+        opacity: 0; transform: translateY(6px);
+        animation: kategoriItemIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .kategori-dropdown-item:hover { background: rgba(255,255,255,0.06); }
+    .kategori-dropdown-item:active { transform: scale(0.98); }
+    .kategori-dropdown-item.selected { color: var(--admin-add); font-weight: 700; background: rgba(16, 185, 129, 0.1); }
+    .kategori-dropdown-item.selected .kat-check { opacity: 1; transform: scale(1); }
     .kategori-dropdown-item span.nama-kat { flex: 1; }
-    .kategori-dropdown-item .hapus-kat-btn { color: var(--admin-delete); padding: 4px 8px; margin-left: 8px; opacity: 0.8; }
-    .kategori-dropdown-item .hapus-kat-btn:active { opacity: 1; }
-    .kategori-add-row { display: flex; gap: 8px; padding: 10px; border-top: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.15); }
-    .kategori-add-row input { flex: 1; padding: 9px 12px; border-radius: 8px; background: var(--tg-bg); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 13px; outline: none; }
-    .kategori-add-row input:focus { border-color: var(--tg-accent); }
-    .kategori-add-row button { padding: 0 14px; border: none; border-radius: 8px; background: var(--admin-add); color: white; font-weight: bold; cursor: pointer; }
-    .kategori-dropdown-empty { padding: 14px; text-align: center; font-size: 12.5px; color: var(--tg-text-muted); }
+    .kategori-dropdown-item .kat-check { color: var(--admin-add); font-size: 12px; opacity: 0; transform: scale(0.5); transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .kategori-dropdown-empty { padding: 18px 14px; text-align: center; font-size: 12.5px; color: var(--tg-text-muted); }
+    .kategori-dropdown-footer-hint { padding: 10px 14px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 11px; color: var(--tg-text-muted); text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .kategori-dropdown-footer-hint i { color: var(--tg-accent); }
+
+    @keyframes kategoriItemIn { to { opacity: 1; transform: translateY(0); } }
+
+    /* MANAJEMEN KATEGORI - LIQUID GLASS (TAB PENGATURAN) */
+    .kategori-manager-card {
+        background: linear-gradient(135deg, rgba(23, 33, 43, 0.85), rgba(14, 22, 33, 0.92));
+        backdrop-filter: blur(25px) saturate(180%);
+        -webkit-backdrop-filter: blur(25px) saturate(180%);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-top: 1px solid rgba(255,255,255,0.28);
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.45), inset 0 1px 1px rgba(255,255,255,0.08);
+        position: relative;
+        overflow: hidden;
+    }
+    .kategori-manager-title { font-size: 15px; font-weight: bold; color: var(--tg-accent); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+    .kategori-manager-desc { font-size: 12px; color: var(--tg-text-muted); margin-bottom: 16px; line-height: 1.5; }
+
+    .kategori-manager-add-row { display: flex; gap: 8px; margin-bottom: 16px; }
+    .kategori-manager-add-row input {
+        flex: 1; padding: 12px 15px; border-radius: 12px;
+        background: rgba(14, 22, 33, 0.6);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: white; font-size: 14px; outline: none;
+        transition: border-color 0.3s ease, background 0.3s ease;
+    }
+    .kategori-manager-add-row input:focus { border-color: var(--admin-add); background: rgba(14, 22, 33, 0.9); }
+    .kategori-manager-add-row button {
+        width: 46px; height: 46px; flex-shrink: 0; border: none; border-radius: 12px;
+        background: linear-gradient(135deg, #10b981, #0d9668);
+        color: white; font-weight: bold; cursor: pointer; font-size: 16px;
+        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+        transition: transform 0.15s ease, box-shadow 0.25s ease;
+    }
+    .kategori-manager-add-row button:active { transform: scale(0.92); box-shadow: 0 3px 8px rgba(16, 185, 129, 0.3); }
+
+    .kategori-manager-list { display: flex; flex-direction: column; gap: 8px; }
+    .kategori-manager-item {
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 14px; border-radius: 14px;
+        background: rgba(255,255,255,0.035);
+        border: 1px solid rgba(255,255,255,0.06);
+        opacity: 0; transform: translateY(10px) scale(0.98);
+        animation: kategoriRowIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        transition: background 0.25s ease, border-color 0.25s ease, opacity 0.25s ease, transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), padding 0.35s ease, margin 0.35s ease;
+        overflow: hidden;
+        max-height: 60px;
+    }
+    .kategori-manager-item:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); }
+    .kategori-manager-item.removing {
+        opacity: 0; transform: translateX(30px) scale(0.9);
+        max-height: 0; padding-top: 0; padding-bottom: 0; margin: 0; border-width: 0;
+    }
+    .kategori-manager-icon {
+        width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+        background: rgba(51, 144, 236, 0.12); color: var(--tg-accent);
+        display: flex; align-items: center; justify-content: center; font-size: 13px;
+    }
+    .kategori-manager-name { flex: 1; font-size: 14px; font-weight: 600; color: var(--tg-text); }
+    .kategori-manager-count { font-size: 10.5px; color: var(--tg-text-muted); background: rgba(255,255,255,0.05); padding: 3px 8px; border-radius: 20px; flex-shrink: 0; }
+    .kategori-manager-delete {
+        width: 32px; height: 32px; flex-shrink: 0; border: none; border-radius: 9px;
+        background: rgba(239, 68, 68, 0.12); color: var(--admin-delete);
+        display: flex; align-items: center; justify-content: center; cursor: pointer;
+        transition: background 0.2s ease, transform 0.15s ease;
+    }
+    .kategori-manager-delete:active { transform: scale(0.88); background: rgba(239, 68, 68, 0.28); }
+    .kategori-manager-empty { text-align: center; padding: 24px 10px; color: var(--tg-text-muted); font-size: 12.5px; }
+
+    @keyframes kategoriRowIn { to { opacity: 1; transform: translateY(0) scale(1); } }
 
 
     .mod-box-item { background: rgba(23, 33, 43, 0.8); margin: 12px 15px; padding: 18px; border-radius: 18px; border: 1px solid rgba(255, 255, 255, 0.08); }
@@ -417,10 +510,7 @@
 
   <div id="kategoriDropdownPanel" class="kategori-dropdown-panel">
     <div class="kategori-dropdown-list" id="kategoriDropdownList"></div>
-    <div class="kategori-add-row">
-        <input type="text" id="kategoriInputBaru" placeholder="Nama kategori baru..." maxlength="20" onkeydown="if(event.key==='Enter'){event.preventDefault(); tambahKategoriBaruDropdown();}">
-        <button onclick="tambahKategoriBaruDropdown()"><i class="fas fa-plus"></i></button>
-    </div>
+    <div class="kategori-dropdown-footer-hint"><i class="fas fa-sliders-h"></i> Kelola kategori di tab Pengaturan</div>
   </div>
 
   <!-- MODAL KONFIRMASI LIQUID GLASS UNIVERSAL -->
@@ -513,6 +603,16 @@
 
   <div class="page-content" id="page-pengaturan">
     <div class="settings-container">
+      <div class="kategori-manager-card" style="margin-bottom: 15px;">
+        <div class="kategori-manager-title"><i class="fas fa-tags"></i> Manajemen Kategori Web</div>
+        <div class="kategori-manager-desc">Tambah atau hapus kategori yang tersedia saat menyimpan link Web Saya. Perubahan langsung tersinkron ke database.</div>
+        <div class="kategori-manager-add-row">
+            <input type="text" id="kategoriManagerInput" placeholder="Nama kategori baru..." maxlength="20" onkeydown="if(event.key==='Enter'){event.preventDefault(); tambahKategoriManager();}">
+            <button onclick="tambahKategoriManager()"><i class="fas fa-plus"></i></button>
+        </div>
+        <div class="kategori-manager-list" id="kategoriManagerList"></div>
+      </div>
+
       <div class="settings-card">
         <div style="font-size:15px; font-weight:bold; color:var(--tg-accent);"><i class="fas fa-palette"></i> Aksen Warna Tema Admin</div>
         <div class="theme-grid">
@@ -797,6 +897,7 @@
         titleEl.innerHTML = 'Pengaturan <span class="admin-badge">DEV</span>'; 
         muatAnnouncementAdmin(); 
         ambilDataInboxAdmin();
+        muatDaftarKategori().then(renderKategoriManagerList);
     } else {
         titleEl.innerHTML = 'Profile <span class="admin-badge">DEV</span>';
     }
@@ -954,16 +1055,16 @@ requestAnimationFrame(()=>{
         if (!listEl) return;
         const nilaiAktif = document.getElementById(kategoriActiveValueId)?.value || '';
         if (daftarKategori.length === 0) {
-            listEl.innerHTML = `<div class="kategori-dropdown-empty">Belum ada kategori</div>`;
+            listEl.innerHTML = `<div class="kategori-dropdown-empty">Belum ada kategori.<br>Tambahkan lewat tab Pengaturan.</div>`;
             return;
         }
-        listEl.innerHTML = daftarKategori.map(k => {
+        listEl.innerHTML = daftarKategori.map((k, idx) => {
             const namaLower = k.nama.toLowerCase();
             const namaLabel = k.nama.charAt(0).toUpperCase() + k.nama.slice(1);
             const isSelected = namaLower === nilaiAktif;
-            return `<div class="kategori-dropdown-item ${isSelected ? 'selected' : ''}">
-                        <span class="nama-kat" onclick="pilihKategoriDropdown('${namaLower}', '${namaLabel.replace(/'/g, "\\'")}')">${namaLabel}</span>
-                        <i class="fas fa-trash hapus-kat-btn" onclick="event.stopPropagation(); hapusKategoriDropdown(${k.id === null ? 'null' : k.id}, '${namaLower}')"></i>
+            return `<div class="kategori-dropdown-item ${isSelected ? 'selected' : ''}" style="animation-delay:${idx * 0.03}s" onclick="pilihKategoriDropdown('${namaLower}', '${namaLabel.replace(/'/g, "\\'")}')">
+                        <span class="nama-kat">${namaLabel}</span>
+                        <i class="fas fa-check kat-check"></i>
                     </div>`;
         }).join('');
     }
@@ -992,9 +1093,6 @@ requestAnimationFrame(()=>{
         panel.style.left = rect.left + 'px';
         panel.style.top = (rect.bottom + 6) + 'px';
         panel.classList.add('show');
-
-        const inputBaru = document.getElementById('kategoriInputBaru');
-        if (inputBaru) inputBaru.value = '';
     }
 
     function tutupDropdownKategori() {
@@ -1010,8 +1108,34 @@ requestAnimationFrame(()=>{
         tutupDropdownKategori();
     }
 
-    async function tambahKategoriBaruDropdown() {
-        const inputEl = document.getElementById('kategoriInputBaru');
+    // =====================================================================
+    // MANAJEMEN KATEGORI (TAB PENGATURAN) - LIQUID GLASS + SMOOTH ANIMATION
+    // =====================================================================
+    function renderKategoriManagerList() {
+        const listEl = document.getElementById('kategoriManagerList');
+        if (!listEl) return;
+
+        if (daftarKategori.length === 0) {
+            listEl.innerHTML = `<div class="kategori-manager-empty"><i class="fas fa-folder-open" style="font-size:22px; display:block; margin-bottom:8px; opacity:0.5;"></i>Belum ada kategori</div>`;
+            return;
+        }
+
+        listEl.innerHTML = daftarKategori.map((k, idx) => {
+            const namaLower = k.nama.toLowerCase();
+            const namaLabel = k.nama.charAt(0).toUpperCase() + k.nama.slice(1);
+            const jumlahDipakai = memoriWeb.filter(w => (w.kategori || 'lainnya').toLowerCase() === namaLower).length;
+            const idAttr = k.id === null ? 'null' : k.id;
+            return `<div class="kategori-manager-item" id="kat-row-${idAttr}" style="animation-delay:${idx * 0.05}s">
+                        <div class="kategori-manager-icon"><i class="fas fa-tag"></i></div>
+                        <div class="kategori-manager-name">${namaLabel}</div>
+                        <div class="kategori-manager-count">${jumlahDipakai} web</div>
+                        <button class="kategori-manager-delete" onclick="hapusKategoriManager(${idAttr}, '${namaLower.replace(/'/g, "\\'")}')"><i class="fas fa-trash"></i></button>
+                    </div>`;
+        }).join('');
+    }
+
+    async function tambahKategoriManager() {
+        const inputEl = document.getElementById('kategoriManagerInput');
         if (!inputEl) return;
         const namaBaru = inputEl.value.trim();
         if (!namaBaru) return tampilkanAlert("Nama kategori tidak boleh kosong!", "error");
@@ -1028,12 +1152,12 @@ requestAnimationFrame(()=>{
         }
         daftarKategori.push(data[0]);
         daftarKategori.sort((a, b) => a.nama.localeCompare(b.nama));
-        renderKategoriDropdownList();
+        renderKategoriManagerList();
         inputEl.value = '';
         tampilkanAlert("Kategori ditambahkan!", "sukses");
     }
 
-    function hapusKategoriDropdown(id, nama) {
+    function hapusKategoriManager(id, nama) {
         if (daftarKategori.length <= 1) {
             return tampilkanAlert("Minimal harus ada 1 kategori!", "error");
         }
@@ -1043,13 +1167,24 @@ requestAnimationFrame(()=>{
             "fas fa-trash",
             "#ef4444",
             async () => {
+                const idAttr = id === null ? 'null' : id;
+                const rowEl = document.getElementById('kat-row-' + idAttr);
+
+                // Animasi hapus smooth (fade + collapse) sebelum benar-benar hilang dari DOM
+                if (rowEl) rowEl.classList.add('removing');
+
                 if (id !== null) {
                     const { error } = await supabaseClient.from('web_kategori').delete().eq('id', id);
-                    if (error) return tampilkanAlert("Gagal hapus: " + error.message, "error");
+                    if (error) {
+                        if (rowEl) rowEl.classList.remove('removing');
+                        return tampilkanAlert("Gagal hapus: " + error.message, "error");
+                    }
                 }
+
                 daftarKategori = daftarKategori.filter(k => k.nama.toLowerCase() !== nama);
-                renderKategoriDropdownList();
                 tampilkanAlert("Kategori dihapus!", "sukses");
+
+                setTimeout(() => renderKategoriManagerList(), rowEl ? 360 : 0);
             }
         );
     }
