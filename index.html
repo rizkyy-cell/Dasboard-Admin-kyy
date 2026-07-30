@@ -181,6 +181,35 @@
 
     @keyframes kategoriRowIn { to { opacity: 1; transform: translateY(0) scale(1); } }
 
+    /* FILTER KATEGORI (CHIPS) - LIQUID GLASS, SCROLLABLE, SMOOTH */
+    .kategori-filter-scroll {
+        display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden;
+        padding: 2px 15px 12px 15px; margin-top: 6px;
+        scrollbar-width: none; -ms-overflow-style: none;
+    }
+    .kategori-filter-scroll::-webkit-scrollbar { display: none; }
+    .kategori-filter-chip {
+        flex-shrink: 0; padding: 8px 16px; border-radius: 20px;
+        font-size: 12.5px; font-weight: 700; white-space: nowrap; cursor: pointer;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: var(--tg-text-muted);
+        backdrop-filter: blur(12px) saturate(160%);
+        -webkit-backdrop-filter: blur(12px) saturate(160%);
+        transition: background 0.3s cubic-bezier(0.4,0,0.2,1), color 0.3s ease, border-color 0.3s ease, transform 0.15s ease;
+        opacity: 0; transform: translateY(6px) scale(0.95);
+        animation: kategoriItemIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .kategori-filter-chip:active { transform: scale(0.94); }
+    .kategori-filter-chip.active {
+        background: linear-gradient(135deg, var(--tg-accent), #2472c4);
+        color: #ffffff; border-color: transparent;
+        box-shadow: 0 6px 16px rgba(51, 144, 236, 0.4);
+    }
+
+    /* Animasi fade-in untuk item list saat difilter */
+    .mod-box-item.kat-fade-in { animation: kategoriRowIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
 
     .mod-box-item { background: rgba(23, 33, 43, 0.8); margin: 12px 15px; padding: 18px; border-radius: 18px; border: 1px solid rgba(255, 255, 255, 0.08); }
     .mod-box-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
@@ -586,6 +615,7 @@
         <input type="hidden" id="web-kategori-value" value="lainnya">
         <button class="admin-btn-save" onclick="simpanWebKeSupabase()">Simpan Ke Database</button>
     </div>
+    <div class="kategori-filter-scroll" id="filterKategori"></div>
     <div id="container-web-list"></div>
   </div>
 
@@ -603,9 +633,15 @@
     <!-- TAMBAHAN INPUT PENGEMBANG -->
     <textarea id="app-dev-name" class="admin-textarea" placeholder="Nama Display Modder (Contoh: @rezky._kurniawan25)"></textarea>
     <textarea id="app-dev-link" class="admin-textarea" placeholder="Link Tujuan Modder (Contoh: https://t.me/...)"></textarea>
+    <div class="kategori-trigger" id="app-kategori-trigger" onclick="bukaDropdownKategori(this, 'app-kategori-value', 'app-kategori-label', 'app')">
+        <span id="app-kategori-label">Lainnya</span>
+        <i class="fas fa-chevron-down"></i>
+    </div>
+    <input type="hidden" id="app-kategori-value" value="lainnya">
     <button class="admin-btn-save" onclick="simpanAppKeSupabase()">Simpan Ke Database</button>
 </div>
 
+    <div class="kategori-filter-scroll" id="filterKategoriApp"></div>
     <div id="container-app-list"></div>
   </div>
 
@@ -621,8 +657,14 @@
         <textarea id="prod-stock" class="admin-textarea" placeholder="Jumlah Stock / Ketersediaan"></textarea>
         <textarea id="prod-wa" class="admin-textarea" placeholder="Link Order WA"></textarea>
         <textarea id="prod-img" class="admin-textarea" placeholder="Link Gambar Produk (Opsional)"></textarea>
+        <div class="kategori-trigger" id="prod-kategori-trigger" onclick="bukaDropdownKategori(this, 'prod-kategori-value', 'prod-kategori-label', 'store')">
+            <span id="prod-kategori-label">Lainnya</span>
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        <input type="hidden" id="prod-kategori-value" value="lainnya">
         <button class="admin-btn-save" onclick="simpanStoreKeSupabase()">Simpan Ke Database</button>
     </div>
+    <div class="kategori-filter-scroll" id="filterKategoriStore"></div>
     <div id="container-store-list"></div>
   </div>
 
@@ -640,6 +682,34 @@
             <button class="kategori-manager-cancel" onclick="toggleKategoriAddForm(true)"><i class="fas fa-times"></i></button>
         </div>
         <div class="kategori-manager-list" id="kategoriManagerList"></div>
+      </div>
+
+      <div class="kategori-manager-card" style="margin-bottom: 15px;">
+        <div class="kategori-manager-title"><i class="fas fa-tags"></i> Manajemen Kategori App Mod</div>
+        <div class="kategori-manager-desc">Tambah atau hapus kategori yang tersedia saat menyimpan Aplikasi Mod. Terpisah dari kategori Web Saya.</div>
+        <div class="kategori-manager-toggle-add" id="kategoriAddToggleApp" onclick="toggleKategoriAddForm('app')">
+            <i class="fas fa-plus-circle"></i> <span id="kategoriAddToggleLabelApp">Tambah Kategori Baru</span>
+        </div>
+        <div class="kategori-manager-add-row" id="kategoriAddRowApp">
+            <input type="text" id="kategoriManagerInputApp" placeholder="Nama kategori baru..." maxlength="20" onkeydown="if(event.key==='Enter'){event.preventDefault(); tambahKategoriManager('app');}">
+            <button onclick="tambahKategoriManager('app')"><i class="fas fa-check"></i></button>
+            <button class="kategori-manager-cancel" onclick="toggleKategoriAddForm('app', true)"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="kategori-manager-list" id="kategoriManagerListApp"></div>
+      </div>
+
+      <div class="kategori-manager-card" style="margin-bottom: 15px;">
+        <div class="kategori-manager-title"><i class="fas fa-tags"></i> Manajemen Kategori Store</div>
+        <div class="kategori-manager-desc">Tambah atau hapus kategori yang tersedia saat menyimpan Produk Store. Terpisah dari kategori Web Saya & App Mod.</div>
+        <div class="kategori-manager-toggle-add" id="kategoriAddToggleStore" onclick="toggleKategoriAddForm('store')">
+            <i class="fas fa-plus-circle"></i> <span id="kategoriAddToggleLabelStore">Tambah Kategori Baru</span>
+        </div>
+        <div class="kategori-manager-add-row" id="kategoriAddRowStore">
+            <input type="text" id="kategoriManagerInputStore" placeholder="Nama kategori baru..." maxlength="20" onkeydown="if(event.key==='Enter'){event.preventDefault(); tambahKategoriManager('store');}">
+            <button onclick="tambahKategoriManager('store')"><i class="fas fa-check"></i></button>
+            <button class="kategori-manager-cancel" onclick="toggleKategoriAddForm('store', true)"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="kategori-manager-list" id="kategoriManagerListStore"></div>
       </div>
 
       <div class="settings-card">
@@ -831,12 +901,31 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let memoriWeb = [];
-    let daftarKategori = [];
+    let daftarKategoriWeb = [];
+    let daftarKategoriApp = [];
+    let daftarKategoriStore = [];
     let kategoriActiveValueId = null;
     let kategoriActiveLabelId = null;
     let kategoriActiveTriggerEl = null;
+    let kategoriActiveSumber = 'web'; // 'web' | 'app' | 'store'
+    let filterAktifWeb = 'semua';
+    let filterAktifApp = 'semua';
+    let filterAktifStore = 'semua';
     let memoriApp = [];
     let memoriStore = [];
+
+    // Konfigurasi terpusat sistem kategori per modul (Web / App Mod / Store)
+    const KATEGORI_CFG = {
+        web:   { tabel: 'web_kategori',   getDaftar: () => daftarKategoriWeb,   setDaftar: v => daftarKategoriWeb = v,   getData: () => memoriWeb,   fallback: [{ id: null, nama: 'tools' }, { id: null, nama: 'lainnya' }] },
+        app:   { tabel: 'app_kategori',   getDaftar: () => daftarKategoriApp,   setDaftar: v => daftarKategoriApp = v,   getData: () => memoriApp,   fallback: [{ id: null, nama: 'game' }, { id: null, nama: 'lainnya' }] },
+        store: { tabel: 'store_kategori', getDaftar: () => daftarKategoriStore, setDaftar: v => daftarKategoriStore = v, getData: () => memoriStore, fallback: [{ id: null, nama: 'langganan' }, { id: null, nama: 'lainnya' }] }
+    };
+    const KATEGORI_SUFFIX = { web: '', app: 'App', store: 'Store' };
+    const KATEGORI_FILTER_STATE = {
+        web:   { get: () => filterAktifWeb,   set: v => filterAktifWeb = v },
+        app:   { get: () => filterAktifApp,   set: v => filterAktifApp = v },
+        store: { get: () => filterAktifStore, set: v => filterAktifStore = v }
+    };
 
     async function verifikasiLoginAdmin() {
     const inputPin = document.getElementById('adminPinInput').value;
@@ -871,7 +960,9 @@
             ambilDataAnnouncement();
             ambilDataInboxAdmin();
             muatStatusSosmedAdmin();
-            muatDaftarKategori();
+            muatDaftarKategori('web').then(() => renderFilterKategori('web'));
+            muatDaftarKategori('app').then(() => renderFilterKategori('app'));
+            muatDaftarKategori('store').then(() => renderFilterKategori('store'));
             resetSessionTimer();
             
             // Refresh tabel agar log SUKSES tadi langsung muncul di atas
@@ -916,17 +1007,22 @@
     if (page === 'home') {
         titleEl.innerHTML = 'Web Admin <span class="admin-badge">DEV</span>';
         ambilDataWeb();
+        muatDaftarKategori('web').then(() => renderFilterKategori('web'));
     } else if (page === 'appmod') {
         titleEl.innerHTML = 'App Mod <span class="admin-badge">DEV</span>';
         ambilDataApp();
+        muatDaftarKategori('app').then(() => renderFilterKategori('app'));
     } else if (page === 'store') { 
         titleEl.innerHTML = 'Store Admin <span class="admin-badge">DEV</span>'; 
         ambilDataStore(); // <-- MEMANGGIL TARIK DATA STORE SAAT TAB DIKLIK
+        muatDaftarKategori('store').then(() => renderFilterKategori('store'));
     } else if (page === 'pengaturan') { 
         titleEl.innerHTML = 'Pengaturan <span class="admin-badge">DEV</span>'; 
         muatAnnouncementAdmin(); 
         ambilDataInboxAdmin();
-        muatDaftarKategori().then(renderKategoriManagerList);
+        muatDaftarKategori('web').then(() => renderKategoriManagerList('web'));
+        muatDaftarKategori('app').then(() => renderKategoriManagerList('app'));
+        muatDaftarKategori('store').then(() => renderKategoriManagerList('store'));
     } else {
         titleEl.innerHTML = 'Profile <span class="admin-badge">DEV</span>';
     }
@@ -965,6 +1061,8 @@
             let imgAsli = (data.img_url || '').replace(/<br\s*\/?>/mg, "\n");
             let devNameAsli = (data.dev_name || '');
             let devLinkAsli = (data.dev_link || '');
+            let kategoriAsli = (data.kategori || 'lainnya').toLowerCase();
+            let kategoriLabelAsli = kategoriAsli.charAt(0).toUpperCase() + kategoriAsli.slice(1);
 
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama App</label><textarea id="upd-1" class="admin-textarea">${namaAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Deskripsi</label><textarea id="upd-2" class="admin-textarea tinggi">${descAsli}</textarea>`;
@@ -973,6 +1071,7 @@
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Ikon</label><textarea id="upd-5" class="admin-textarea">${imgAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Display Modder</label><textarea id="upd-6" class="admin-textarea">${devNameAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Modder</label><textarea id="upd-7" class="admin-textarea">${devLinkAsli}</textarea>`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Kategori</label><div class="kategori-trigger" id="upd-kategori-trigger" onclick="bukaDropdownKategori(this, 'upd-kategori-value', 'upd-kategori-label', 'app')"><span id="upd-kategori-label">${kategoriLabelAsli}</span><i class="fas fa-chevron-down"></i></div><input type="hidden" id="upd-kategori-value" value="${kategoriAsli}">`;
         } else if (tabel === 'store_products') {
             let data = memoriStore[index];
             let namaAsli = (data.nama_produk || '').replace(/<br\s*\/?>/mg, "\n");
@@ -980,12 +1079,15 @@
             let hargaAsli = (data.harga || '').replace(/<br\s*\/?>/mg, "\n");
             let linkAsli = (data.link_wa || '').replace(/<br\s*\/?>/mg, "\n");
             let imgAsli = (data.img_url || '').replace(/<br\s*\/?>/mg, "\n");
+            let kategoriAsliStore = (data.kategori || 'lainnya').toLowerCase();
+            let kategoriLabelAsliStore = kategoriAsliStore.charAt(0).toUpperCase() + kategoriAsliStore.slice(1);
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama Produk</label><textarea id="upd-1" class="admin-textarea">${namaAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Deskripsi</label><textarea id="upd-2" class="admin-textarea tinggi">${descAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Harga Jual</label><textarea id="upd-3" class="admin-textarea">${hargaAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Stock Produk</label><input type="text" id="upd-stock" class="admin-input" style="width:100%; padding:12px; background:var(--tg-bg); border:1px solid rgba(255,255,255,0.1); color:white; border-radius:10px;" value="${(data.stock || '')}">`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link WA</label><textarea id="upd-4" class="admin-textarea">${linkAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Gambar</label><textarea id="upd-5" class="admin-textarea">${imgAsli}</textarea>`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Kategori</label><div class="kategori-trigger" id="upd-kategori-trigger" onclick="bukaDropdownKategori(this, 'upd-kategori-value', 'upd-kategori-label', 'store')"><span id="upd-kategori-label">${kategoriLabelAsliStore}</span><i class="fas fa-chevron-down"></i></div><input type="hidden" id="upd-kategori-value" value="${kategoriAsliStore}">`;
         }
         fieldsContainer.innerHTML = innerH;
         const popup=document.getElementById("editDataPopup");
@@ -1031,7 +1133,8 @@ requestAnimationFrame(()=>{
                 link_download: document.getElementById('upd-4').value.replace(/\n/g, '<br>'), 
                 img_url: document.getElementById('upd-5').value.replace(/\n/g, '<br>'),
                 dev_name: document.getElementById('upd-6').value.trim(),
-                dev_link: document.getElementById('upd-7').value.trim()
+                dev_link: document.getElementById('upd-7').value.trim(),
+                kategori: document.getElementById('upd-kategori-value').value
             };
         } else if (tabel === 'store_products') {
             targetId = memoriStore[index].id;
@@ -1041,7 +1144,8 @@ requestAnimationFrame(()=>{
                 harga: document.getElementById('upd-3').value.replace(/\n/g, '<br>'), 
                 stock: document.getElementById('upd-stock').value, 
                 link_wa: document.getElementById('upd-4').value, 
-                img_url: document.getElementById('upd-5').value.replace(/\n/g, '<br>') 
+                img_url: document.getElementById('upd-5').value.replace(/\n/g, '<br>'),
+                kategori: document.getElementById('upd-kategori-value').value
             };
         }
 
@@ -1067,27 +1171,30 @@ requestAnimationFrame(()=>{
 
 
     // =====================================================================
-    // SISTEM KATEGORI DINAMIS (CUSTOM DROPDOWN)
+    // SISTEM KATEGORI DINAMIS (CUSTOM DROPDOWN) - MULTI MODUL (Web/App/Store)
     // =====================================================================
-    async function muatDaftarKategori() {
-        const { data, error } = await supabaseClient.from('web_kategori').select('*').order('nama', { ascending: true });
+    async function muatDaftarKategori(sumber = 'web') {
+        const cfg = KATEGORI_CFG[sumber];
+        if (!cfg) return;
+        const { data, error } = await supabaseClient.from(cfg.tabel).select('*').order('nama', { ascending: true });
         if (error || !data || data.length === 0) {
             // Fallback default kalau tabel belum dibuat / masih kosong
-            daftarKategori = [{ id: null, nama: 'tools' }, { id: null, nama: 'lainnya' }];
+            cfg.setDaftar(cfg.fallback.slice());
         } else {
-            daftarKategori = data;
+            cfg.setDaftar(data);
         }
     }
 
     function renderKategoriDropdownList() {
         const listEl = document.getElementById('kategoriDropdownList');
         if (!listEl) return;
+        const daftarAktif = KATEGORI_CFG[kategoriActiveSumber].getDaftar();
         const nilaiAktif = document.getElementById(kategoriActiveValueId)?.value || '';
-        if (daftarKategori.length === 0) {
+        if (daftarAktif.length === 0) {
             listEl.innerHTML = `<div class="kategori-dropdown-empty">Belum ada kategori.<br>Tambahkan lewat tab Pengaturan.</div>`;
             return;
         }
-        listEl.innerHTML = daftarKategori.map((k, idx) => {
+        listEl.innerHTML = daftarAktif.map((k, idx) => {
             const namaLower = k.nama.toLowerCase();
             const namaLabel = k.nama.charAt(0).toUpperCase() + k.nama.slice(1);
             const isSelected = namaLower === nilaiAktif;
@@ -1098,7 +1205,7 @@ requestAnimationFrame(()=>{
         }).join('');
     }
 
-    function bukaDropdownKategori(triggerEl, valueId, labelId) {
+    function bukaDropdownKategori(triggerEl, valueId, labelId, sumber = 'web') {
         const panel = document.getElementById('kategoriDropdownPanel');
         if (!panel) return;
 
@@ -1111,6 +1218,7 @@ requestAnimationFrame(()=>{
         kategoriActiveValueId = valueId;
         kategoriActiveLabelId = labelId;
         kategoriActiveTriggerEl = triggerEl;
+        kategoriActiveSumber = sumber;
 
         document.querySelectorAll('.kategori-trigger').forEach(t => t.classList.remove('open'));
         triggerEl.classList.add('open');
@@ -1139,35 +1247,44 @@ requestAnimationFrame(()=>{
 
     // =====================================================================
     // MANAJEMEN KATEGORI (TAB PENGATURAN) - LIQUID GLASS + SMOOTH ANIMATION
+    // Berlaku generik untuk 3 modul: 'web' | 'app' | 'store'
     // =====================================================================
-    function renderKategoriManagerList() {
-        const listEl = document.getElementById('kategoriManagerList');
-        if (!listEl) return;
+    const KATEGORI_UNIT_LABEL = { web: 'web', app: 'app', store: 'produk' };
 
-        if (daftarKategori.length === 0) {
+    function renderKategoriManagerList(sumber = 'web') {
+        const suffix = KATEGORI_SUFFIX[sumber];
+        const listEl = document.getElementById('kategoriManagerList' + suffix);
+        if (!listEl) return;
+        const cfg = KATEGORI_CFG[sumber];
+        const daftar = cfg.getDaftar();
+        const dataArr = cfg.getData();
+        const unit = KATEGORI_UNIT_LABEL[sumber];
+
+        if (daftar.length === 0) {
             listEl.innerHTML = `<div class="kategori-manager-empty"><i class="fas fa-folder-open" style="font-size:22px; display:block; margin-bottom:8px; opacity:0.5;"></i>Belum ada kategori</div>`;
             return;
         }
 
-        listEl.innerHTML = daftarKategori.map((k, idx) => {
+        listEl.innerHTML = daftar.map((k, idx) => {
             const namaLower = k.nama.toLowerCase();
             const namaLabel = k.nama.charAt(0).toUpperCase() + k.nama.slice(1);
-            const jumlahDipakai = memoriWeb.filter(w => (w.kategori || 'lainnya').toLowerCase() === namaLower).length;
+            const jumlahDipakai = dataArr.filter(w => (w.kategori || 'lainnya').toLowerCase() === namaLower).length;
             const idAttr = k.id === null ? 'null' : k.id;
-            return `<div class="kategori-manager-item" id="kat-row-${idAttr}" style="animation-delay:${idx * 0.05}s">
+            return `<div class="kategori-manager-item" id="kat-row-${sumber}-${idAttr}" style="animation-delay:${idx * 0.05}s">
                         <div class="kategori-manager-icon"><i class="fas fa-tag"></i></div>
                         <div class="kategori-manager-name">${namaLabel}</div>
-                        <div class="kategori-manager-count">${jumlahDipakai} web</div>
-                        <button class="kategori-manager-delete" onclick="hapusKategoriManager(${idAttr}, '${namaLower.replace(/'/g, "\\'")}')"><i class="fas fa-trash"></i></button>
+                        <div class="kategori-manager-count">${jumlahDipakai} ${unit}</div>
+                        <button class="kategori-manager-delete" onclick="hapusKategoriManager('${sumber}', ${idAttr}, '${namaLower.replace(/'/g, "\\'")}')"><i class="fas fa-trash"></i></button>
                     </div>`;
         }).join('');
     }
 
-    function toggleKategoriAddForm(forceClose) {
-        const row = document.getElementById('kategoriAddRow');
-        const toggle = document.getElementById('kategoriAddToggle');
-        const label = document.getElementById('kategoriAddToggleLabel');
-        const input = document.getElementById('kategoriManagerInput');
+    function toggleKategoriAddForm(sumber = 'web', forceClose) {
+        const suffix = KATEGORI_SUFFIX[sumber];
+        const row = document.getElementById('kategoriAddRow' + suffix);
+        const toggle = document.getElementById('kategoriAddToggle' + suffix);
+        const label = document.getElementById('kategoriAddToggleLabel' + suffix);
+        const input = document.getElementById('kategoriManagerInput' + suffix);
         if (!row || !toggle) return;
 
         const isOpen = row.classList.contains('open');
@@ -1184,59 +1301,97 @@ requestAnimationFrame(()=>{
         }
     }
 
-    async function tambahKategoriManager() {
-        const inputEl = document.getElementById('kategoriManagerInput');
+    async function tambahKategoriManager(sumber = 'web') {
+        const suffix = KATEGORI_SUFFIX[sumber];
+        const cfg = KATEGORI_CFG[sumber];
+        const inputEl = document.getElementById('kategoriManagerInput' + suffix);
         if (!inputEl) return;
         const namaBaru = inputEl.value.trim();
         if (!namaBaru) return tampilkanAlert("Nama kategori tidak boleh kosong!", "error");
 
         const namaLower = namaBaru.toLowerCase();
-        if (daftarKategori.some(k => k.nama.toLowerCase() === namaLower)) {
+        const daftar = cfg.getDaftar();
+        if (daftar.some(k => k.nama.toLowerCase() === namaLower)) {
             return tampilkanAlert("Kategori ini sudah ada!", "error");
         }
 
-        const { data, error } = await supabaseClient.from('web_kategori').insert([{ nama: namaLower }]).select();
+        const { data, error } = await supabaseClient.from(cfg.tabel).insert([{ nama: namaLower }]).select();
         if (error) {
             tampilkanAlert("Gagal simpan kategori: " + error.message, "error");
             return;
         }
-        daftarKategori.push(data[0]);
-        daftarKategori.sort((a, b) => a.nama.localeCompare(b.nama));
-        renderKategoriManagerList();
-        toggleKategoriAddForm(true);
+        const daftarBaru = daftar.concat(data[0]).sort((a, b) => a.nama.localeCompare(b.nama));
+        cfg.setDaftar(daftarBaru);
+        renderKategoriManagerList(sumber);
+        renderFilterKategori(sumber);
+        toggleKategoriAddForm(sumber, true);
         tampilkanAlert("Kategori ditambahkan!", "sukses");
     }
 
-    function hapusKategoriManager(id, nama) {
-        if (daftarKategori.length <= 1) {
+    function hapusKategoriManager(sumber, id, nama) {
+        const cfg = KATEGORI_CFG[sumber];
+        const daftar = cfg.getDaftar();
+        if (daftar.length <= 1) {
             return tampilkanAlert("Minimal harus ada 1 kategori!", "error");
         }
         tampilkanConfirmLiquidGlass(
             "Hapus Kategori",
-            `Yakin mau hapus kategori "${nama}"? Web yang sudah pakai kategori ini tidak akan otomatis pindah.`,
+            `Yakin mau hapus kategori "${nama}"? Data yang sudah pakai kategori ini tidak akan otomatis pindah.`,
             "fas fa-trash",
             "#ef4444",
             async () => {
                 const idAttr = id === null ? 'null' : id;
-                const rowEl = document.getElementById('kat-row-' + idAttr);
+                const rowEl = document.getElementById(`kat-row-${sumber}-${idAttr}`);
 
                 // Animasi hapus smooth (fade + collapse) sebelum benar-benar hilang dari DOM
                 if (rowEl) rowEl.classList.add('removing');
 
                 if (id !== null) {
-                    const { error } = await supabaseClient.from('web_kategori').delete().eq('id', id);
+                    const { error } = await supabaseClient.from(cfg.tabel).delete().eq('id', id);
                     if (error) {
                         if (rowEl) rowEl.classList.remove('removing');
                         return tampilkanAlert("Gagal hapus: " + error.message, "error");
                     }
                 }
 
-                daftarKategori = daftarKategori.filter(k => k.nama.toLowerCase() !== nama);
+                cfg.setDaftar(daftar.filter(k => k.nama.toLowerCase() !== nama));
                 tampilkanAlert("Kategori dihapus!", "sukses");
 
-                setTimeout(() => renderKategoriManagerList(), rowEl ? 360 : 0);
+                setTimeout(() => { renderKategoriManagerList(sumber); renderFilterKategori(sumber); }, rowEl ? 360 : 0);
             }
         );
+    }
+
+    // =====================================================================
+    // FILTER KATEGORI PADA LIST (Home / App Mod / Store) - LIQUID GLASS CHIPS
+    // =====================================================================
+    function renderFilterKategori(sumber = 'web') {
+        const suffix = KATEGORI_SUFFIX[sumber];
+        const wrapEl = document.getElementById('filterKategori' + suffix);
+        if (!wrapEl) return;
+
+        const cfg = KATEGORI_CFG[sumber];
+        const daftar = cfg.getDaftar();
+        const aktif = KATEGORI_FILTER_STATE[sumber].get();
+
+        if (daftar.length === 0) { wrapEl.innerHTML = ''; return; }
+
+        let chips = `<div class="kategori-filter-chip ${aktif === 'semua' ? 'active' : ''}" onclick="setFilterKategori('${sumber}', 'semua')">Semua</div>`;
+        chips += daftar.map((k, idx) => {
+            const namaLower = k.nama.toLowerCase();
+            const namaLabel = k.nama.charAt(0).toUpperCase() + k.nama.slice(1);
+            return `<div class="kategori-filter-chip ${aktif === namaLower ? 'active' : ''}" style="animation-delay:${(idx + 1) * 0.03}s" onclick="setFilterKategori('${sumber}', '${namaLower}')">${namaLabel}</div>`;
+        }).join('');
+
+        wrapEl.innerHTML = chips;
+    }
+
+    function setFilterKategori(sumber, nilai) {
+        KATEGORI_FILTER_STATE[sumber].set(nilai);
+        renderFilterKategori(sumber);
+        if (sumber === 'web') renderListWeb();
+        else if (sumber === 'app') renderListApp();
+        else if (sumber === 'store') renderListStore();
     }
 
     document.addEventListener('click', function(e) {
@@ -1250,14 +1405,20 @@ requestAnimationFrame(()=>{
 
     async function ambilDataWeb() {
         const { data } = await supabaseClient.from('web_saya').select('*').order('id', { ascending: false });
-        if (data) { memoriWeb = data; renderListWeb(); }
+        if (data) { memoriWeb = data; renderFilterKategori('web'); renderListWeb(); }
     }
 
     function renderListWeb() {
         const container = document.getElementById('container-web-list'); container.innerHTML = '';
+        const filterAktif = filterAktifWeb;
         memoriWeb.forEach((web, idx) => {
-            container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header" style="margin-bottom:0;"><div class="mod-box-title-group"><div class="mod-box-icon" style="font-size:20px; width:40px; height:40px;"><i class="fas fa-globe"></i></div><div class="mod-box-name">${web.nama_web}</div></div></div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'web_saya')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusWeb(${web.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
+            const katWeb = (web.kategori || 'lainnya').toLowerCase();
+            if (filterAktif !== 'semua' && katWeb !== filterAktif) return;
+            container.innerHTML += `<div class="mod-box-item kat-fade-in"><div class="mod-box-header" style="margin-bottom:0;"><div class="mod-box-title-group"><div class="mod-box-icon" style="font-size:20px; width:40px; height:40px;"><i class="fas fa-globe"></i></div><div class="mod-box-name">${web.nama_web}</div></div></div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'web_saya')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusWeb(${web.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
         });
+        if (!container.innerHTML) {
+            container.innerHTML = `<div style="text-align:center; color:var(--tg-text-muted); font-size:12.5px; padding:24px;">Tidak ada web di kategori ini.</div>`;
+        }
     }
     async function simpanWebKeSupabase() {
         const nama = document.getElementById('web-title').value.replace(/\n/g, '<br>'); 
@@ -1297,8 +1458,13 @@ requestAnimationFrame(()=>{
         const container = document.getElementById('container-app-list'); 
         if (!container) return;
         container.innerHTML = '';
+        const filterAktif = filterAktifApp;
+        let adaTampil = false;
         
         memoriApp.forEach((app, idx) => {
+            const katApp = (app.kategori || 'lainnya').toLowerCase();
+            if (filterAktif !== 'semua' && katApp !== filterAktif) return;
+            adaTampil = true;
             let iconHtml = app.img_url ? `<img src="${app.img_url.replace(/<br\s*\/?>/mg, '')}" onerror="this.outerHTML='📱'" style="width:100%; height:100%; object-fit:cover; border-radius:12px;">` : '📱';
             
             // Batasi deskripsi hingga 100 karakter
@@ -1311,7 +1477,7 @@ requestAnimationFrame(()=>{
             let devLink = app.dev_link ? app.dev_link : 'https://t.me/rizky_kurniawan25';
 
             container.innerHTML += `
-                <div class="mod-box-item">
+                <div class="mod-box-item kat-fade-in">
                     <div class="mod-box-header">
                         <div class="mod-box-title-group">
                             <div class="mod-box-icon">${iconHtml}</div>
@@ -1347,6 +1513,10 @@ requestAnimationFrame(()=>{
                     </div>
                 </div>`;
         });
+
+        if (!adaTampil) {
+            container.innerHTML = `<div style="text-align:center; color:var(--tg-text-muted); font-size:12.5px; padding:24px;">Tidak ada aplikasi di kategori ini.</div>`;
+        }
     }
 
     // FUNGSI TOGGLE READ MORE / READ LESS DI WEB ADMIN DEV
@@ -1374,6 +1544,7 @@ async function simpanAppKeSupabase() {
     const img = document.getElementById('app-img').value.replace(/\n/g, '<br>');
     const devName = document.getElementById('app-dev-name').value.trim();
     const devLink = document.getElementById('app-dev-link').value.trim();
+    const kategori = document.getElementById('app-kategori-value').value;
 
     if(!nama || !url) return tampilkanAlert("Wajib diisi!", "error");
 
@@ -1384,7 +1555,8 @@ async function simpanAppKeSupabase() {
         link_download: url, 
         img_url: img,
         dev_name: devName,
-        dev_link: devLink
+        dev_link: devLink,
+        kategori: kategori
     }]);
 
     if (!error) { 
@@ -1396,6 +1568,8 @@ async function simpanAppKeSupabase() {
         document.getElementById('app-img').value = '';
         document.getElementById('app-dev-name').value = '';
         document.getElementById('app-dev-link').value = '';
+        document.getElementById('app-kategori-value').value = 'lainnya';
+        document.getElementById('app-kategori-label').innerText = 'Lainnya';
         
         toggleForm('app-form', 'btn-show-app', 'App Mod'); 
         ambilDataApp(); 
@@ -1424,11 +1598,19 @@ async function hapusApp(id) {
 }
     function renderListStore() {
         const container = document.getElementById('container-store-list'); container.innerHTML = '';
+        const filterAktif = filterAktifStore;
+        let adaTampil = false;
         memoriStore.forEach((prod, idx) => {
+            const katProd = (prod.kategori || 'lainnya').toLowerCase();
+            if (filterAktif !== 'semua' && katProd !== filterAktif) return;
+            adaTampil = true;
             let iconHtml = prod.img_url ? `<img src="${prod.img_url.replace(/<br\s*\/?>/mg, '')}" onerror="this.outerHTML='🛍️'" style="width:100%; height:100%; object-fit:cover;">` : '🛍️';
             let stockBadge = prod.stock ? `<span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px; font-size:10px; margin-left:5px; color:#fff;">Stock: ${prod.stock}</span>` : '';
-            container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header"><div class="mod-box-title-group"><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${prod.nama_produk}</div></div><div class="mod-box-size" style="color:#00ff7f; background:none;">${prod.harga}${stockBadge}</div></div><div class="mod-box-desc">${prod.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'store_products')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusStore(${prod.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
+            container.innerHTML += `<div class="mod-box-item kat-fade-in"><div class="mod-box-header"><div class="mod-box-title-group"><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${prod.nama_produk}</div></div><div class="mod-box-size" style="color:#00ff7f; background:none;">${prod.harga}${stockBadge}</div></div><div class="mod-box-desc">${prod.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'store_products')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusStore(${prod.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
         });
+        if (!adaTampil) {
+            container.innerHTML = `<div style="text-align:center; color:var(--tg-text-muted); font-size:12.5px; padding:24px;">Tidak ada produk di kategori ini.</div>`;
+        }
     }
     
     // FUNGSI TARIK DATA STORE DARI SUPABASE DENGAN URUTAN TERBARU
@@ -1457,9 +1639,16 @@ async function ambilDataStore() {
         let waRaw = document.getElementById('prod-wa').value;
         const wa = waRaw.replace(/\n/g, '').replace(/<br\s*\/?>/mg, ''); 
         const img = document.getElementById('prod-img').value.replace(/\n/g, '<br>');
+        const kategori = document.getElementById('prod-kategori-value').value;
         if(!nama || !price) return tampilkanAlert("Wajib diisi!", "error");
-        const { error } = await supabaseClient.from('store_products').insert([{ nama_produk: nama, deskripsi: desc, harga: price, stock: stock, link_wa: wa, img_url: img }]);
-        if (!error) { tampilkanAlert("Tersimpan!", "sukses"); toggleForm('store-form', 'btn-show-store', 'Store'); ambilDataStore(); }
+        const { error } = await supabaseClient.from('store_products').insert([{ nama_produk: nama, deskripsi: desc, harga: price, stock: stock, link_wa: wa, img_url: img, kategori: kategori }]);
+        if (!error) { 
+            tampilkanAlert("Tersimpan!", "sukses"); 
+            toggleForm('store-form', 'btn-show-store', 'Store'); 
+            document.getElementById('prod-kategori-value').value = 'lainnya';
+            document.getElementById('prod-kategori-label').innerText = 'Lainnya';
+            ambilDataStore(); 
+        }
     }
     async function hapusStore(id) { 
     tampilkanConfirmLiquidGlass(
@@ -1897,6 +2086,9 @@ function tampilkanConfirmLiquidGlass(judul, pesan, ikonClass, warnaTombol, callb
                 ambilDataAnnouncement();
                 ambilDataInboxAdmin();
                 muatStatusSosmedAdmin();
+                muatDaftarKategori('web').then(() => renderFilterKategori('web'));
+                muatDaftarKategori('app').then(() => renderFilterKategori('app'));
+                muatDaftarKategori('store').then(() => renderFilterKategori('store'));
                 resetSessionTimer();
 
                 await muatLogKeamanan();
