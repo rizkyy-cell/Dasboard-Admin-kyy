@@ -103,7 +103,8 @@
     .kategori-manager-title { font-size: 15px; font-weight: bold; color: var(--tg-accent); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
     .kategori-manager-desc { font-size: 12px; color: var(--tg-text-muted); margin-bottom: 16px; line-height: 1.5; }
 
-    .kategori-manager-add-row { display: flex; gap: 8px; margin-bottom: 16px; }
+    .kategori-manager-add-row { display: flex; gap: 8px; overflow: hidden; max-height: 0; opacity: 0; margin-bottom: 0; transition: max-height 0.38s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease, margin-bottom 0.38s ease; }
+    .kategori-manager-add-row.open { max-height: 60px; opacity: 1; margin-bottom: 16px; }
     .kategori-manager-add-row input {
         flex: 1; padding: 12px 15px; border-radius: 12px;
         background: rgba(14, 22, 33, 0.6);
@@ -120,6 +121,30 @@
         transition: transform 0.15s ease, box-shadow 0.25s ease;
     }
     .kategori-manager-add-row button:active { transform: scale(0.92); box-shadow: 0 3px 8px rgba(16, 185, 129, 0.3); }
+    .kategori-manager-add-row .kategori-manager-cancel { background: rgba(255,255,255,0.06); box-shadow: none; color: var(--tg-text-muted); }
+    .kategori-manager-add-row .kategori-manager-cancel:active { background: rgba(255,255,255,0.12); }
+
+    .kategori-manager-toggle-add {
+        border: 1.5px dashed rgba(16, 185, 129, 0.5);
+        background: rgba(16, 185, 129, 0.06);
+        color: var(--admin-add);
+        border-radius: 12px;
+        padding: 11px;
+        text-align: center;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: background 0.25s ease, border-color 0.25s ease, transform 0.15s ease;
+    }
+    .kategori-manager-toggle-add:active { transform: scale(0.98); }
+    .kategori-manager-toggle-add.open { background: rgba(16, 185, 129, 0.12); border-color: var(--admin-add); }
+    .kategori-manager-toggle-add i { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .kategori-manager-toggle-add.open i { transform: rotate(45deg); }
 
     .kategori-manager-list { display: flex; flex-direction: column; gap: 8px; }
     .kategori-manager-item {
@@ -606,9 +631,13 @@
       <div class="kategori-manager-card" style="margin-bottom: 15px;">
         <div class="kategori-manager-title"><i class="fas fa-tags"></i> Manajemen Kategori Web</div>
         <div class="kategori-manager-desc">Tambah atau hapus kategori yang tersedia saat menyimpan link Web Saya. Perubahan langsung tersinkron ke database.</div>
-        <div class="kategori-manager-add-row">
+        <div class="kategori-manager-toggle-add" id="kategoriAddToggle" onclick="toggleKategoriAddForm()">
+            <i class="fas fa-plus-circle"></i> <span id="kategoriAddToggleLabel">Tambah Kategori Baru</span>
+        </div>
+        <div class="kategori-manager-add-row" id="kategoriAddRow">
             <input type="text" id="kategoriManagerInput" placeholder="Nama kategori baru..." maxlength="20" onkeydown="if(event.key==='Enter'){event.preventDefault(); tambahKategoriManager();}">
-            <button onclick="tambahKategoriManager()"><i class="fas fa-plus"></i></button>
+            <button onclick="tambahKategoriManager()"><i class="fas fa-check"></i></button>
+            <button class="kategori-manager-cancel" onclick="toggleKategoriAddForm(true)"><i class="fas fa-times"></i></button>
         </div>
         <div class="kategori-manager-list" id="kategoriManagerList"></div>
       </div>
@@ -1134,6 +1163,27 @@ requestAnimationFrame(()=>{
         }).join('');
     }
 
+    function toggleKategoriAddForm(forceClose) {
+        const row = document.getElementById('kategoriAddRow');
+        const toggle = document.getElementById('kategoriAddToggle');
+        const label = document.getElementById('kategoriAddToggleLabel');
+        const input = document.getElementById('kategoriManagerInput');
+        if (!row || !toggle) return;
+
+        const isOpen = row.classList.contains('open');
+        if (isOpen || forceClose === true) {
+            row.classList.remove('open');
+            toggle.classList.remove('open');
+            label.innerText = 'Tambah Kategori Baru';
+            if (input) input.value = '';
+        } else {
+            row.classList.add('open');
+            toggle.classList.add('open');
+            label.innerText = 'Batal';
+            setTimeout(() => input && input.focus(), 200);
+        }
+    }
+
     async function tambahKategoriManager() {
         const inputEl = document.getElementById('kategoriManagerInput');
         if (!inputEl) return;
@@ -1153,7 +1203,7 @@ requestAnimationFrame(()=>{
         daftarKategori.push(data[0]);
         daftarKategori.sort((a, b) => a.nama.localeCompare(b.nama));
         renderKategoriManagerList();
-        inputEl.value = '';
+        toggleKategoriAddForm(true);
         tampilkanAlert("Kategori ditambahkan!", "sukses");
     }
 
