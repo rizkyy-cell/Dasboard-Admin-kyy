@@ -43,6 +43,27 @@
     .admin-input { width: 100%; padding: 12px 15px; margin-bottom: 12px; border-radius: 10px; background: var(--tg-bg); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 14px; outline: none; font-family: inherit; }
     .admin-input:focus { border-color: var(--tg-accent); }
 
+    /* CUSTOM DROPDOWN KATEGORI */
+    .kategori-trigger { width: 100%; padding: 12px 15px; margin-bottom: 12px; border-radius: 10px; background: var(--tg-bg); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+    .kategori-trigger.open { border-color: var(--tg-accent); }
+    .kategori-trigger i { color: var(--tg-text-muted); transition: transform 0.25s ease; }
+    .kategori-trigger.open i { transform: rotate(180deg); color: var(--tg-accent); }
+    .kategori-dropdown-panel { position: fixed; z-index: 500; background: rgba(23, 33, 43, 0.98); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); overflow: hidden; opacity: 0; transform: translateY(-8px); pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease; }
+    .kategori-dropdown-panel.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .kategori-dropdown-list { max-height: 200px; overflow-y: auto; }
+    .kategori-dropdown-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; font-size: 14px; color: var(--tg-text); border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer; }
+    .kategori-dropdown-item:last-child { border-bottom: none; }
+    .kategori-dropdown-item.selected { color: var(--admin-add); font-weight: 700; }
+    .kategori-dropdown-item span.nama-kat { flex: 1; }
+    .kategori-dropdown-item .hapus-kat-btn { color: var(--admin-delete); padding: 4px 8px; margin-left: 8px; opacity: 0.8; }
+    .kategori-dropdown-item .hapus-kat-btn:active { opacity: 1; }
+    .kategori-add-row { display: flex; gap: 8px; padding: 10px; border-top: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.15); }
+    .kategori-add-row input { flex: 1; padding: 9px 12px; border-radius: 8px; background: var(--tg-bg); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 13px; outline: none; }
+    .kategori-add-row input:focus { border-color: var(--tg-accent); }
+    .kategori-add-row button { padding: 0 14px; border: none; border-radius: 8px; background: var(--admin-add); color: white; font-weight: bold; cursor: pointer; }
+    .kategori-dropdown-empty { padding: 14px; text-align: center; font-size: 12.5px; color: var(--tg-text-muted); }
+
+
     .mod-box-item { background: rgba(23, 33, 43, 0.8); margin: 12px 15px; padding: 18px; border-radius: 18px; border: 1px solid rgba(255, 255, 255, 0.08); }
     .mod-box-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .mod-box-title-group { display: flex; align-items: center; gap: 12px; }
@@ -394,6 +415,14 @@
 
   </div>
 
+  <div id="kategoriDropdownPanel" class="kategori-dropdown-panel">
+    <div class="kategori-dropdown-list" id="kategoriDropdownList"></div>
+    <div class="kategori-add-row">
+        <input type="text" id="kategoriInputBaru" placeholder="Nama kategori baru..." maxlength="20" onkeydown="if(event.key==='Enter'){event.preventDefault(); tambahKategoriBaruDropdown();}">
+        <button onclick="tambahKategoriBaruDropdown()"><i class="fas fa-plus"></i></button>
+    </div>
+  </div>
+
   <!-- MODAL KONFIRMASI LIQUID GLASS UNIVERSAL -->
 <div id="liquidConfirmModal" class="glass-popup-overlay hidden">
   <div class="glass-popup-card-custom">
@@ -435,10 +464,11 @@
         <div class="admin-form-title"><i class="fas fa-globe"></i> Input Web Baru</div>
         <textarea id="web-title" class="admin-textarea" placeholder="Nama Web (Bisa klik enter paragraf baru...)"></textarea>
         <textarea id="web-url" class="admin-textarea" placeholder="Link Website (Contoh: https://...)"></textarea>
-        <select id="web-kategori" class="admin-textarea" style="background: var(--tg-bg); height:45px; padding:5px 12px;">
-            <option value="tools">Tools</option>
-            <option value="lainnya">Lainnya</option>
-        </select>
+        <div class="kategori-trigger" id="web-kategori-trigger" onclick="bukaDropdownKategori(this, 'web-kategori-value', 'web-kategori-label')">
+            <span id="web-kategori-label">Lainnya</span>
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        <input type="hidden" id="web-kategori-value" value="lainnya">
         <button class="admin-btn-save" onclick="simpanWebKeSupabase()">Simpan Ke Database</button>
     </div>
     <div id="container-web-list"></div>
@@ -672,6 +702,10 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let memoriWeb = [];
+    let daftarKategori = [];
+    let kategoriActiveValueId = null;
+    let kategoriActiveLabelId = null;
+    let kategoriActiveTriggerEl = null;
     let memoriApp = [];
     let memoriStore = [];
 
@@ -708,6 +742,7 @@
             ambilDataAnnouncement();
             ambilDataInboxAdmin();
             muatStatusSosmedAdmin();
+            muatDaftarKategori();
             resetSessionTimer();
             
             // Refresh tabel agar log SUKSES tadi langsung muncul di atas
@@ -787,9 +822,10 @@
             let namaAsli = (data.nama_web || '').replace(/<br\s*\/?>/mg, "\n");
             let linkAsli = (data.link_web || '').replace(/<br\s*\/?>/mg, "\n");
             let kategoriAsli = (data.kategori || 'lainnya').toLowerCase();
+            let kategoriLabelAsli = kategoriAsli.charAt(0).toUpperCase() + kategoriAsli.slice(1);
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama Web</label><textarea id="upd-1" class="admin-textarea">${namaAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Web</label><textarea id="upd-2" class="admin-textarea">${linkAsli}</textarea>`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Kategori</label><select id="upd-kategori" class="admin-textarea" style="background: var(--tg-bg); height:45px; padding:5px 12px;"><option value="tools" ${kategoriAsli==='tools'?'selected':''}>Tools</option><option value="lainnya" ${kategoriAsli==='lainnya'?'selected':''}>Lainnya</option></select>`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Kategori</label><div class="kategori-trigger" id="upd-kategori-trigger" onclick="bukaDropdownKategori(this, 'upd-kategori-value', 'upd-kategori-label')"><span id="upd-kategori-label">${kategoriLabelAsli}</span><i class="fas fa-chevron-down"></i></div><input type="hidden" id="upd-kategori-value" value="${kategoriAsli}">`;
         } else if (tabel === 'app_mods') {
             let data = memoriApp[index];
             let namaAsli = (data.nama_app || '').replace(/<br\s*\/?>/mg, "\n");
@@ -854,7 +890,7 @@ requestAnimationFrame(()=>{
             payload = { 
                 nama_web: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), 
                 link_web: document.getElementById('upd-2').value.replace(/\n/g, '<br>'),
-                kategori: document.getElementById('upd-kategori').value
+                kategori: document.getElementById('upd-kategori-value').value
             };
         } else if (tabel === 'app_mods') {
             targetId = memoriApp[index].id;
@@ -900,6 +936,133 @@ requestAnimationFrame(()=>{
     }
 
 
+    // =====================================================================
+    // SISTEM KATEGORI DINAMIS (CUSTOM DROPDOWN)
+    // =====================================================================
+    async function muatDaftarKategori() {
+        const { data, error } = await supabaseClient.from('web_kategori').select('*').order('nama', { ascending: true });
+        if (error || !data || data.length === 0) {
+            // Fallback default kalau tabel belum dibuat / masih kosong
+            daftarKategori = [{ id: null, nama: 'tools' }, { id: null, nama: 'lainnya' }];
+        } else {
+            daftarKategori = data;
+        }
+    }
+
+    function renderKategoriDropdownList() {
+        const listEl = document.getElementById('kategoriDropdownList');
+        if (!listEl) return;
+        const nilaiAktif = document.getElementById(kategoriActiveValueId)?.value || '';
+        if (daftarKategori.length === 0) {
+            listEl.innerHTML = `<div class="kategori-dropdown-empty">Belum ada kategori</div>`;
+            return;
+        }
+        listEl.innerHTML = daftarKategori.map(k => {
+            const namaLower = k.nama.toLowerCase();
+            const namaLabel = k.nama.charAt(0).toUpperCase() + k.nama.slice(1);
+            const isSelected = namaLower === nilaiAktif;
+            return `<div class="kategori-dropdown-item ${isSelected ? 'selected' : ''}">
+                        <span class="nama-kat" onclick="pilihKategoriDropdown('${namaLower}', '${namaLabel.replace(/'/g, "\\'")}')">${namaLabel}</span>
+                        <i class="fas fa-trash hapus-kat-btn" onclick="event.stopPropagation(); hapusKategoriDropdown(${k.id === null ? 'null' : k.id}, '${namaLower}')"></i>
+                    </div>`;
+        }).join('');
+    }
+
+    function bukaDropdownKategori(triggerEl, valueId, labelId) {
+        const panel = document.getElementById('kategoriDropdownPanel');
+        if (!panel) return;
+
+        // Kalau trigger yang sama diklik lagi saat sudah terbuka, tutup saja
+        if (panel.classList.contains('show') && kategoriActiveTriggerEl === triggerEl) {
+            tutupDropdownKategori();
+            return;
+        }
+
+        kategoriActiveValueId = valueId;
+        kategoriActiveLabelId = labelId;
+        kategoriActiveTriggerEl = triggerEl;
+
+        document.querySelectorAll('.kategori-trigger').forEach(t => t.classList.remove('open'));
+        triggerEl.classList.add('open');
+
+        renderKategoriDropdownList();
+
+        const rect = triggerEl.getBoundingClientRect();
+        panel.style.width = rect.width + 'px';
+        panel.style.left = rect.left + 'px';
+        panel.style.top = (rect.bottom + 6) + 'px';
+        panel.classList.add('show');
+
+        const inputBaru = document.getElementById('kategoriInputBaru');
+        if (inputBaru) inputBaru.value = '';
+    }
+
+    function tutupDropdownKategori() {
+        const panel = document.getElementById('kategoriDropdownPanel');
+        if (panel) panel.classList.remove('show');
+        document.querySelectorAll('.kategori-trigger').forEach(t => t.classList.remove('open'));
+        kategoriActiveTriggerEl = null;
+    }
+
+    function pilihKategoriDropdown(nilai, label) {
+        if (kategoriActiveValueId) document.getElementById(kategoriActiveValueId).value = nilai;
+        if (kategoriActiveLabelId) document.getElementById(kategoriActiveLabelId).innerText = label;
+        tutupDropdownKategori();
+    }
+
+    async function tambahKategoriBaruDropdown() {
+        const inputEl = document.getElementById('kategoriInputBaru');
+        if (!inputEl) return;
+        const namaBaru = inputEl.value.trim();
+        if (!namaBaru) return tampilkanAlert("Nama kategori tidak boleh kosong!", "error");
+
+        const namaLower = namaBaru.toLowerCase();
+        if (daftarKategori.some(k => k.nama.toLowerCase() === namaLower)) {
+            return tampilkanAlert("Kategori ini sudah ada!", "error");
+        }
+
+        const { data, error } = await supabaseClient.from('web_kategori').insert([{ nama: namaLower }]).select();
+        if (error) {
+            tampilkanAlert("Gagal simpan kategori: " + error.message, "error");
+            return;
+        }
+        daftarKategori.push(data[0]);
+        daftarKategori.sort((a, b) => a.nama.localeCompare(b.nama));
+        renderKategoriDropdownList();
+        inputEl.value = '';
+        tampilkanAlert("Kategori ditambahkan!", "sukses");
+    }
+
+    function hapusKategoriDropdown(id, nama) {
+        if (daftarKategori.length <= 1) {
+            return tampilkanAlert("Minimal harus ada 1 kategori!", "error");
+        }
+        tampilkanConfirmLiquidGlass(
+            "Hapus Kategori",
+            `Yakin mau hapus kategori "${nama}"? Web yang sudah pakai kategori ini tidak akan otomatis pindah.`,
+            "fas fa-trash",
+            "#ef4444",
+            async () => {
+                if (id !== null) {
+                    const { error } = await supabaseClient.from('web_kategori').delete().eq('id', id);
+                    if (error) return tampilkanAlert("Gagal hapus: " + error.message, "error");
+                }
+                daftarKategori = daftarKategori.filter(k => k.nama.toLowerCase() !== nama);
+                renderKategoriDropdownList();
+                tampilkanAlert("Kategori dihapus!", "sukses");
+            }
+        );
+    }
+
+    document.addEventListener('click', function(e) {
+        const panel = document.getElementById('kategoriDropdownPanel');
+        if (!panel || !panel.classList.contains('show')) return;
+        const isTrigger = e.target.closest('.kategori-trigger');
+        const isPanel = e.target.closest('#kategoriDropdownPanel');
+        if (!isTrigger && !isPanel) tutupDropdownKategori();
+    });
+
+
     async function ambilDataWeb() {
         const { data } = await supabaseClient.from('web_saya').select('*').order('id', { ascending: false });
         if (data) { memoriWeb = data; renderListWeb(); }
@@ -914,10 +1077,16 @@ requestAnimationFrame(()=>{
     async function simpanWebKeSupabase() {
         const nama = document.getElementById('web-title').value.replace(/\n/g, '<br>'); 
         const url = document.getElementById('web-url').value.replace(/\n/g, '<br>');
-        const kategori = document.getElementById('web-kategori').value;
+        const kategori = document.getElementById('web-kategori-value').value;
         if(!nama || !url) return tampilkanAlert("Wajib diisi!", "error");
         const { error } = await supabaseClient.from('web_saya').insert([{ nama_web: nama, link_web: url, kategori: kategori }]);
-        if (!error) { tampilkanAlert("Tersimpan!", "sukses"); toggleForm('web-form', 'btn-show-web', 'Web Saya'); ambilDataWeb(); }
+        if (!error) { 
+            tampilkanAlert("Tersimpan!", "sukses"); 
+            toggleForm('web-form', 'btn-show-web', 'Web Saya'); 
+            document.getElementById('web-kategori-value').value = 'lainnya';
+            document.getElementById('web-kategori-label').innerText = 'Lainnya';
+            ambilDataWeb(); 
+        }
     }
         async function hapusWeb(id) { 
     tampilkanConfirmLiquidGlass(
