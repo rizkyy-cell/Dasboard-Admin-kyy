@@ -427,7 +427,7 @@
     </header>
   </div>
 
-    <div class="page-content active" id="page-home">
+  <div class="page-content active" id="page-home">
     <div class="admin-add-trigger-box" id="btn-show-web" onclick="toggleForm('web-form', 'btn-show-web', 'Web Saya')">
         <i class="fas fa-plus-circle"></i> Tambah Web Saya Baru
     </div>
@@ -435,8 +435,6 @@
         <div class="admin-form-title"><i class="fas fa-globe"></i> Input Web Baru</div>
         <textarea id="web-title" class="admin-textarea" placeholder="Nama Web (Bisa klik enter paragraf baru...)"></textarea>
         <textarea id="web-url" class="admin-textarea" placeholder="Link Website (Contoh: https://...)"></textarea>
-        <!-- INPUT KATEGORI KETIK BEBAS -->
-        <textarea id="web-category" class="admin-textarea" style="height: 45px;" placeholder="Kategori (Contoh: tools, lainnya, dll...)"></textarea>
         <button class="admin-btn-save" onclick="simpanWebKeSupabase()">Simpan Ke Database</button>
     </div>
     <div id="container-web-list"></div>
@@ -778,15 +776,12 @@
         fieldsContainer.innerHTML = '';
 
         let innerH = '';
-                if (tabel === 'web_saya') {
+        if (tabel === 'web_saya') {
             let data = memoriWeb[index];
             let namaAsli = (data.nama_web || '').replace(/<br\s*\/?>/mg, "\n");
             let linkAsli = (data.link_web || '').replace(/<br\s*\/?>/mg, "\n");
-            let katAsli = (data.kategori || 'lainnya');
-            
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama Web</label><textarea id="upd-1" class="admin-textarea">${namaAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Web</label><textarea id="upd-2" class="admin-textarea">${linkAsli}</textarea>`;
-            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Kategori</label><textarea id="upd-3" class="admin-textarea" style="height:45px;">${katAsli}</textarea>`;
         } else if (tabel === 'app_mods') {
             let data = memoriApp[index];
             let namaAsli = (data.nama_app || '').replace(/<br\s*\/?>/mg, "\n");
@@ -846,12 +841,11 @@ requestAnimationFrame(()=>{
         let targetId = 0;
 
         // Mapping ID dan Data
-                if (tabel === 'web_saya') {
+        if (tabel === 'web_saya') {
             targetId = memoriWeb[index].id;
             payload = { 
                 nama_web: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), 
-                link_web: document.getElementById('upd-2').value.replace(/\n/g, '<br>'),
-                kategori: document.getElementById('upd-3').value.trim().toLowerCase() 
+                link_web: document.getElementById('upd-2').value.replace(/\n/g, '<br>') 
             };
         } else if (tabel === 'app_mods') {
             targetId = memoriApp[index].id;
@@ -908,33 +902,13 @@ requestAnimationFrame(()=>{
             container.innerHTML += `<div class="mod-box-item"><div class="mod-box-header" style="margin-bottom:0;"><div class="mod-box-title-group"><div class="mod-box-icon" style="font-size:20px; width:40px; height:40px;"><i class="fas fa-globe"></i></div><div class="mod-box-name">${web.nama_web}</div></div></div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'web_saya')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusWeb(${web.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
         });
     }
-        async function simpanWebKeSupabase() {
+    async function simpanWebKeSupabase() {
         const nama = document.getElementById('web-title').value.replace(/\n/g, '<br>'); 
         const url = document.getElementById('web-url').value.replace(/\n/g, '<br>');
-        let kategori = document.getElementById('web-category').value.trim().toLowerCase();
-        
-        if(!kategori) kategori = 'lainnya'; // Default jika kosong
-
         if(!nama || !url) return tampilkanAlert("Wajib diisi!", "error");
-        
-        const { error } = await supabaseClient.from('web_saya').insert([{ 
-            nama_web: nama, 
-            link_web: url, 
-            kategori: kategori 
-        }]);
-
-        if (!error) { 
-            tampilkanAlert("Tersimpan!", "sukses"); 
-            document.getElementById('web-title').value = '';
-            document.getElementById('web-url').value = '';
-            document.getElementById('web-category').value = '';
-            toggleForm('web-form', 'btn-show-web', 'Web Saya'); 
-            ambilDataWeb(); 
-        } else {
-            tampilkanAlert("Gagal menyimpan: " + error.message, "error");
-        }
+        const { error } = await supabaseClient.from('web_saya').insert([{ nama_web: nama, link_web: url }]);
+        if (!error) { tampilkanAlert("Tersimpan!", "sukses"); toggleForm('web-form', 'btn-show-web', 'Web Saya'); ambilDataWeb(); }
     }
-
         async function hapusWeb(id) { 
     tampilkanConfirmLiquidGlass(
         "Hapus Web Saya", 
