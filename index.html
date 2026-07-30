@@ -435,6 +435,10 @@
         <div class="admin-form-title"><i class="fas fa-globe"></i> Input Web Baru</div>
         <textarea id="web-title" class="admin-textarea" placeholder="Nama Web (Bisa klik enter paragraf baru...)"></textarea>
         <textarea id="web-url" class="admin-textarea" placeholder="Link Website (Contoh: https://...)"></textarea>
+        <select id="web-kategori" class="admin-textarea" style="background: var(--tg-bg); height:45px; padding:5px 12px;">
+            <option value="tools">Tools</option>
+            <option value="lainnya">Lainnya</option>
+        </select>
         <button class="admin-btn-save" onclick="simpanWebKeSupabase()">Simpan Ke Database</button>
     </div>
     <div id="container-web-list"></div>
@@ -782,8 +786,10 @@
             let data = memoriWeb[index];
             let namaAsli = (data.nama_web || '').replace(/<br\s*\/?>/mg, "\n");
             let linkAsli = (data.link_web || '').replace(/<br\s*\/?>/mg, "\n");
+            let kategoriAsli = (data.kategori || 'lainnya').toLowerCase();
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama Web</label><textarea id="upd-1" class="admin-textarea">${namaAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Web</label><textarea id="upd-2" class="admin-textarea">${linkAsli}</textarea>`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Kategori</label><select id="upd-kategori" class="admin-textarea" style="background: var(--tg-bg); height:45px; padding:5px 12px;"><option value="tools" ${kategoriAsli==='tools'?'selected':''}>Tools</option><option value="lainnya" ${kategoriAsli==='lainnya'?'selected':''}>Lainnya</option></select>`;
         } else if (tabel === 'app_mods') {
             let data = memoriApp[index];
             let namaAsli = (data.nama_app || '').replace(/<br\s*\/?>/mg, "\n");
@@ -847,7 +853,8 @@ requestAnimationFrame(()=>{
             targetId = memoriWeb[index].id;
             payload = { 
                 nama_web: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), 
-                link_web: document.getElementById('upd-2').value.replace(/\n/g, '<br>') 
+                link_web: document.getElementById('upd-2').value.replace(/\n/g, '<br>'),
+                kategori: document.getElementById('upd-kategori').value
             };
         } else if (tabel === 'app_mods') {
             targetId = memoriApp[index].id;
@@ -907,8 +914,9 @@ requestAnimationFrame(()=>{
     async function simpanWebKeSupabase() {
         const nama = document.getElementById('web-title').value.replace(/\n/g, '<br>'); 
         const url = document.getElementById('web-url').value.replace(/\n/g, '<br>');
+        const kategori = document.getElementById('web-kategori').value;
         if(!nama || !url) return tampilkanAlert("Wajib diisi!", "error");
-        const { error } = await supabaseClient.from('web_saya').insert([{ nama_web: nama, link_web: url }]);
+        const { error } = await supabaseClient.from('web_saya').insert([{ nama_web: nama, link_web: url, kategori: kategori }]);
         if (!error) { tampilkanAlert("Tersimpan!", "sukses"); toggleForm('web-form', 'btn-show-web', 'Web Saya'); ambilDataWeb(); }
     }
         async function hapusWeb(id) { 
