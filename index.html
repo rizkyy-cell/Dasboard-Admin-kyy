@@ -48,7 +48,7 @@
     .kategori-trigger.open { border-color: var(--tg-accent); }
     .kategori-trigger i { color: var(--tg-text-muted); transition: transform 0.25s ease; }
     .kategori-trigger.open i { transform: rotate(180deg); color: var(--tg-accent); }
-    .kategori-dropdown-panel { position: fixed; z-index: 500; background: rgba(23, 33, 43, 0.98); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); overflow: hidden; opacity: 0; transform: translateY(-8px); pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease; }
+    .kategori-dropdown-panel { position: fixed; z-index: 100000; background: rgba(23, 33, 43, 0.98); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); overflow: hidden; opacity: 0; transform: translateY(-8px); pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease; }
     .kategori-dropdown-panel.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
     .kategori-dropdown-list { max-height: 200px; overflow-y: auto; }
     .kategori-dropdown-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; font-size: 14px; color: var(--tg-text); border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer; }
