@@ -722,6 +722,14 @@
         </div>
       </div>
 
+      <div class="settings-card" style="border-color:#22c55e;">
+        <div style="font-size:15px; font-weight:bold; color:#22c55e; margin-bottom: 15px;"><i class="fas fa-coins"></i> Top-up Manual Deep Search (VIP)</div>
+        <input type="email" id="topup-email" class="admin-input" placeholder="Email akun user (sesuai login mereka)">
+        <input type="number" id="topup-jumlah" class="admin-input" placeholder="Jumlah credit (contoh: 50)" min="1">
+        <button class="admin-btn-save" style="background:#22c55e;" onclick="topupCreditManual()">Tambah Credit</button>
+        <div id="topup-hasil" style="margin-top:10px; font-size:13px;"></div>
+      </div>
+
       <div class="settings-card">
         <div style="font-size:15px; font-weight:bold; color:var(--admin-add); margin-bottom: 15px;"><i class="fas fa-bullhorn"></i> Manajemen Announcement</div>
         <textarea id="anc-title" class="admin-textarea" placeholder="Judul Pengumuman (Bisa klik enter...)"></textarea>
@@ -927,7 +935,50 @@
         store: { get: () => filterAktifStore, set: v => filterAktifStore = v }
     };
 
-    async function verifikasiLoginAdmin() {
+    async function topupCreditManual(){
+    const email = document.getElementById('topup-email').value.trim();
+    const jumlah = document.getElementById('topup-jumlah').value;
+    const hasilEl = document.getElementById('topup-hasil');
+
+    if(!email || !jumlah){
+        hasilEl.style.color = '#f43f5e';
+        hasilEl.textContent = 'Email dan jumlah wajib diisi.';
+        return;
+    }
+
+    // Minta PIN sekali lagi khusus buat aksi sensitif ini (nambah credit = nilai uang),
+    // biar gak cuma bergantung ke PIN login awal yang sudah lewat.
+    const pinKonfirmasi = prompt('Masukkan PIN admin untuk konfirmasi top-up:');
+    if(!pinKonfirmasi) return;
+
+    hasilEl.style.color = 'inherit';
+    hasilEl.textContent = 'Memproses...';
+
+    try{
+        const res = await fetch('/api/admin-add-credit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin: pinKonfirmasi, email, jumlah })
+        });
+        const data = await res.json();
+
+        if(!res.ok){
+            hasilEl.style.color = '#f43f5e';
+            hasilEl.textContent = '⚠️ ' + (data.error || 'Gagal top-up.');
+            return;
+        }
+
+        hasilEl.style.color = '#22c55e';
+        hasilEl.textContent = `✅ Berhasil! ${data.email} sekarang punya ${data.sisaKredit}x credit Deep Search.`;
+        document.getElementById('topup-email').value = '';
+        document.getElementById('topup-jumlah').value = '';
+    }catch(err){
+        hasilEl.style.color = '#f43f5e';
+        hasilEl.textContent = '⚠️ Error koneksi: ' + err.message;
+    }
+}
+
+async function verifikasiLoginAdmin() {
     const inputPin = document.getElementById('adminPinInput').value;
     if (!inputPin) return tampilkanAlert("PIN tidak boleh kosong!", "error");
     
