@@ -488,6 +488,170 @@
   filter: drop-shadow(0 4px 10px rgba(245, 158, 11, 0.4));
 }
 
+/* ================= KARTU TRIGGER "FEEDBACK USER" (di halaman Profil) ================= */
+.feedback-trigger-card {
+  margin: 0 15px 20px;
+  padding: 16px 18px;
+  background: linear-gradient(135deg, rgba(51,144,236,0.12), rgba(23,33,43,0.6));
+  border: 1px solid rgba(51,144,236,0.35);
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.2s ease;
+}
+.feedback-trigger-card:active { transform: scale(0.98); }
+.feedback-trigger-icon {
+  width: 44px; height: 44px;
+  border-radius: 14px;
+  background: rgba(51,144,236,0.18);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.feedback-trigger-text { flex: 1; }
+.feedback-trigger-title { font-size: 14.5px; font-weight: 700; color: var(--tg-text); }
+.feedback-trigger-sub { font-size: 11.5px; color: var(--tg-text-muted); margin-top: 2px; }
+.feedback-trigger-card i.fa-chevron-right { color: var(--tg-text-muted); font-size: 14px; }
+
+/* ================= FULL-SCREEN SHEET "FEEDBACK USER" ================= */
+.feedback-admin-overlay {
+  position: fixed; inset: 0;
+  z-index: 500;
+  background: rgba(0,0,0,0.55);
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.feedback-admin-overlay.show { opacity: 1; visibility: visible; }
+.feedback-admin-sheet {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 100%; height: 100dvh;
+  background: var(--tg-bg);
+  border-radius: 22px 22px 0 0;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.38s cubic-bezier(0.16,1,0.3,1);
+  overflow: hidden;
+}
+.feedback-admin-overlay.show .feedback-admin-sheet { transform: translateY(0); }
+.feedback-admin-sheet-handle {
+  width: 40px; height: 4px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 99px;
+  margin: 10px auto 0;
+  flex-shrink: 0;
+}
+.feedback-admin-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.feedback-admin-header-title { font-size: 16px; font-weight: 800; color: var(--tg-accent); display: flex; align-items: center; gap: 8px; }
+.feedback-admin-header button {
+  background: rgba(255,255,255,0.06);
+  border: none;
+  color: var(--tg-text);
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+}
+.feedback-admin-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 10px 16px;
+  flex-shrink: 0;
+}
+.feedback-admin-tab {
+  flex: 1;
+  text-align: center;
+  padding: 8px;
+  border-radius: 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+  background: rgba(255,255,255,0.05);
+  color: var(--tg-text-muted);
+  cursor: pointer;
+}
+.feedback-admin-tab.active-up { background: rgba(16,185,129,0.18); color: #10b981; }
+.feedback-admin-tab.active-down { background: rgba(239,68,68,0.18); color: #ef4444; }
+.feedback-admin-scroll {
+  flex: 1;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.feedback-admin-panel {
+  min-width: 100%;
+  scroll-snap-align: start;
+  overflow-y: auto;
+  padding: 4px 16px 30px;
+}
+.feedback-admin-panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 2px 14px;
+  position: sticky; top: 0;
+  background: var(--tg-bg);
+  z-index: 2;
+}
+.feedback-admin-panel-title { font-size: 14px; font-weight: 700; }
+.feedback-admin-count-badge {
+  font-size: 11px; font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.feedback-admin-count-badge.up { background: rgba(16,185,129,0.18); color: #10b981; }
+.feedback-admin-count-badge.down { background: rgba(239,68,68,0.18); color: #ef4444; }
+.feedback-admin-list { display: flex; flex-direction: column; gap: 10px; }
+.feedback-admin-item {
+  display: flex; gap: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 12px;
+}
+.feedback-admin-item-num {
+  flex-shrink: 0;
+  width: 26px; height: 26px;
+  border-radius: 8px;
+  background: rgba(51,144,236,0.15);
+  color: var(--tg-accent);
+  font-size: 11.5px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+}
+.feedback-admin-item-body { flex: 1; min-width: 0; }
+.feedback-admin-item-title {
+  font-size: 13px; font-weight: 600; color: var(--tg-text);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.feedback-admin-item-meta {
+  font-size: 10.5px; color: var(--tg-text-muted);
+  margin-top: 6px;
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.feedback-admin-item-tag {
+  background: rgba(255,255,255,0.06);
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+.feedback-admin-empty {
+  text-align: center;
+  color: var(--tg-text-muted);
+  font-size: 12px;
+  padding: 40px 10px;
+}
+
   </style>
 </head>
 <body>
@@ -789,6 +953,15 @@
     </div>
 
     <div style="padding: 0 15px;">
+        <div class="feedback-trigger-card" onclick="openFeedbackUserSheet()">
+            <div class="feedback-trigger-icon">💬</div>
+            <div class="feedback-trigger-text">
+                <div class="feedback-trigger-title">Feedback User</div>
+                <div class="feedback-trigger-sub" id="feedbackTriggerSub">Lihat laporan 👍 / 👎 dari pengguna</div>
+            </div>
+            <i class="fas fa-chevron-right"></i>
+        </div>
+
         <!-- START: SECURITY LOGS DASHBOARD BY GEMINI -->
         <style>
             .logs-wrapper {
@@ -901,6 +1074,46 @@
     <div class="nav-item" onclick="switchNav('store', 2, this)"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg><span class="nav-label">Store</span></div>
     <div class="nav-item" onclick="switchNav('pengaturan', 3, this)"><svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0 0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg><span class="nav-label">Setting</span></div>
     <div class="nav-item" onclick="switchNav('profil', 4, this)"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg><span class="nav-label">Profil</span></div>
+  </div>
+
+  <!-- SHEET FULL SCREEN: FEEDBACK USER (👍/👎) -->
+  <div class="feedback-admin-overlay" id="feedbackAdminOverlay" onclick="if(event.target===this) closeFeedbackUserSheet()">
+    <div class="feedback-admin-sheet">
+      <div class="feedback-admin-sheet-handle"></div>
+      <div class="feedback-admin-header">
+        <div class="feedback-admin-header-title"><i class="fas fa-comment-dots"></i> Feedback User</div>
+        <div style="display:flex; gap:8px;">
+          <button type="button" onclick="loadFeedbackAdminData()" title="Refresh"><i class="fas fa-sync-alt" id="feedbackRefreshIcon"></i></button>
+          <button type="button" onclick="closeFeedbackUserSheet()" title="Tutup"><i class="fas fa-times"></i></button>
+        </div>
+      </div>
+
+      <div class="feedback-admin-tabs">
+        <div class="feedback-admin-tab active-up" id="feedbackTabUp" onclick="feedbackScrollTo(0)">👍 Positif</div>
+        <div class="feedback-admin-tab" id="feedbackTabDown" onclick="feedbackScrollTo(1)">👎 Negatif</div>
+      </div>
+
+      <div class="feedback-admin-scroll" id="feedbackAdminScroll" onscroll="feedbackSyncTab()">
+        <div class="feedback-admin-panel">
+          <div class="feedback-admin-panel-header">
+            <div class="feedback-admin-panel-title">👍 Feedback Positif</div>
+            <div class="feedback-admin-count-badge up" id="feedbackCountUp">0</div>
+          </div>
+          <div class="feedback-admin-list" id="feedbackListUp">
+            <div class="feedback-admin-empty">Memuat data...</div>
+          </div>
+        </div>
+        <div class="feedback-admin-panel">
+          <div class="feedback-admin-panel-header">
+            <div class="feedback-admin-panel-title">👎 Feedback Negatif</div>
+            <div class="feedback-admin-count-badge down" id="feedbackCountDown">0</div>
+          </div>
+          <div class="feedback-admin-list" id="feedbackListDown">
+            <div class="feedback-admin-empty">Memuat data...</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -2164,6 +2377,94 @@ function tampilkanConfirmLiquidGlass(judul, pesan, ikonClass, warnaTombol, callb
             }
         } catch (err) {
             tampilkanAlert("Terjadi kesalahan: " + err.message, "error");
+        }
+    }
+
+    /* ================= FEEDBACK USER (👍/👎) — SHEET FULL SCREEN ================= */
+    function escapeHtmlFb(str) {
+        return String(str || '').replace(/[&<>"']/g, c => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[c]));
+    }
+
+    function formatTanggalFb(iso) {
+        if (!iso) return '';
+        const d = new Date(iso);
+        return d.toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+
+    function openFeedbackUserSheet() {
+        document.getElementById('feedbackAdminOverlay').classList.add('show');
+        loadFeedbackAdminData();
+    }
+
+    function closeFeedbackUserSheet() {
+        document.getElementById('feedbackAdminOverlay').classList.remove('show');
+    }
+
+    function feedbackScrollTo(panelIndex) {
+        const scroller = document.getElementById('feedbackAdminScroll');
+        scroller.scrollTo({ left: scroller.clientWidth * panelIndex, behavior: 'smooth' });
+    }
+
+    function feedbackSyncTab() {
+        const scroller = document.getElementById('feedbackAdminScroll');
+        const idx = Math.round(scroller.scrollLeft / scroller.clientWidth);
+        document.getElementById('feedbackTabUp').classList.toggle('active-up', idx === 0);
+        document.getElementById('feedbackTabDown').classList.toggle('active-down', idx === 1);
+    }
+
+    function renderFeedbackListFb(containerId, items) {
+        const wrap = document.getElementById(containerId);
+        if (!items || items.length === 0) {
+            wrap.innerHTML = '<div class="feedback-admin-empty">Belum ada feedback.</div>';
+            return;
+        }
+        wrap.innerHTML = items.map((item, i) => {
+            const judul = escapeHtmlFb(item.message_content || '(tanpa isi pesan)');
+            const tags = [];
+            if (item.issue_type) tags.push(`<span class="feedback-admin-item-tag">${escapeHtmlFb(item.issue_type)}</span>`);
+            if (item.detail) tags.push(`<span class="feedback-admin-item-tag">"${escapeHtmlFb(item.detail.slice(0, 40))}${item.detail.length > 40 ? '…' : ''}"</span>`);
+            tags.push(`<span class="feedback-admin-item-tag">${formatTanggalFb(item.created_at)}</span>`);
+            return `
+              <div class="feedback-admin-item">
+                <div class="feedback-admin-item-num">${i + 1}</div>
+                <div class="feedback-admin-item-body">
+                  <div class="feedback-admin-item-title">${judul}</div>
+                  <div class="feedback-admin-item-meta">${tags.join('')}</div>
+                </div>
+              </div>`;
+        }).join('');
+    }
+
+    async function loadFeedbackAdminData() {
+        const icon = document.getElementById('feedbackRefreshIcon');
+        icon.classList.add('fa-spin');
+
+        try {
+            const { data, error } = await supabaseClient
+                .from('submit_feedback')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            const items = data || [];
+            const up = items.filter(x => x.vote === 'up');
+            const down = items.filter(x => x.vote === 'down');
+
+            document.getElementById('feedbackCountUp').textContent = up.length;
+            document.getElementById('feedbackCountDown').textContent = down.length;
+            document.getElementById('feedbackTriggerSub').textContent = `👍 ${up.length}  ·  👎 ${down.length} laporan masuk`;
+
+            renderFeedbackListFb('feedbackListUp', up);
+            renderFeedbackListFb('feedbackListDown', down);
+        } catch (err) {
+            console.error(err);
+            document.getElementById('feedbackListUp').innerHTML = '<div class="feedback-admin-empty">Gagal memuat data.</div>';
+            document.getElementById('feedbackListDown').innerHTML = '<div class="feedback-admin-empty">Gagal memuat data.</div>';
+        } finally {
+            icon.classList.remove('fa-spin');
         }
     }
   </script>
