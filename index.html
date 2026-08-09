@@ -762,6 +762,83 @@
   display: flex; align-items: center; justify-content: center; gap: 8px;
 }
 
+/* ================= MANAJEMEN USER (tabel admin + search highlight) ================= */
+.user-mgmt-search-wrap { position: relative; margin-bottom: 12px; }
+.user-mgmt-search-wrap input {
+  width: 100%; padding: 12px 15px 12px 40px;
+  border-radius: 12px;
+  background: rgba(14, 22, 33, 0.6);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #fff; font-size: 14px; outline: none;
+  transition: border-color 0.3s ease;
+}
+.user-mgmt-search-wrap input:focus { border-color: var(--tg-accent); }
+.user-mgmt-search-wrap i {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  color: var(--tg-text-muted); font-size: 13px; pointer-events: none;
+}
+.user-mgmt-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.user-mgmt-count { font-size: 11.5px; color: var(--tg-text-muted); }
+.user-mgmt-refresh { background: none; border: none; color: var(--tg-accent); font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+.user-mgmt-refresh:active { opacity: 0.6; }
+
+.user-mgmt-table-wrap {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 520px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+  -webkit-overflow-scrolling: touch;
+}
+.user-mgmt-table { border-collapse: collapse; width: 100%; min-width: 960px; font-size: 12.5px; }
+.user-mgmt-table thead th {
+  position: sticky; top: 0;
+  background: #101820;
+  color: var(--tg-accent);
+  font-weight: 800;
+  text-align: left;
+  padding: 11px 12px;
+  white-space: nowrap;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  z-index: 2;
+}
+.user-mgmt-table tbody td {
+  padding: 10px 12px;
+  color: var(--tg-text);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  white-space: nowrap;
+  vertical-align: middle;
+  transition: opacity .25s ease, filter .25s ease, background-color .25s ease;
+}
+.user-mgmt-table tbody tr:last-child td { border-bottom: none; }
+.user-mgmt-table tbody tr.um-row-match td { background: rgba(51, 144, 236, 0.16); }
+.user-mgmt-table tbody tr.um-row-dim td { opacity: 0.28; filter: blur(1.5px); }
+
+.um-user-cell { display: flex; align-items: center; gap: 8px; }
+.um-avatar {
+  width: 26px; height: 26px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
+  background: rgba(255,255,255,0.08);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--tg-text-muted); font-size: 11px;
+}
+.um-name-wrap { display: flex; flex-direction: column; line-height: 1.35; }
+.um-name { font-weight: 700; font-size: 12.5px; color: #fff; }
+.um-username { font-size: 10.5px; color: var(--tg-text-muted); }
+
+.um-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 20px; font-size: 10.5px; font-weight: 800; white-space: nowrap; }
+.um-badge.normal { background: rgba(16,185,129,0.15); color: #10b981; }
+.um-badge.vip { background: rgba(245,158,11,0.15); color: #f59e0b; }
+.um-badge.banned { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+.um-action-btn {
+  border: none; border-radius: 8px; padding: 7px 12px;
+  font-size: 11px; font-weight: 800; cursor: pointer; white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.um-action-btn.ban { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+.um-action-btn.unban { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+.um-action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
   </style>
 </head>
 <body>
@@ -1002,6 +1079,47 @@
         <input type="number" id="topup-jumlah" class="admin-input" placeholder="Jumlah credit (contoh: 50)" min="1">
         <button class="admin-btn-save" style="background:#22c55e;" onclick="topupCreditManual()">Tambah Credit</button>
         <div id="topup-hasil" style="margin-top:10px; font-size:13px;"></div>
+      </div>
+
+      <div class="settings-card">
+        <div style="font-size:15px; font-weight:bold; color:var(--tg-accent); margin-bottom: 6px;"><i class="fas fa-users-gear"></i> Manajemen User</div>
+        <p style="font-size:12px; color:var(--tg-text-muted); margin-bottom:14px; line-height:1.5;">Lihat semua user terdaftar (ID, email, IP terakhir, device, status), cari dengan cepat, dan kelola akses lewat Ban/Unban. Data ditarik langsung dari server saat dibutuhkan, bukan disimpan di HP.</p>
+
+        <div id="userMgmtLoadArea">
+          <button class="kategori-manager-toggle-add" onclick="muatDataUserManagement()">
+            <i class="fas fa-cloud-arrow-down"></i> <span>Muat Data User</span>
+          </button>
+        </div>
+
+        <div id="userMgmtContent" style="display:none;">
+          <div class="user-mgmt-search-wrap">
+            <i class="fas fa-magnifying-glass"></i>
+            <input type="text" id="userMgmtSearchInput" placeholder="Cari ID / email / username / IP..." oninput="filterUserManagementTable(this.value)">
+          </div>
+          <div class="user-mgmt-toolbar">
+            <span class="user-mgmt-count" id="userMgmtCountLabel">0 user</span>
+            <button class="user-mgmt-refresh" onclick="muatDataUserManagement()"><i class="fas fa-rotate"></i> Refresh</button>
+          </div>
+          <div class="user-mgmt-table-wrap">
+            <table class="user-mgmt-table">
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>User</th>
+                  <th>ID</th>
+                  <th>Email</th>
+                  <th>IP Terakhir</th>
+                  <th>Device</th>
+                  <th>Terdaftar</th>
+                  <th>Login Terakhir</th>
+                  <th>Status</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="userMgmtTableBody"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       <div class="settings-card">
@@ -1343,6 +1461,171 @@
         hasilEl.style.color = '#f43f5e';
         hasilEl.textContent = '⚠️ Error koneksi: ' + err.message;
     }
+}
+
+// =====================================================================
+// MANAJEMEN USER — tabel admin, search dengan highlight, ban/unban
+// =====================================================================
+let userMgmtPin = null;   // disimpan di memori tab ini aja (bukan localStorage), direset kalau salah
+let userMgmtData = [];
+
+function escapeHtmlUM(str) {
+    return String(str || '').replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+}
+
+function formatTanggalUM(iso) {
+    if (!iso) return '-';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '-';
+    return d.toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+async function muatDataUserManagement() {
+    if (!userMgmtPin) {
+        const inputPin = prompt('Masukkan PIN admin untuk memuat data user:');
+        if (!inputPin) return;
+        userMgmtPin = inputPin;
+    }
+
+    const content = document.getElementById('userMgmtContent');
+    const tbody = document.getElementById('userMgmtTableBody');
+    content.style.display = 'block';
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:24px; color:var(--tg-text-muted);"><i class="fas fa-circle-notch fa-spin"></i> Memuat data user...</td></tr>`;
+
+    try {
+        const res = await fetch('/api/admin-list-users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin: userMgmtPin })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            userMgmtPin = null; // PIN salah / ditolak -> reset biar diminta ulang lain kali
+            content.style.display = 'none';
+            tampilkanAlert(data.error || 'Gagal memuat data user.', 'error');
+            return;
+        }
+
+        userMgmtData = data.users || [];
+        renderUserManagementTable(userMgmtData);
+        document.getElementById('userMgmtCountLabel').textContent = `${userMgmtData.length} user`;
+
+        const searchInput = document.getElementById('userMgmtSearchInput');
+        if (searchInput && searchInput.value.trim()) filterUserManagementTable(searchInput.value);
+    } catch (err) {
+        content.style.display = 'none';
+        tampilkanAlert('Error koneksi: ' + err.message, 'error');
+    }
+}
+
+function renderUserManagementTable(list) {
+    const tbody = document.getElementById('userMgmtTableBody');
+    if (!list || list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:24px; color:var(--tg-text-muted);">Belum ada user terdaftar.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = list.map((u, idx) => {
+        const isBanned = !!u.banned_until && new Date(u.banned_until) > new Date();
+        const statusBadge = isBanned
+            ? `<span class="um-badge banned"><i class="fas fa-ban"></i> Banned</span>`
+            : (u.is_vip
+                ? `<span class="um-badge vip"><i class="fas fa-crown"></i> VIP</span>`
+                : `<span class="um-badge normal"><i class="fas fa-check"></i> Normal</span>`);
+
+        const avatarHtml = u.photo_url
+            ? `<img class="um-avatar" src="${escapeHtmlUM(u.photo_url)}" onerror="this.style.visibility='hidden'">`
+            : `<div class="um-avatar"><i class="fas fa-user"></i></div>`;
+
+        const actionBtn = isBanned
+            ? `<button class="um-action-btn unban" onclick="prosesBanUnbanUser('${u.id}','unban',this)"><i class="fas fa-unlock"></i> Unban</button>`
+            : `<button class="um-action-btn ban" onclick="prosesBanUnbanUser('${u.id}','ban',this)"><i class="fas fa-ban"></i> Ban</button>`;
+
+        const searchBlob = [u.permanent_id, u.email, u.username, u.display_name, u.last_ip]
+            .join(' ').toLowerCase();
+
+        return `
+            <tr data-um-search="${escapeHtmlUM(searchBlob)}">
+                <td>${idx + 1}</td>
+                <td>
+                    <div class="um-user-cell">
+                        ${avatarHtml}
+                        <div class="um-name-wrap">
+                            <span class="um-name">${escapeHtmlUM(u.display_name)}</span>
+                            <span class="um-username">${escapeHtmlUM(u.username)}</span>
+                        </div>
+                    </div>
+                </td>
+                <td>${escapeHtmlUM(u.permanent_id)}</td>
+                <td>${escapeHtmlUM(u.email)}</td>
+                <td>${escapeHtmlUM(u.last_ip)}</td>
+                <td>${escapeHtmlUM(u.device_login)}</td>
+                <td>${formatTanggalUM(u.created_at)}</td>
+                <td>${formatTanggalUM(u.last_login_at || u.last_sign_in_at)}</td>
+                <td>${statusBadge}</td>
+                <td>${actionBtn}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function filterUserManagementTable(keyword) {
+    const kw = keyword.trim().toLowerCase();
+    const rows = document.querySelectorAll('#userMgmtTableBody tr[data-um-search]');
+
+    if (!kw) {
+        rows.forEach(r => r.classList.remove('um-row-match', 'um-row-dim'));
+        return;
+    }
+
+    rows.forEach(r => {
+        const match = r.getAttribute('data-um-search').includes(kw);
+        r.classList.toggle('um-row-match', match);
+        r.classList.toggle('um-row-dim', !match);
+    });
+}
+
+async function prosesBanUnbanUser(userId, action, btn) {
+    const label = action === 'ban' ? 'Ban' : 'Unban';
+    tampilkanConfirmLiquidGlass(
+        `${label} User Ini?`,
+        action === 'ban'
+            ? 'User yang di-ban tidak akan bisa login atau memakai sesi lagi sampai kamu unban manual.'
+            : 'User ini akan bisa login dan memakai akunnya kembali seperti biasa.',
+        action === 'ban' ? 'fas fa-ban' : 'fas fa-unlock',
+        action === 'ban' ? '#ef4444' : '#10b981',
+        async () => {
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+
+            try {
+                const res = await fetch('/api/admin-ban-user', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: userMgmtPin, userId, action })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    tampilkanAlert(data.error || `Gagal ${label.toLowerCase()} user.`, 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                    return;
+                }
+
+                tampilkanAlert(`User berhasil di-${label.toLowerCase()}.`, 'sukses');
+                muatDataUserManagement();
+            } catch (err) {
+                tampilkanAlert('Error koneksi: ' + err.message, 'error');
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        }
+    );
 }
 
 async function verifikasiLoginAdmin() {
