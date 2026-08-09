@@ -2657,7 +2657,7 @@ function tampilkanConfirmLiquidGlass(judul, pesan, ikonClass, warnaTombol, callb
         }
 
         const namaUser = item.user_name || item.user_email || 'Guest (belum login)';
-        const idUser = item.user_id || '-';
+        const idUser = item.user_permanent_id || item.user_id || '-';
         document.getElementById('feedbackDetailUser').innerHTML =
             `${escapeHtmlFb(namaUser)}<br><span style="color:var(--tg-text-muted); font-size:11.5px;">ID: ${escapeHtmlFb(idUser)}</span>`;
 
