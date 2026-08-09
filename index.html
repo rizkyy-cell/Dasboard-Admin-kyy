@@ -652,6 +652,116 @@
   padding: 40px 10px;
 }
 
+/* ================= MODE PILIH (SELECT/DELETE) FEEDBACK ================= */
+.feedback-admin-select-bar {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.feedback-admin-select-bar.show { display: flex; }
+.feedback-admin-select-bar label {
+  font-size: 12px; color: var(--tg-text-muted);
+  display: flex; align-items: center; gap: 6px; cursor: pointer;
+}
+.feedback-admin-select-bar input[type="checkbox"] {
+  width: 15px; height: 15px; accent-color: var(--tg-accent); cursor: pointer;
+}
+.feedback-admin-select-bar .fb-del-btn {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(239,68,68,0.15);
+  color: #ef4444;
+  border: none;
+  padding: 7px 12px;
+  border-radius: 20px;
+  font-size: 12px; font-weight: 700;
+  cursor: pointer;
+}
+.feedback-admin-select-bar .fb-cancel-btn {
+  background: rgba(255,255,255,0.08);
+  color: var(--tg-text-muted);
+  border: none;
+  padding: 7px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+}
+#feedbackSelectBtn.active { background: rgba(51,144,236,0.25); color: var(--tg-accent); }
+
+.feedback-admin-item { cursor: pointer; }
+.feedback-admin-item-checkbox {
+  display: none;
+  width: 17px; height: 17px;
+  accent-color: var(--tg-accent);
+  flex-shrink: 0;
+  margin-top: 3px;
+  cursor: pointer;
+}
+.feedback-admin-scroll.select-mode .feedback-admin-item-checkbox { display: block; }
+
+/* ================= MODAL DETAIL FEEDBACK ================= */
+.feedback-detail-overlay {
+  position: fixed; inset: 0;
+  z-index: 700;
+  background: rgba(0,0,0,0.6);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+  padding: 20px;
+}
+.feedback-detail-overlay.show { opacity: 1; visibility: visible; }
+.feedback-detail-card {
+  background: linear-gradient(135deg, rgba(23,33,43,0.95), rgba(14,22,33,0.98));
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 20px;
+  width: 100%;
+  max-width: 400px;
+  max-height: 82vh;
+  overflow-y: auto;
+  transform: scale(0.92);
+  transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+.feedback-detail-overlay.show .feedback-detail-card { transform: scale(1); }
+.feedback-detail-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.feedback-detail-vote { font-size: 20px; }
+.feedback-detail-vote.up { color: #10b981; }
+.feedback-detail-vote.down { color: #ef4444; }
+.feedback-detail-close {
+  background: rgba(255,255,255,0.08);
+  border: none; color: var(--tg-text);
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.feedback-detail-section { margin-bottom: 14px; }
+.feedback-detail-label {
+  font-size: 10.5px; color: var(--tg-text-muted);
+  text-transform: uppercase; letter-spacing: 0.05em;
+  margin-bottom: 4px; font-weight: 700;
+}
+.feedback-detail-value {
+  font-size: 13.5px; color: var(--tg-text);
+  line-height: 1.5; white-space: pre-wrap; word-break: break-word;
+}
+.feedback-detail-delete-btn {
+  width: 100%; padding: 12px;
+  background: rgba(239,68,68,0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 12px;
+  font-weight: 700; font-size: 13px;
+  cursor: pointer;
+  margin-top: 6px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+
   </style>
 </head>
 <body>
@@ -954,10 +1064,10 @@
 
     <div style="padding: 0 15px;">
         <div class="feedback-trigger-card" onclick="openFeedbackUserSheet()">
-            <div class="feedback-trigger-icon">💬</div>
+            <div class="feedback-trigger-icon"><i class="fas fa-comment-dots"></i></div>
             <div class="feedback-trigger-text">
                 <div class="feedback-trigger-title">Feedback User</div>
-                <div class="feedback-trigger-sub" id="feedbackTriggerSub">Lihat laporan 👍 / 👎 dari pengguna</div>
+                <div class="feedback-trigger-sub" id="feedbackTriggerSub">Lihat laporan dari pengguna</div>
             </div>
             <i class="fas fa-chevron-right"></i>
         </div>
@@ -1083,20 +1193,27 @@
       <div class="feedback-admin-header">
         <div class="feedback-admin-header-title"><i class="fas fa-comment-dots"></i> Feedback User</div>
         <div style="display:flex; gap:8px;">
+          <button type="button" onclick="toggleFeedbackSelectMode()" title="Pilih" id="feedbackSelectBtn"><i class="fas fa-check-square"></i></button>
           <button type="button" onclick="loadFeedbackAdminData()" title="Refresh"><i class="fas fa-sync-alt" id="feedbackRefreshIcon"></i></button>
           <button type="button" onclick="closeFeedbackUserSheet()" title="Tutup"><i class="fas fa-times"></i></button>
         </div>
       </div>
 
+      <div class="feedback-admin-select-bar" id="feedbackSelectBar">
+        <label><input type="checkbox" id="feedbackSelectAllCb" onchange="toggleFeedbackSelectAll(this)"> Semua</label>
+        <button type="button" class="fb-del-btn" onclick="deleteFeedbackSelected()"><i class="fas fa-trash-alt"></i> Hapus (<span id="feedbackSelectedCount">0</span>)</button>
+        <button type="button" class="fb-cancel-btn" onclick="toggleFeedbackSelectMode()">Batal</button>
+      </div>
+
       <div class="feedback-admin-tabs">
-        <div class="feedback-admin-tab active-up" id="feedbackTabUp" onclick="feedbackScrollTo(0)">👍 Positif</div>
-        <div class="feedback-admin-tab" id="feedbackTabDown" onclick="feedbackScrollTo(1)">👎 Negatif</div>
+        <div class="feedback-admin-tab active-up" id="feedbackTabUp" onclick="feedbackScrollTo(0)"><i class="fas fa-thumbs-up"></i> Positif</div>
+        <div class="feedback-admin-tab" id="feedbackTabDown" onclick="feedbackScrollTo(1)"><i class="fas fa-thumbs-down"></i> Negatif</div>
       </div>
 
       <div class="feedback-admin-scroll" id="feedbackAdminScroll" onscroll="feedbackSyncTab()">
         <div class="feedback-admin-panel">
           <div class="feedback-admin-panel-header">
-            <div class="feedback-admin-panel-title">👍 Feedback Positif</div>
+            <div class="feedback-admin-panel-title"><i class="fas fa-thumbs-up" style="color:#10b981;"></i> Feedback Positif</div>
             <div class="feedback-admin-count-badge up" id="feedbackCountUp">0</div>
           </div>
           <div class="feedback-admin-list" id="feedbackListUp">
@@ -1105,7 +1222,7 @@
         </div>
         <div class="feedback-admin-panel">
           <div class="feedback-admin-panel-header">
-            <div class="feedback-admin-panel-title">👎 Feedback Negatif</div>
+            <div class="feedback-admin-panel-title"><i class="fas fa-thumbs-down" style="color:#ef4444;"></i> Feedback Negatif</div>
             <div class="feedback-admin-count-badge down" id="feedbackCountDown">0</div>
           </div>
           <div class="feedback-admin-list" id="feedbackListDown">
@@ -1113,6 +1230,43 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL DETAIL FEEDBACK -->
+  <div class="feedback-detail-overlay" id="feedbackDetailOverlay" onclick="if(event.target===this) closeFeedbackDetail()">
+    <div class="feedback-detail-card">
+      <div class="feedback-detail-header">
+        <div class="feedback-detail-vote" id="feedbackDetailVoteIcon"></div>
+        <button type="button" class="feedback-detail-close" onclick="closeFeedbackDetail()"><i class="fas fa-times"></i></button>
+      </div>
+
+      <div class="feedback-detail-section">
+        <div class="feedback-detail-label">Isi Pesan</div>
+        <div class="feedback-detail-value" id="feedbackDetailMessage"></div>
+      </div>
+
+      <div class="feedback-detail-section" id="feedbackDetailIssueWrap">
+        <div class="feedback-detail-label">Jenis Masalah</div>
+        <div class="feedback-detail-value" id="feedbackDetailIssue"></div>
+      </div>
+
+      <div class="feedback-detail-section" id="feedbackDetailNoteWrap">
+        <div class="feedback-detail-label">Catatan User</div>
+        <div class="feedback-detail-value" id="feedbackDetailNote"></div>
+      </div>
+
+      <div class="feedback-detail-section">
+        <div class="feedback-detail-label">User</div>
+        <div class="feedback-detail-value" id="feedbackDetailUser"></div>
+      </div>
+
+      <div class="feedback-detail-section">
+        <div class="feedback-detail-label">Waktu</div>
+        <div class="feedback-detail-value" id="feedbackDetailTime"></div>
+      </div>
+
+      <button type="button" class="feedback-detail-delete-btn" onclick="deleteFeedbackFromDetail()"><i class="fas fa-trash-alt"></i> Hapus Feedback Ini</button>
     </div>
   </div>
 
@@ -2380,7 +2534,11 @@ function tampilkanConfirmLiquidGlass(judul, pesan, ikonClass, warnaTombol, callb
         }
     }
 
-    /* ================= FEEDBACK USER (👍/👎) — SHEET FULL SCREEN ================= */
+    /* ================= FEEDBACK USER — SHEET FULL SCREEN ================= */
+    let feedbackDataMap = {};
+    let feedbackSelectMode = false;
+    let feedbackSelectedIds = new Set();
+
     function escapeHtmlFb(str) {
         return String(str || '').replace(/[&<>"']/g, c => ({
             '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -2400,6 +2558,7 @@ function tampilkanConfirmLiquidGlass(judul, pesan, ikonClass, warnaTombol, callb
 
     function closeFeedbackUserSheet() {
         document.getElementById('feedbackAdminOverlay').classList.remove('show');
+        if (feedbackSelectMode) toggleFeedbackSelectMode();
     }
 
     function feedbackScrollTo(panelIndex) {
@@ -2414,6 +2573,121 @@ function tampilkanConfirmLiquidGlass(judul, pesan, ikonClass, warnaTombol, callb
         document.getElementById('feedbackTabDown').classList.toggle('active-down', idx === 1);
     }
 
+    /* ---------- MODE PILIH & HAPUS ---------- */
+    function toggleFeedbackSelectMode() {
+        feedbackSelectMode = !feedbackSelectMode;
+        feedbackSelectedIds.clear();
+
+        document.getElementById('feedbackAdminScroll').classList.toggle('select-mode', feedbackSelectMode);
+        document.getElementById('feedbackSelectBar').classList.toggle('show', feedbackSelectMode);
+        document.getElementById('feedbackSelectBtn').classList.toggle('active', feedbackSelectMode);
+        document.getElementById('feedbackSelectAllCb').checked = false;
+        document.querySelectorAll('.feedback-admin-item-checkbox').forEach(cb => cb.checked = false);
+        updateFeedbackSelectCount();
+    }
+
+    function toggleFeedbackItemSelect(id, checkbox) {
+        if (checkbox.checked) feedbackSelectedIds.add(id); else feedbackSelectedIds.delete(id);
+        updateFeedbackSelectCount();
+    }
+
+    function toggleFeedbackSelectAll(checkbox) {
+        feedbackSelectedIds.clear();
+        if (checkbox.checked) {
+            Object.keys(feedbackDataMap).forEach(id => feedbackSelectedIds.add(id));
+        }
+        document.querySelectorAll('.feedback-admin-item-checkbox').forEach(cb => cb.checked = checkbox.checked);
+        updateFeedbackSelectCount();
+    }
+
+    function updateFeedbackSelectCount() {
+        document.getElementById('feedbackSelectedCount').textContent = feedbackSelectedIds.size;
+    }
+
+    async function deleteFeedbackSelected() {
+        if (feedbackSelectedIds.size === 0) return;
+        if (!confirm(`Hapus ${feedbackSelectedIds.size} feedback terpilih?`)) return;
+
+        const ids = Array.from(feedbackSelectedIds);
+        try {
+            const { error } = await supabaseClient.from('submit_feedback').delete().in('id', ids);
+            if (error) throw error;
+            tampilkanAlert('Feedback terpilih berhasil dihapus.', 'sukses');
+            toggleFeedbackSelectMode();
+            loadFeedbackAdminData();
+        } catch (err) {
+            console.error(err);
+            tampilkanAlert('Gagal menghapus feedback.', 'error');
+        }
+    }
+
+    /* ---------- KLIK ITEM -> MODAL DETAIL ---------- */
+    let feedbackDetailCurrentId = null;
+
+    function openFeedbackItem(id, checkboxEvent) {
+        if (checkboxEvent) return; // klik pas checkbox, jangan buka modal
+        if (feedbackSelectMode) return;
+
+        const item = feedbackDataMap[id];
+        if (!item) return;
+        feedbackDetailCurrentId = id;
+
+        const isUp = item.vote === 'up';
+        document.getElementById('feedbackDetailVoteIcon').innerHTML =
+            `<i class="fas fa-thumbs-${isUp ? 'up' : 'down'}"></i>`;
+        document.getElementById('feedbackDetailVoteIcon').className =
+            'feedback-detail-vote ' + (isUp ? 'up' : 'down');
+
+        document.getElementById('feedbackDetailMessage').textContent = item.message_content || '(tanpa isi pesan)';
+
+        const issueWrap = document.getElementById('feedbackDetailIssueWrap');
+        if (item.issue_type) {
+            issueWrap.style.display = 'block';
+            document.getElementById('feedbackDetailIssue').textContent = item.issue_type;
+        } else {
+            issueWrap.style.display = 'none';
+        }
+
+        const noteWrap = document.getElementById('feedbackDetailNoteWrap');
+        if (item.detail) {
+            noteWrap.style.display = 'block';
+            document.getElementById('feedbackDetailNote').textContent = item.detail;
+        } else {
+            noteWrap.style.display = 'none';
+        }
+
+        const namaUser = item.user_name || item.user_email || 'Guest (belum login)';
+        const idUser = item.user_id || '-';
+        document.getElementById('feedbackDetailUser').innerHTML =
+            `${escapeHtmlFb(namaUser)}<br><span style="color:var(--tg-text-muted); font-size:11.5px;">ID: ${escapeHtmlFb(idUser)}</span>`;
+
+        document.getElementById('feedbackDetailTime').textContent = formatTanggalFb(item.created_at);
+
+        document.getElementById('feedbackDetailOverlay').classList.add('show');
+    }
+
+    function closeFeedbackDetail() {
+        document.getElementById('feedbackDetailOverlay').classList.remove('show');
+        feedbackDetailCurrentId = null;
+    }
+
+    async function deleteFeedbackFromDetail() {
+        if (!feedbackDetailCurrentId) return;
+        if (!confirm('Hapus feedback ini?')) return;
+
+        try {
+            const { error } = await supabaseClient.from('submit_feedback').delete().eq('id', feedbackDetailCurrentId);
+            if (error) throw error;
+            tampilkanAlert('Feedback berhasil dihapus.', 'sukses');
+            closeFeedbackDetail();
+            loadFeedbackAdminData();
+        } catch (err) {
+            console.error(err);
+            tampilkanAlert('Gagal menghapus feedback.', 'error');
+        }
+    }
+
+    /* ---------- RENDER LIST ---------- */
     function renderFeedbackListFb(containerId, items) {
         const wrap = document.getElementById(containerId);
         if (!items || items.length === 0) {
@@ -2422,12 +2696,14 @@ function tampilkanConfirmLiquidGlass(judul, pesan, ikonClass, warnaTombol, callb
         }
         wrap.innerHTML = items.map((item, i) => {
             const judul = escapeHtmlFb(item.message_content || '(tanpa isi pesan)');
-            const tags = [];
+            const namaUser = escapeHtmlFb(item.user_name || item.user_email || 'Guest');
+            const tags = [`<span class="feedback-admin-item-tag"><i class="fas fa-user" style="margin-right:4px;"></i>${namaUser}</span>`];
             if (item.issue_type) tags.push(`<span class="feedback-admin-item-tag">${escapeHtmlFb(item.issue_type)}</span>`);
             if (item.detail) tags.push(`<span class="feedback-admin-item-tag">"${escapeHtmlFb(item.detail.slice(0, 40))}${item.detail.length > 40 ? '…' : ''}"</span>`);
             tags.push(`<span class="feedback-admin-item-tag">${formatTanggalFb(item.created_at)}</span>`);
             return `
-              <div class="feedback-admin-item">
+              <div class="feedback-admin-item" onclick="openFeedbackItem('${item.id}', event.target.closest('.feedback-admin-item-checkbox'))">
+                <input type="checkbox" class="feedback-admin-item-checkbox" onclick="event.stopPropagation(); toggleFeedbackItemSelect('${item.id}', this)">
                 <div class="feedback-admin-item-num">${i + 1}</div>
                 <div class="feedback-admin-item-body">
                   <div class="feedback-admin-item-title">${judul}</div>
@@ -2450,12 +2726,16 @@ function tampilkanConfirmLiquidGlass(judul, pesan, ikonClass, warnaTombol, callb
             if (error) throw error;
 
             const items = data || [];
+            feedbackDataMap = {};
+            items.forEach(it => feedbackDataMap[it.id] = it);
+
             const up = items.filter(x => x.vote === 'up');
             const down = items.filter(x => x.vote === 'down');
 
             document.getElementById('feedbackCountUp').textContent = up.length;
             document.getElementById('feedbackCountDown').textContent = down.length;
-            document.getElementById('feedbackTriggerSub').textContent = `👍 ${up.length}  ·  👎 ${down.length} laporan masuk`;
+            document.getElementById('feedbackTriggerSub').innerHTML =
+                `<i class="fas fa-thumbs-up" style="color:#10b981;"></i> ${up.length} &nbsp;·&nbsp; <i class="fas fa-thumbs-down" style="color:#ef4444;"></i> ${down.length} laporan masuk`;
 
             renderFeedbackListFb('feedbackListUp', up);
             renderFeedbackListFb('feedbackListDown', down);
