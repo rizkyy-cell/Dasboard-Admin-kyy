@@ -1019,152 +1019,241 @@
     <div id="container-store-list"></div>
   </div>
 
+    <!-- PAGE CONTENT: PENGATURAN (ACCORDION GROUPING) -->
   <div class="page-content" id="page-pengaturan">
-    <div class="settings-container">
-      <div class="kategori-manager-card" style="margin-bottom: 15px;">
-        <div class="kategori-manager-title"><i class="fas fa-tags"></i> Manajemen Kategori Web</div>
-        <div class="kategori-manager-desc">Tambah atau hapus kategori yang tersedia saat menyimpan link Web Saya. Perubahan langsung tersinkron ke database.</div>
-        <div class="kategori-manager-toggle-add" id="kategoriAddToggle" onclick="toggleKategoriAddForm()">
+    <style>
+      /* Style khusus Accordion Grouping Settings */
+      .settings-group-card {
+        background: var(--tg-panel);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 18px;
+        margin: 10px 15px;
+        overflow: hidden;
+        transition: border-color 0.3s ease;
+      }
+      .settings-group-header {
+        padding: 16px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        user-select: none;
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .settings-group-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--tg-text);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .settings-group-title i {
+        color: var(--tg-accent);
+      }
+      .settings-group-header i.chevron-icon {
+        color: var(--tg-text-muted);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .settings-group-card.open .settings-group-header i.chevron-icon {
+        transform: rotate(180deg);
+        color: var(--tg-accent);
+      }
+      .settings-group-body {
+        display: none;
+        padding: 15px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .settings-group-card.open .settings-group-body {
+        display: block;
+        animation: accordionFade 0.3s ease;
+      }
+      @keyframes accordionFade {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    </style>
+
+    <!-- GRUP 1: KATEGORI & KONTEN -->
+    <div class="settings-group-card">
+      <div class="settings-group-header" onclick="toggleSettingsGroup(this)">
+        <div class="settings-group-title"><i class="fas fa-tags"></i> Kategori & Konten</div>
+        <i class="fas fa-chevron-down chevron-icon"></i>
+      </div>
+      <div class="settings-group-body">
+        <!-- Manajemen Kategori Web -->
+        <div class="kategori-manager-card" style="margin-bottom: 15px;">
+          <div class="kategori-manager-title"><i class="fas fa-globe"></i> Kategori Web</div>
+          <div class="kategori-manager-toggle-add" id="kategoriAddToggle" onclick="toggleKategoriAddForm()">
             <i class="fas fa-plus-circle"></i> <span id="kategoriAddToggleLabel">Tambah Kategori Baru</span>
-        </div>
-        <div class="kategori-manager-add-row" id="kategoriAddRow">
+          </div>
+          <div class="kategori-manager-add-row" id="kategoriAddRow">
             <input type="text" id="kategoriManagerInput" placeholder="Nama kategori baru..." maxlength="20" onkeydown="if(event.key==='Enter'){event.preventDefault(); tambahKategoriManager();}">
             <button onclick="tambahKategoriManager()"><i class="fas fa-check"></i></button>
             <button class="kategori-manager-cancel" onclick="toggleKategoriAddForm(true)"><i class="fas fa-times"></i></button>
+          </div>
+          <div class="kategori-manager-list" id="kategoriManagerList"></div>
         </div>
-        <div class="kategori-manager-list" id="kategoriManagerList"></div>
-      </div>
 
-      <div class="kategori-manager-card" style="margin-bottom: 15px;">
-        <div class="kategori-manager-title"><i class="fas fa-tags"></i> Manajemen Kategori App Mod</div>
-        <div class="kategori-manager-desc">Tambah atau hapus kategori yang tersedia saat menyimpan Aplikasi Mod. Terpisah dari kategori Web Saya.</div>
-        <div class="kategori-manager-toggle-add" id="kategoriAddToggleApp" onclick="toggleKategoriAddForm('app')">
+        <!-- Manajemen Kategori App Mod -->
+        <div class="kategori-manager-card" style="margin-bottom: 15px;">
+          <div class="kategori-manager-title"><i class="fas fa-mobile-alt"></i> Kategori App Mod</div>
+          <div class="kategori-manager-toggle-add" id="kategoriAddToggleApp" onclick="toggleKategoriAddForm('app')">
             <i class="fas fa-plus-circle"></i> <span id="kategoriAddToggleLabelApp">Tambah Kategori Baru</span>
-        </div>
-        <div class="kategori-manager-add-row" id="kategoriAddRowApp">
+          </div>
+          <div class="kategori-manager-add-row" id="kategoriAddRowApp">
             <input type="text" id="kategoriManagerInputApp" placeholder="Nama kategori baru..." maxlength="20" onkeydown="if(event.key==='Enter'){event.preventDefault(); tambahKategoriManager('app');}">
             <button onclick="tambahKategoriManager('app')"><i class="fas fa-check"></i></button>
             <button class="kategori-manager-cancel" onclick="toggleKategoriAddForm('app', true)"><i class="fas fa-times"></i></button>
+          </div>
+          <div class="kategori-manager-list" id="kategoriManagerListApp"></div>
         </div>
-        <div class="kategori-manager-list" id="kategoriManagerListApp"></div>
-      </div>
 
-      <div class="kategori-manager-card" style="margin-bottom: 15px;">
-        <div class="kategori-manager-title"><i class="fas fa-tags"></i> Manajemen Kategori Store</div>
-        <div class="kategori-manager-desc">Tambah atau hapus kategori yang tersedia saat menyimpan Produk Store. Terpisah dari kategori Web Saya & App Mod.</div>
-        <div class="kategori-manager-toggle-add" id="kategoriAddToggleStore" onclick="toggleKategoriAddForm('store')">
+        <!-- Manajemen Kategori Store -->
+        <div class="kategori-manager-card">
+          <div class="kategori-manager-title"><i class="fas fa-store"></i> Kategori Store</div>
+          <div class="kategori-manager-toggle-add" id="kategoriAddToggleStore" onclick="toggleKategoriAddForm('store')">
             <i class="fas fa-plus-circle"></i> <span id="kategoriAddToggleLabelStore">Tambah Kategori Baru</span>
-        </div>
-        <div class="kategori-manager-add-row" id="kategoriAddRowStore">
+          </div>
+          <div class="kategori-manager-add-row" id="kategoriAddRowStore">
             <input type="text" id="kategoriManagerInputStore" placeholder="Nama kategori baru..." maxlength="20" onkeydown="if(event.key==='Enter'){event.preventDefault(); tambahKategoriManager('store');}">
             <button onclick="tambahKategoriManager('store')"><i class="fas fa-check"></i></button>
             <button class="kategori-manager-cancel" onclick="toggleKategoriAddForm('store', true)"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="kategori-manager-list" id="kategoriManagerListStore"></div>
-      </div>
-
-      <div class="settings-card">
-        <div style="font-size:15px; font-weight:bold; color:var(--tg-accent);"><i class="fas fa-palette"></i> Aksen Warna Tema Admin</div>
-        <div class="theme-grid">
-          <div class="theme-dot selected" style="background-color: #3390ec;" onclick="gantiTemaAdmin('#3390ec', this)"></div>
-          <div class="theme-dot" style="background-color: #a259ff;" onclick="gantiTemaAdmin('#a259ff', this)"></div>
-          <div class="theme-dot" style="background-color: #10b981;" onclick="gantiTemaAdmin('#10b981', this)"></div>
-          <div class="theme-dot" style="background-color: #ff23e6;" onclick="gantiTemaAdmin('#ff23e6', this)"></div>
-        </div>
-      </div>
-
-      <div class="settings-card" style="border-color:#22c55e;">
-        <div style="font-size:15px; font-weight:bold; color:#22c55e; margin-bottom: 15px;"><i class="fas fa-coins"></i> Top-up Manual Deep Search (VIP)</div>
-        <input type="email" id="topup-email" class="admin-input" placeholder="Email akun user (sesuai login mereka)">
-        <input type="number" id="topup-jumlah" class="admin-input" placeholder="Jumlah credit (contoh: 50)" min="1">
-        <button class="admin-btn-save" style="background:#22c55e;" onclick="topupCreditManual()">Tambah Credit</button>
-        <div id="topup-hasil" style="margin-top:10px; font-size:13px;"></div>
-      </div>
-
-      <div class="settings-card">
-        <div style="font-size:15px; font-weight:bold; color:var(--tg-accent); margin-bottom: 6px;"><i class="fas fa-users-gear"></i> Manajemen User</div>
-        <p style="font-size:12px; color:var(--tg-text-muted); margin-bottom:14px; line-height:1.5;">Lihat semua user terdaftar (ID, email, IP terakhir, device, status), cari dengan cepat, dan kelola akses lewat Ban/Unban. Data ditarik langsung dari server saat dibutuhkan, bukan disimpan di HP.</p>
-
-        <div id="userMgmtLoadArea">
-          <button class="kategori-manager-toggle-add" onclick="muatDataUserManagement()">
-            <i class="fas fa-cloud-arrow-down"></i> <span>Muat Data User</span>
-          </button>
-        </div>
-
-        <div id="userMgmtContent" style="display:none;">
-          <div class="user-mgmt-search-wrap">
-            <i class="fas fa-magnifying-glass"></i>
-            <input type="text" id="userMgmtSearchInput" placeholder="Cari ID / email / username / IP..." oninput="filterUserManagementTable(this.value)">
           </div>
-          <div class="user-mgmt-toolbar">
-            <span class="user-mgmt-count" id="userMgmtCountLabel">0 user</span>
-            <button class="user-mgmt-refresh" onclick="muatDataUserManagement()"><i class="fas fa-rotate"></i> Refresh</button>
-          </div>
-          <div class="user-mgmt-table-wrap">
-            <table class="user-mgmt-table">
-              <thead>
-                <tr>
-                  <th>No</th>
-                  <th>User</th>
-                  <th>ID</th>
-                  <th>Email</th>
-                  <th>IP Terakhir</th>
-                  <th>Device</th>
-                  <th>Terdaftar</th>
-                  <th>Login Terakhir</th>
-                  <th>Status</th>
-                  <th>Aksi</th>
-                </tr>
-              </thead>
-              <tbody id="userMgmtTableBody"></tbody>
-            </table>
-          </div>
+          <div class="kategori-manager-list" id="kategoriManagerListStore"></div>
         </div>
       </div>
+    </div>
 
-      <div class="settings-card">
-        <div style="font-size:15px; font-weight:bold; color:var(--admin-add); margin-bottom: 15px;"><i class="fas fa-bullhorn"></i> Manajemen Announcement</div>
-        <textarea id="anc-title" class="admin-textarea" placeholder="Judul Pengumuman (Bisa klik enter...)"></textarea>
-        <textarea id="anc-body" class="admin-textarea tinggi" placeholder="Isi detail text pengumuman (Bisa klik enter...)"></textarea>
-        <select id="anc-type" class="admin-textarea" style="background: var(--tg-bg); height:45px; padding:5px 12px;">
+    <!-- GRUP 2: KOMUNIKASI & PUBLIKASI -->
+    <div class="settings-group-card">
+      <div class="settings-group-header" onclick="toggleSettingsGroup(this)">
+        <div class="settings-group-title"><i class="fas fa-bullhorn"></i> Komunikasi & Publikasi</div>
+        <i class="fas fa-chevron-down chevron-icon"></i>
+      </div>
+      <div class="settings-group-body">
+        <!-- Announcement -->
+        <div class="settings-card" style="margin-bottom: 15px;">
+          <div style="font-size:15px; font-weight:bold; color:var(--admin-add); margin-bottom: 12px;"><i class="fas fa-bullhorn"></i> Manajemen Announcement</div>
+          <textarea id="anc-title" class="admin-textarea" placeholder="Judul Pengumuman..."></textarea>
+          <textarea id="anc-body" class="admin-textarea tinggi" placeholder="Isi detail text pengumuman..."></textarea>
+          <select id="anc-type" class="admin-textarea" style="background: var(--tg-bg); height:45px; padding:5px 12px; margin-bottom: 12px;">
             <option value="info">Info (Biru)</option>
             <option value="warning">Warning (Kuning)</option>
             <option value="promo">Promo (Hijau)</option>
             <option value="maintenance">Maintenance (Merah)</option>
-        </select>
-        <div style="margin-bottom:12px; display:flex; align-items:center; gap:10px;">
+          </select>
+          <div style="margin-bottom:12px; display:flex; align-items:center; gap:10px;">
             <label style="font-size:13px; font-weight:bold; color:white;">Status Aktif Publik:</label>
             <input type="checkbox" id="anc-active" checked style="width:18px; height:18px;">
+          </div>
+          <button class="admin-btn-save" style="background: var(--tg-accent);" onclick="simpanAnnouncementKeSupabase()">Publish Pengumuman Baru</button>
+          <div id="container-announcement-list" style="margin-top: 15px;"></div>
         </div>
-        <button class="admin-btn-save" style="background: var(--tg-accent);" onclick="simpanAnnouncementKeSupabase()">Publish Pengumuman Baru</button>
-        
-        <div id="container-announcement-list" style="margin-top: 20px;"></div>
-      </div>
 
-      <div class="settings-card" style="border-color: var(--admin-edit);">
-        <div style="font-size:15px; font-weight:bold; color:var(--admin-edit); margin-bottom: 15px;"><i class="fas fa-envelope"></i> Kirim Notifikasi Kotak Surat</div>
-        <textarea id="inbox-title" class="admin-textarea" placeholder="Judul Notifikasi (Contoh: System Update)"></textarea>
-        <textarea id="inbox-msg" class="admin-textarea tinggi" placeholder="Isi detail pesan notifikasi (Bisa klik enter...)"></textarea>
-        <input type="password" id="inbox-date" class="admin-input" placeholder="Tanggal (Contoh: 5/9/2026)">
-        
-        <div style="margin-bottom:12px; display:flex; align-items:center; gap:10px;">
+        <!-- Inbox -->
+        <div class="settings-card" style="border-color: var(--admin-edit);">
+          <div style="font-size:15px; font-weight:bold; color:var(--admin-edit); margin-bottom: 12px;"><i class="fas fa-envelope"></i> Kirim Notifikasi Kotak Surat</div>
+          <textarea id="inbox-title" class="admin-textarea" placeholder="Judul Notifikasi..."></textarea>
+          <textarea id="inbox-msg" class="admin-textarea tinggi" placeholder="Isi detail pesan..."></textarea>
+          <input type="password" id="inbox-date" class="admin-input" placeholder="Tanggal (Contoh: 5/9/2026)">
+          <div style="margin-bottom:12px; display:flex; align-items:center; gap:10px;">
             <label style="font-size:13px; font-weight:bold; color:white;">Status Expired:</label>
             <input type="checkbox" id="inbox-expired" style="width:18px; height:18px;">
+          </div>
+          <button class="admin-btn-save" style="background: var(--admin-edit);" onclick="kirimInboxKeSupabase()">Kirim ke Kotak Surat Publik</button>
+          <div id="container-inbox-list" style="margin-top: 15px;"></div>
         </div>
-        <button class="admin-btn-save" style="background: var(--admin-edit);" onclick="kirimInboxKeSupabase()">Kirim ke Kotak Surat Publik</button>
-        
-        <div id="container-inbox-list" style="margin-top: 20px;"></div>
       </div>
+    </div>
 
-      <div class="settings-card">
-        <div style="font-size:15px; font-weight:bold; color:var(--tg-accent); margin-bottom: 15px;"><i class="fas fa-fingerprint"></i> Keamanan Biometrik</div>
-        <p style="font-size:13px; color:var(--tg-text-muted); margin-bottom:12px;">Daftarkan fingerprint/Face ID HP kamu sebagai cara login tambahan selain PIN.</p>
-        <button type="button" onclick="daftarkanFingerprint()" style="width:100%; padding:10px 16px; background:linear-gradient(135deg, #f3d078 0%, #c89d36 100%); border:none; border-radius:20px; color:#121216; font-weight:600; cursor:pointer;">
+    <!-- GRUP 3: PENGGUNA & AKSES -->
+    <div class="settings-group-card">
+      <div class="settings-group-header" onclick="toggleSettingsGroup(this)">
+        <div class="settings-group-title"><i class="fas fa-users-gear"></i> Pengguna & Akses</div>
+        <i class="fas fa-chevron-down chevron-icon"></i>
+      </div>
+      <div class="settings-group-body">
+        <!-- Top-up Manual Credit -->
+        <div class="settings-card" style="border-color:#22c55e; margin-bottom: 15px;">
+          <div style="font-size:15px; font-weight:bold; color:#22c55e; margin-bottom: 12px;"><i class="fas fa-coins"></i> Top-up Credit Deep Search (VIP)</div>
+          <input type="email" id="topup-email" class="admin-input" placeholder="Email akun user">
+          <input type="number" id="topup-jumlah" class="admin-input" placeholder="Jumlah credit (contoh: 50)" min="1">
+          <button class="admin-btn-save" style="background:#22c55e;" onclick="topupCreditManual()">Tambah Credit</button>
+          <div id="topup-hasil" style="margin-top:10px; font-size:13px;"></div>
+        </div>
+
+        <!-- Manajemen User -->
+        <div class="settings-card">
+          <div style="font-size:15px; font-weight:bold; color:var(--tg-accent); margin-bottom: 6px;"><i class="fas fa-users"></i> Tabel Manajemen User</div>
+          <p style="font-size:12px; color:var(--tg-text-muted); margin-bottom:14px;">Lihat semua user terdaftar, cari dengan cepat, dan kelola akses lewat Ban/Unban.</p>
+          <div id="userMgmtLoadArea">
+            <button class="kategori-manager-toggle-add" onclick="muatDataUserManagement()">
+              <i class="fas fa-cloud-arrow-down"></i> <span>Muat Data User</span>
+            </button>
+          </div>
+          <div id="userMgmtContent" style="display:none;">
+            <div class="user-mgmt-search-wrap">
+              <i class="fas fa-magnifying-glass"></i>
+              <input type="text" id="userMgmtSearchInput" placeholder="Cari ID / email / username..." oninput="filterUserManagementTable(this.value)">
+            </div>
+            <div class="user-mgmt-toolbar">
+              <span class="user-mgmt-count" id="userMgmtCountLabel">0 user</span>
+              <button class="user-mgmt-refresh" onclick="muatDataUserManagement()"><i class="fas fa-rotate"></i> Refresh</button>
+            </div>
+            <div class="user-mgmt-table-wrap">
+              <table class="user-mgmt-table">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>User</th>
+                    <th>ID</th>
+                    <th>Email</th>
+                    <th>IP Terakhir</th>
+                    <th>Device</th>
+                    <th>Terdaftar</th>
+                    <th>Login Terakhir</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="userMgmtTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRUP 4: SISTEM & KEAMANAN -->
+    <div class="settings-group-card">
+      <div class="settings-group-header" onclick="toggleSettingsGroup(this)">
+        <div class="settings-group-title"><i class="fas fa-shield-halved"></i> Sistem & Keamanan</div>
+        <i class="fas fa-chevron-down chevron-icon"></i>
+      </div>
+      <div class="settings-group-body">
+        <!-- Tema Warna -->
+        <div class="settings-card" style="margin-bottom: 15px;">
+          <div style="font-size:15px; font-weight:bold; color:var(--tg-accent);"><i class="fas fa-palette"></i> Aksen Warna Tema Admin</div>
+          <div class="theme-grid">
+            <div class="theme-dot selected" style="background-color: #3390ec;" onclick="gantiTemaAdmin('#3390ec', this)"></div>
+            <div class="theme-dot" style="background-color: #a259ff;" onclick="gantiTemaAdmin('#a259ff', this)"></div>
+            <div class="theme-dot" style="background-color: #10b981;" onclick="gantiTemaAdmin('#10b981', this)"></div>
+            <div class="theme-dot" style="background-color: #ff23e6;" onclick="gantiTemaAdmin('#ff23e6', this)"></div>
+          </div>
+        </div>
+
+        <!-- Biometrik -->
+        <div class="settings-card">
+          <div style="font-size:15px; font-weight:bold; color:var(--tg-accent); margin-bottom: 12px;"><i class="fas fa-fingerprint"></i> Keamanan Biometrik</div>
+          <p style="font-size:13px; color:var(--tg-text-muted); margin-bottom:12px;">Daftarkan fingerprint/Face ID HP sebagai cara login tambahan.</p>
+          <button type="button" onclick="daftarkanFingerprint()" style="width:100%; padding:10px 16px; background:linear-gradient(135deg, #f3d078 0%, #c89d36 100%); border:none; border-radius:20px; color:#121216; font-weight:600; cursor:pointer;">
             🔒 Daftarkan Fingerprint
-        </button>
-        <button type="button" onclick="hapusFingerprint()" style="width:100%; margin-top:10px; padding:10px 16px; background:transparent; border:1px solid var(--admin-delete); border-radius:20px; color:var(--admin-delete); font-weight:600; cursor:pointer;">
-            🗑️ Hapus Semua Fingerprint Terdaftar
-        </button>
+          </button>
+          <button type="button" onclick="hapusFingerprint()" style="width:100%; margin-top:10px; padding:10px 16px; background:transparent; border:1px solid var(--admin-delete); border-radius:20px; color:var(--admin-delete); font-weight:600; cursor:pointer;">
+            🗑️ Hapus Semua Fingerprint
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -3030,6 +3119,20 @@ function tampilkanConfirmLiquidGlass(judul, pesan, ikonClass, warnaTombol, callb
             icon.classList.remove('fa-spin');
         }
     }
+    // Fungsi untuk buka-tutup grup accordion di Tab Settings
+function toggleSettingsGroup(headerEl) {
+    const card = headerEl.parentElement;
+    const isAlreadyOpen = card.classList.contains('open');
+
+    // Opsional: Tutup grup lain jika ingin hanya 1 grup terbuka dalam satu waktu
+    document.querySelectorAll('.settings-group-card').forEach(c => c.classList.remove('open'));
+
+    // Toggle grup yang diklik
+    if (!isAlreadyOpen) {
+        card.classList.add('open');
+    }
+}
+
   </script>
 </body>
 </html>
