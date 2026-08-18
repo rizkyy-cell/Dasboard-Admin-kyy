@@ -28,6 +28,16 @@ function isValidImageBuffer(buffer) {
     return isPng || isJpg || isWebp;
 }
 
+// PENTING: ImgBB migrasi domain hosting gambar dari "i.ibb.co" ke "i.ibb.co.com",
+// tapi endpoint upload API mereka masih balikin link pakai domain LAMA yang
+// sertifikat SSL-nya rusak (NET::ERR_CERT_COMMON_NAME_INVALID di browser modern).
+// Struktur path-nya identik (/KODE/namafile.ext), jadi cukup ganti domainnya saja
+// biar gambar bisa dimuat normal.
+function fixImgbbDomain(url) {
+    if (!url) return url;
+    return url.replace('https://i.ibb.co/', 'https://i.ibb.co.com/');
+}
+
 // Kenali hosting dari URL, balikin direct-download link asli
 async function resolveDirectLink(rawUrl) {
     const url = rawUrl.trim();
@@ -105,7 +115,8 @@ async function uploadBase64ToImgbb(base64Data) {
     if (!res.ok || !data.success) {
         throw new Error('Gagal upload icon ke ImgBB: ' + (data.error?.message || 'Unknown error'));
     }
-    return data.data.url;
+
+    return fixImgbbDomain(data.data.url);
 }
 
 module.exports = async function handler(req, res) {
@@ -174,3 +185,4 @@ module.exports = async function handler(req, res) {
         return res.status(200).json({ error: err.message || 'Gagal memproses link.' });
     }
 };
+                                                          
