@@ -144,7 +144,24 @@
     .kategori-manager-toggle-add:active { transform: scale(0.98); }
     .kategori-manager-toggle-add.open { background: rgba(16, 185, 129, 0.12); border-color: var(--admin-add); }
     .kategori-manager-toggle-add i { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    /* KODE BARU — sisipkan di antaranya */
     .kategori-manager-toggle-add.open i { transform: rotate(45deg); }
+
+    .icon-dropzone {
+        border: 1.5px dashed rgba(51, 144, 236, 0.4);
+        background: rgba(51, 144, 236, 0.05);
+        border-radius: 12px;
+        padding: 16px;
+        text-align: center;
+        font-size: 12.5px;
+        color: var(--tg-text-muted);
+        cursor: pointer;
+        margin: 10px 0;
+        transition: background 0.2s ease, border-color 0.2s ease;
+    }
+    .icon-dropzone:active { transform: scale(0.98); }
+    .icon-dropzone.drag-over { background: rgba(51, 144, 236, 0.15); border-color: var(--tg-accent); }
+    .icon-dropzone i { display: block; font-size: 20px; margin-bottom: 6px; color: var(--tg-accent); }
 
     .kategori-manager-list { display: flex; flex-direction: column; gap: 8px; }
     .kategori-manager-item {
@@ -974,13 +991,31 @@
     <div class="admin-add-trigger-box" id="btn-show-app" onclick="toggleForm('app-form', 'btn-show-app', 'App Mod')">
         <i class="fas fa-plus-circle"></i> Tambah App Mod Baru
     </div>
+    <!-- KODE BARU -->
     <div class="admin-form-card" id="app-form">
     <div class="admin-form-title"><i class="fas fa-folder-plus"></i> Input Aplikasi Baru</div>
     <textarea id="app-title" class="admin-textarea" placeholder="Nama Aplikasi Mod (Bisa klik enter...)"></textarea>
     <textarea id="app-desc" class="admin-textarea jawaban tinggi" placeholder="Deskripsi Singkat Fitur Mod (Bisa klik enter...)"></textarea>
     <textarea id="app-size" class="admin-textarea" placeholder="Ukuran File (Contoh: 65 MB)"></textarea>
-    <textarea id="app-url" class="admin-textarea" placeholder="Link Download File"></textarea>
-    <textarea id="app-img" class="admin-textarea" placeholder="Link Ikon ImgBB (Opsional)"></textarea>
+    <textarea id="app-url" class="admin-textarea" placeholder="Link Download File (MediaFire/GDrive/link .apk langsung)"></textarea>
+
+    <button type="button" class="admin-btn-save" style="background:var(--tg-accent); margin-bottom:4px;" onclick="autoExtractAppInfo()">
+        <i class="fas fa-bolt"></i> Auto-Extract Icon, Ukuran & Versi
+    </button>
+    <div id="autoExtractStatus" style="font-size:12px; margin:2px 0 12px; min-height:15px;"></div>
+
+    <textarea id="app-img" class="admin-textarea" placeholder="Link Ikon ImgBB (auto-terisi, atau isi manual)"></textarea>
+
+    <div class="icon-dropzone" id="iconDropzone" onclick="document.getElementById('iconFileInput').click()">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <span id="iconDropzoneLabel">Atau upload gambar icon manual (tap / drag & drop)</span>
+    </div>
+    <input type="file" id="iconFileInput" accept="image/*" style="display:none" onchange="handleIconFileUpload(event)">
+    <div id="iconPreviewWrap" style="display:none; text-align:center; margin-bottom:12px;">
+        <img id="iconPreviewImg" style="width:64px;height:64px;border-radius:14px;object-fit:cover;border:1px solid rgba(255,255,255,0.15);">
+    </div>
+
+    <!-- TAMBAHAN INPUT PENGEMBANG -->
     <!-- TAMBAHAN INPUT PENGEMBANG -->
     <textarea id="app-dev-name" class="admin-textarea" placeholder="Nama Display Modder (Contoh: @rezky._kurniawan25)"></textarea>
     <textarea id="app-dev-link" class="admin-textarea" placeholder="Link Tujuan Modder (Contoh: https://t.me/...)"></textarea>
@@ -2324,6 +2359,125 @@ requestAnimationFrame(()=>{
             }
         }
     }
+    // ===== AUTO-EXTRACT INFO APK (icon, ukuran, versi) + UPLOAD ICON MANUAL =====
+let extractApkPin = null;
+
+async function ensureExtractPin(){
+    if (extractApkPin) return extractApkPin;
+    const p = prompt('Masukkan PIN admin untuk memakai fitur Auto-Extract:');
+    if (!p) return null;
+    extractApkPin = p;
+    return p;
+}
+
+function showIconPreview(url){
+    const wrap = document.getElementById('iconPreviewWrap');
+    const img = document.getElementById('iconPreviewImg');
+    if (!wrap || !img) return;
+    img.src = url;
+    wrap.style.display = 'block';
+}
+
+async function autoExtractAppInfo(){
+    const url = document.getElementById('app-url').value.trim();
+    const statusEl = document.getElementById('autoExtractStatus');
+    if (!url) { statusEl.style.color = '#f43f5e'; statusEl.textContent = 'Isi Link Download File dulu.'; return; }
+
+    const pin = await ensureExtractPin();
+    if (!pin) return;
+
+    statusEl.style.color = '#3390ec';
+    statusEl.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Mengambil info dari APK... (bisa 10-30 detik)';
+
+    try {
+        const res = await fetch('/api/extract-apk-info', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin, url })
+        });
+        const data = await res.json();
+
+        if (data.error && data.error.includes('PIN')) extractApkPin = null;
+
+        if (!res.ok || data.error) {
+            statusEl.style.color = '#f43f5e';
+            statusEl.textContent = '⚠️ ' + (data.error || 'Gagal ekstrak info APK.');
+            return;
+        }
+
+        if (data.iconUrl) {
+            document.getElementById('app-img').value = data.iconUrl;
+            showIconPreview(data.iconUrl);
+        }
+        if (data.sizeFormatted) document.getElementById('app-size').value = data.sizeFormatted;
+
+        let pesan = '✅ Berhasil!';
+        if (data.versionName) pesan += ` Versi terdeteksi: ${data.versionName}.`;
+        if (!data.iconUrl) pesan += ' Icon tidak ketemu di APK ini — isi manual/upload ya.';
+        statusEl.style.color = '#22c55e';
+        statusEl.textContent = pesan;
+    } catch (err) {
+        statusEl.style.color = '#f43f5e';
+        statusEl.textContent = '⚠️ Error koneksi: ' + err.message;
+    }
+}
+
+async function uploadIconFileToImgbb(file){
+    const statusEl = document.getElementById('autoExtractStatus');
+    const pin = await ensureExtractPin();
+    if (!pin) return;
+
+    statusEl.style.color = '#3390ec';
+    statusEl.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Mengupload icon...';
+
+    try {
+        const base64 = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+
+        const res = await fetch('/api/extract-apk-info', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin, mode: 'upload_only', imageBase64: base64 })
+        });
+        const data = await res.json();
+
+        if (!res.ok || data.error) {
+            statusEl.style.color = '#f43f5e';
+            statusEl.textContent = '⚠️ ' + (data.error || 'Gagal upload icon.');
+            return;
+        }
+
+        document.getElementById('app-img').value = data.iconUrl;
+        showIconPreview(data.iconUrl);
+        statusEl.style.color = '#22c55e';
+        statusEl.textContent = '✅ Icon berhasil diupload!';
+    } catch (err) {
+        statusEl.style.color = '#f43f5e';
+        statusEl.textContent = '⚠️ Error: ' + err.message;
+    }
+}
+
+function handleIconFileUpload(event){
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (file) uploadIconFileToImgbb(file);
+}
+
+function initIconDropzone(){
+    const zone = document.getElementById('iconDropzone');
+    if (!zone) return;
+    ['dragenter','dragover'].forEach(evt => zone.addEventListener(evt, e => { e.preventDefault(); zone.classList.add('drag-over'); }));
+    ['dragleave','drop'].forEach(evt => zone.addEventListener(evt, e => { e.preventDefault(); zone.classList.remove('drag-over'); }));
+    zone.addEventListener('drop', e => {
+        const file = e.dataTransfer.files?.[0];
+        if (file && file.type.startsWith('image/')) uploadIconFileToImgbb(file);
+    });
+}
+document.addEventListener('DOMContentLoaded', initIconDropzone);
     
 // 1. Simpan App Baru ke Supabase (Versi Fix)
 async function simpanAppKeSupabase() {
@@ -2360,8 +2514,10 @@ async function simpanAppKeSupabase() {
         document.getElementById('app-dev-link').value = '';
         document.getElementById('app-kategori-value').value = 'lainnya';
         document.getElementById('app-kategori-label').innerText = 'Lainnya';
+        document.getElementById('autoExtractStatus').textContent = '';
+        document.getElementById('iconPreviewWrap').style.display = 'none';
         
-        toggleForm('app-form', 'btn-show-app', 'App Mod'); 
+        toggleForm('app-form', 'btn-show-app', 'App Mod');
         ambilDataApp(); 
     } else {
         tampilkanAlert("Gagal menyimpan: " + error.message, "error");
