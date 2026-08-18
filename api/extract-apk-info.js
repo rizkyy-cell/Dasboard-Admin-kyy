@@ -16,6 +16,18 @@ function formatBytes(bytes) {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
+// Cek apakah buffer beneran file gambar valid (PNG/JPG/WEBP), bukan data rusak/kosong.
+// Ini penting karena APK modern sering pakai Adaptive Icon (foreground+background XML),
+// yang kadang gagal disusun jadi PNG utuh oleh parser -> hasilnya data corrupt kalau
+// nggak divalidasi dulu sebelum di-upload ke ImgBB.
+function isValidImageBuffer(buffer) {
+    if (!buffer || buffer.length < 200) return false; // terlalu kecil buat jadi icon beneran
+    const isPng = buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47;
+    const isJpg = buffer[0] === 0xFF && buffer[1] === 0xD8;
+    const isWebp = buffer.length > 12 && buffer.slice(8, 12).toString('ascii') === 'WEBP';
+    return isPng || isJpg || isWebp;
+}
+
 // Kenali hosting dari URL, balikin direct-download link asli
 async function resolveDirectLink(rawUrl) {
     const url = rawUrl.trim();
@@ -76,6 +88,11 @@ async function downloadWithLimit(directUrl) {
 async function uploadBase64ToImgbb(base64Data) {
     if (!IMGBB_API_KEY) throw new Error('IMGBB_API_KEY belum di-set di Environment Variables Vercel.');
 
+    const rawBuffer = Buffer.from(base64Data, 'base64');
+    if (!isValidImageBuffer(rawBuffer)) {
+        throw new Error('Data gambar tidak valid (kemungkinan Adaptive Icon yang gagal disusun). Upload icon manual ya.');
+    }
+
     const params = new URLSearchParams();
     params.set('image', base64Data);
 
@@ -132,7 +149,12 @@ module.exports = async function handler(req, res) {
 
             if (info.icon) {
                 const base64Only = info.icon.includes(',') ? info.icon.split(',')[1] : info.icon;
-                iconUrl = await uploadBase64ToImgbb(base64Only);
+                try {
+                    iconUrl = await uploadBase64ToImgbb(base64Only);
+                } catch (iconErr) {
+                    console.error('Icon invalid, dilewati:', iconErr.message);
+                    // iconUrl tetap null — biarin admin upload manual/drag&drop
+                }
             }
         } catch (parseErr) {
             console.error('Gagal parse APK:', parseErr);
