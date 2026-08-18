@@ -144,7 +144,6 @@
     .kategori-manager-toggle-add:active { transform: scale(0.98); }
     .kategori-manager-toggle-add.open { background: rgba(16, 185, 129, 0.12); border-color: var(--admin-add); }
     .kategori-manager-toggle-add i { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-    /* KODE BARU — sisipkan di antaranya */
     .kategori-manager-toggle-add.open i { transform: rotate(45deg); }
 
     .icon-dropzone {
@@ -991,7 +990,6 @@
     <div class="admin-add-trigger-box" id="btn-show-app" onclick="toggleForm('app-form', 'btn-show-app', 'App Mod')">
         <i class="fas fa-plus-circle"></i> Tambah App Mod Baru
     </div>
-    <!-- KODE BARU -->
     <div class="admin-form-card" id="app-form">
     <div class="admin-form-title"><i class="fas fa-folder-plus"></i> Input Aplikasi Baru</div>
     <textarea id="app-title" class="admin-textarea" placeholder="Nama Aplikasi Mod (Bisa klik enter...)"></textarea>
@@ -1008,14 +1006,12 @@
 
     <div class="icon-dropzone" id="iconDropzone" onclick="document.getElementById('iconFileInput').click()">
         <i class="fas fa-cloud-upload-alt"></i>
-        <span id="iconDropzoneLabel">Atau upload gambar icon manual (tap / drag & drop)</span>
+        <span>Atau upload gambar icon manual (tap / drag &amp; drop)</span>
     </div>
     <input type="file" id="iconFileInput" accept="image/*" style="display:none" onchange="handleIconFileUpload(event)">
     <div id="iconPreviewWrap" style="display:none; text-align:center; margin-bottom:12px;">
         <img id="iconPreviewImg" style="width:64px;height:64px;border-radius:14px;object-fit:cover;border:1px solid rgba(255,255,255,0.15);">
     </div>
-
-    <!-- TAMBAHAN INPUT PENGEMBANG -->
     <!-- TAMBAHAN INPUT PENGEMBANG -->
     <textarea id="app-dev-name" class="admin-textarea" placeholder="Nama Display Modder (Contoh: @rezky._kurniawan25)"></textarea>
     <textarea id="app-dev-link" class="admin-textarea" placeholder="Link Tujuan Modder (Contoh: https://t.me/...)"></textarea>
@@ -1893,7 +1889,12 @@ async function verifikasiLoginAdmin() {
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Deskripsi</label><textarea id="upd-2" class="admin-textarea tinggi">${descAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Ukuran File</label><textarea id="upd-3" class="admin-textarea">${sizeAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Download</label><textarea id="upd-4" class="admin-textarea">${linkAsli}</textarea>`;
+            innerH += `<button type="button" class="admin-btn-save" style="background:var(--tg-accent); margin-bottom:4px;" onclick="autoExtractAppInfoEdit()"><i class="fas fa-bolt"></i> Auto-Extract Icon, Ukuran & Versi</button>`;
+            innerH += `<div id="updAutoExtractStatus" style="font-size:12px; margin:2px 0 12px; min-height:15px;"></div>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Ikon</label><textarea id="upd-5" class="admin-textarea">${imgAsli}</textarea>`;
+            innerH += `<div class="icon-dropzone" id="updIconDropzone" onclick="document.getElementById('updIconFileInput').click()"><i class="fas fa-cloud-upload-alt"></i><span>Atau upload gambar icon manual (tap / drag &amp; drop)</span></div>`;
+            innerH += `<input type="file" id="updIconFileInput" accept="image/*" style="display:none" onchange="handleIconFileUploadEdit(event)">`;
+            innerH += `<div id="updIconPreviewWrap" style="display:${imgAsli ? 'block' : 'none'}; text-align:center; margin-bottom:12px;"><img id="updIconPreviewImg" src="${imgAsli}" style="width:64px;height:64px;border-radius:14px;object-fit:cover;border:1px solid rgba(255,255,255,0.15);"></div>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Display Modder</label><textarea id="upd-6" class="admin-textarea">${devNameAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Modder</label><textarea id="upd-7" class="admin-textarea">${devLinkAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Kategori</label><div class="kategori-trigger" id="upd-kategori-trigger" onclick="bukaDropdownKategori(this, 'upd-kategori-value', 'upd-kategori-label', 'app')"><span id="upd-kategori-label">${kategoriLabelAsli}</span><i class="fas fa-chevron-down"></i></div><input type="hidden" id="upd-kategori-value" value="${kategoriAsli}">`;
@@ -1915,6 +1916,7 @@ async function verifikasiLoginAdmin() {
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Kategori</label><div class="kategori-trigger" id="upd-kategori-trigger" onclick="bukaDropdownKategori(this, 'upd-kategori-value', 'upd-kategori-label', 'store')"><span id="upd-kategori-label">${kategoriLabelAsliStore}</span><i class="fas fa-chevron-down"></i></div><input type="hidden" id="upd-kategori-value" value="${kategoriAsliStore}">`;
         }
         fieldsContainer.innerHTML = innerH;
+        if (tabel === 'app_mods') initUpdIconDropzone();
         const popup=document.getElementById("editDataPopup");
 
 popup.classList.remove("hidden");
@@ -2359,7 +2361,8 @@ requestAnimationFrame(()=>{
             }
         }
     }
-    // ===== AUTO-EXTRACT INFO APK (icon, ukuran, versi) + UPLOAD ICON MANUAL =====
+    
+// ===== AUTO-EXTRACT INFO APK (icon, ukuran, versi) + UPLOAD ICON MANUAL =====
 let extractApkPin = null;
 
 async function ensureExtractPin(){
@@ -2370,17 +2373,17 @@ async function ensureExtractPin(){
     return p;
 }
 
-function showIconPreview(url){
-    const wrap = document.getElementById('iconPreviewWrap');
-    const img = document.getElementById('iconPreviewImg');
+function showIconPreviewGeneric(url, wrapId, imgId){
+    const wrap = document.getElementById(wrapId);
+    const img = document.getElementById(imgId);
     if (!wrap || !img) return;
     img.src = url;
     wrap.style.display = 'block';
 }
 
-async function autoExtractAppInfo(){
-    const url = document.getElementById('app-url').value.trim();
-    const statusEl = document.getElementById('autoExtractStatus');
+async function autoExtractAppInfoGeneric(urlId, sizeId, imgId, statusId, previewWrapId, previewImgId){
+    const url = document.getElementById(urlId).value.trim();
+    const statusEl = document.getElementById(statusId);
     if (!url) { statusEl.style.color = '#f43f5e'; statusEl.textContent = 'Isi Link Download File dulu.'; return; }
 
     const pin = await ensureExtractPin();
@@ -2406,10 +2409,10 @@ async function autoExtractAppInfo(){
         }
 
         if (data.iconUrl) {
-            document.getElementById('app-img').value = data.iconUrl;
-            showIconPreview(data.iconUrl);
+            document.getElementById(imgId).value = data.iconUrl;
+            showIconPreviewGeneric(data.iconUrl, previewWrapId, previewImgId);
         }
-        if (data.sizeFormatted) document.getElementById('app-size').value = data.sizeFormatted;
+        if (data.sizeFormatted) document.getElementById(sizeId).value = data.sizeFormatted;
 
         let pesan = '✅ Berhasil!';
         if (data.versionName) pesan += ` Versi terdeteksi: ${data.versionName}.`;
@@ -2422,8 +2425,8 @@ async function autoExtractAppInfo(){
     }
 }
 
-async function uploadIconFileToImgbb(file){
-    const statusEl = document.getElementById('autoExtractStatus');
+async function uploadIconFileToImgbbGeneric(file, imgId, statusId, previewWrapId, previewImgId){
+    const statusEl = document.getElementById(statusId);
     const pin = await ensureExtractPin();
     if (!pin) return;
 
@@ -2451,8 +2454,8 @@ async function uploadIconFileToImgbb(file){
             return;
         }
 
-        document.getElementById('app-img').value = data.iconUrl;
-        showIconPreview(data.iconUrl);
+        document.getElementById(imgId).value = data.iconUrl;
+        showIconPreviewGeneric(data.iconUrl, previewWrapId, previewImgId);
         statusEl.style.color = '#22c55e';
         statusEl.textContent = '✅ Icon berhasil diupload!';
     } catch (err) {
@@ -2461,24 +2464,48 @@ async function uploadIconFileToImgbb(file){
     }
 }
 
+// ---- Wiring buat form "Input Aplikasi Baru" ----
+function autoExtractAppInfo(){
+    autoExtractAppInfoGeneric('app-url', 'app-size', 'app-img', 'autoExtractStatus', 'iconPreviewWrap', 'iconPreviewImg');
+}
 function handleIconFileUpload(event){
     const file = event.target.files?.[0];
     event.target.value = '';
-    if (file) uploadIconFileToImgbb(file);
+    if (file) uploadIconFileToImgbbGeneric(file, 'app-img', 'autoExtractStatus', 'iconPreviewWrap', 'iconPreviewImg');
 }
-
 function initIconDropzone(){
     const zone = document.getElementById('iconDropzone');
+    if (!zone || zone.dataset.wired) return;
+    zone.dataset.wired = '1';
+    ['dragenter','dragover'].forEach(evt => zone.addEventListener(evt, e => { e.preventDefault(); zone.classList.add('drag-over'); }));
+    ['dragleave','drop'].forEach(evt => zone.addEventListener(evt, e => { e.preventDefault(); zone.classList.remove('drag-over'); }));
+    zone.addEventListener('drop', e => {
+        const file = e.dataTransfer.files?.[0];
+        if (file && file.type.startsWith('image/')) uploadIconFileToImgbbGeneric(file, 'app-img', 'autoExtractStatus', 'iconPreviewWrap', 'iconPreviewImg');
+    });
+}
+document.addEventListener('DOMContentLoaded', initIconDropzone);
+
+// ---- Wiring buat popup "Edit App Mod" ----
+function autoExtractAppInfoEdit(){
+    autoExtractAppInfoGeneric('upd-4', 'upd-3', 'upd-5', 'updAutoExtractStatus', 'updIconPreviewWrap', 'updIconPreviewImg');
+}
+function handleIconFileUploadEdit(event){
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (file) uploadIconFileToImgbbGeneric(file, 'upd-5', 'updAutoExtractStatus', 'updIconPreviewWrap', 'updIconPreviewImg');
+}
+function initUpdIconDropzone(){
+    const zone = document.getElementById('updIconDropzone');
     if (!zone) return;
     ['dragenter','dragover'].forEach(evt => zone.addEventListener(evt, e => { e.preventDefault(); zone.classList.add('drag-over'); }));
     ['dragleave','drop'].forEach(evt => zone.addEventListener(evt, e => { e.preventDefault(); zone.classList.remove('drag-over'); }));
     zone.addEventListener('drop', e => {
         const file = e.dataTransfer.files?.[0];
-        if (file && file.type.startsWith('image/')) uploadIconFileToImgbb(file);
+        if (file && file.type.startsWith('image/')) uploadIconFileToImgbbGeneric(file, 'upd-5', 'updAutoExtractStatus', 'updIconPreviewWrap', 'updIconPreviewImg');
     });
 }
-document.addEventListener('DOMContentLoaded', initIconDropzone);
-    
+
 // 1. Simpan App Baru ke Supabase (Versi Fix)
 async function simpanAppKeSupabase() {
     const nama = document.getElementById('app-title').value.replace(/\n/g, '<br>'); 
@@ -2517,7 +2544,7 @@ async function simpanAppKeSupabase() {
         document.getElementById('autoExtractStatus').textContent = '';
         document.getElementById('iconPreviewWrap').style.display = 'none';
         
-        toggleForm('app-form', 'btn-show-app', 'App Mod');
+        toggleForm('app-form', 'btn-show-app', 'App Mod'); 
         ambilDataApp(); 
     } else {
         tampilkanAlert("Gagal menyimpan: " + error.message, "error");
