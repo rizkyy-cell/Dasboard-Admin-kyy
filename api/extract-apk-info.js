@@ -119,13 +119,63 @@ async function uploadBase64ToImgbb(base64Data) {
     return fixImgbbDomain(data.data.url);
 }
 
+// Batas ukuran gambar yang di-fetch dari URL internet (icon aja, gak perlu gede-gede)
+const MAX_IMAGE_FETCH_BYTES = 20 * 1024 * 1024; // 20MB
+
+// Ambil bytes gambar dari URL manapun (server-side, jadi bebas CORS), lalu balikin base64.
+// Dipakai buat fitur "tempel link gambar dari internet" di dashboard admin.
+async function fetchImageAsBase64(imageUrl) {
+    let res;
+    try {
+        res = await fetch(imageUrl, {
+            redirect: 'follow',
+            headers: {
+                // Banyak CDN/hosting nolak request tanpa User-Agent & Referer browser-like
+                'User-Agent': 'Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36',
+                'Accept': 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8'
+            }
+        });
+    } catch (err) {
+        throw new Error('Gagal konek ke URL gambar tersebut (mungkin diblokir hosting-nya atau URL salah).');
+    }
+
+    if (!res.ok) {
+        throw new Error(`Gagal ambil gambar dari URL (status ${res.status}). Kemungkinan link diproteksi/hotlink-blocked.`);
+    }
+
+    const contentType = (res.headers.get('content-type') || '').toLowerCase();
+    if (!contentType.startsWith('image/')) {
+        throw new Error('URL yang ditempel bukan file gambar langsung (mungkin link halaman, bukan link gambar).');
+    }
+
+    const declared = parseInt(res.headers.get('content-length') || '0', 10);
+    if (declared && declared > MAX_IMAGE_FETCH_BYTES) {
+        throw new Error(`Gambar terlalu besar (${formatBytes(declared)}). Batas ${formatBytes(MAX_IMAGE_FETCH_BYTES)}.`);
+    }
+
+    const reader = res.body.getReader();
+    const chunks = [];
+    let received = 0;
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        received += value.length;
+        if (received > MAX_IMAGE_FETCH_BYTES) {
+            throw new Error(`Gambar terlalu besar (lebih dari ${formatBytes(MAX_IMAGE_FETCH_BYTES)}).`);
+        }
+        chunks.push(Buffer.from(value));
+    }
+
+    return Buffer.concat(chunks).toString('base64');
+}
+
 module.exports = async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method tidak diizinkan' });
     }
 
     try {
-        const { pin, url, mode, imageBase64 } = req.body;
+        const { pin, url, mode, imageBase64, imageUrl } = req.body;
 
         if (!pin || pin !== process.env.ADMIN_PIN) {
             return res.status(401).json({ error: 'PIN salah / akses ditolak.' });
@@ -135,6 +185,16 @@ module.exports = async function handler(req, res) {
         if (mode === 'upload_only') {
             if (!imageBase64) return res.status(200).json({ error: 'File gambar tidak ada.' });
             const iconUrl = await uploadBase64ToImgbb(imageBase64);
+            return res.status(200).json({ iconUrl });
+        }
+
+        // MODE: ambil gambar dari link internet (paste link / drag lintas-tab) — server yang fetch, bebas CORS
+        if (mode === 'fetch_url') {
+            if (!imageUrl || !imageUrl.trim()) return res.status(200).json({ error: 'Link gambar tidak ada.' });
+            if (!/^https?:\/\//i.test(imageUrl.trim())) return res.status(200).json({ error: 'Link gambar tidak valid.' });
+
+            const base64Data = await fetchImageAsBase64(imageUrl.trim());
+            const iconUrl = await uploadBase64ToImgbb(base64Data);
             return res.status(200).json({ iconUrl });
         }
 
@@ -185,4 +245,3 @@ module.exports = async function handler(req, res) {
         return res.status(200).json({ error: err.message || 'Gagal memproses link.' });
     }
 };
-                                                          
