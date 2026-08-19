@@ -2260,9 +2260,12 @@ requestAnimationFrame(()=>{
         _sortableInstances[containerId] = new Sortable(container, {
             handle: '.drag-handle',
             animation: 180,
-            delay: 120,
-            delayOnTouchOnly: true,
-            touchStartThreshold: 5,
+            // Pakai "fallback" (drag simulasi JS milik Sortable sendiri), BUKAN drag native
+            // HTML5/browser — di Chrome Android drag native suka nyangkut/putus sendiri dan
+            // ninggalin listener yang ngeblok scroll. Fallback jauh lebih stabil di HP.
+            forceFallback: true,
+            fallbackTolerance: 3,
+            fallbackOnBody: true,
             ghostClass: 'sortable-ghost',
             dragClass: 'sortable-drag',
             onEnd: async function () {
