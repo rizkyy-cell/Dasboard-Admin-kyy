@@ -2426,6 +2426,69 @@ async function autoExtractAppInfoGeneric(urlId, sizeId, imgId, statusId, preview
 }
 
 /* KODE BARU */
+// Ambil URL gambar dari drag-drop lintas-tab/halaman (mis. hasil Google Images).
+// Browser mobile biasanya TIDAK ngasih byte file untuk drag lintas-origin,
+// yang ada cuma referensi URL-nya lewat text/uri-list / text/html / text/plain.
+function extractImageUrlFromDataTransfer(dt){
+    try {
+        const uriList = dt.getData('text/uri-list');
+        if (uriList) {
+            const url = uriList.split('\n').map(l => l.trim()).find(l => l && !l.startsWith('#'));
+            if (url) return url;
+        }
+        const html = dt.getData('text/html');
+        if (html) {
+            const match = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+            if (match && match[1]) return match[1];
+        }
+        const plain = dt.getData('text/plain');
+        if (plain && /^https?:\/\//i.test(plain.trim())) return plain.trim();
+    } catch (e) { /* ignore */ }
+    return null;
+}
+
+// Upload icon dari URL gambar internet (drag dari halaman lain) — backend yang
+// fetch bytes-nya biar ga kena batasan CORS di browser.
+async function uploadIconFromUrlGeneric(imageUrl, imgId, statusId, previewWrapId, previewImgId){
+    const statusEl = document.getElementById(statusId);
+    if (!imageUrl || !/^https?:\/\//i.test(imageUrl)) {
+        statusEl.style.color = '#f43f5e';
+        statusEl.textContent = '⚠️ URL gambar tidak valid.';
+        return;
+    }
+
+    const pin = await ensureExtractPin();
+    if (!pin) return;
+
+    statusEl.style.color = '#3390ec';
+    statusEl.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Mengambil & mengupload gambar dari internet...';
+
+    try {
+        const res = await fetch('/api/extract-apk-info', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin, mode: 'fetch_url', imageUrl })
+        });
+        const data = await res.json();
+
+        if (data.error && data.error.includes('PIN')) extractApkPin = null;
+
+        if (!res.ok || data.error) {
+            statusEl.style.color = '#f43f5e';
+            statusEl.textContent = '⚠️ ' + (data.error || 'Gagal ambil gambar dari URL tersebut.');
+            return;
+        }
+
+        document.getElementById(imgId).value = data.iconUrl;
+        showIconPreviewGeneric(data.iconUrl, previewWrapId, previewImgId);
+        statusEl.style.color = '#22c55e';
+        statusEl.textContent = '✅ Icon berhasil diambil dari internet & diupload!';
+    } catch (err) {
+        statusEl.style.color = '#f43f5e';
+        statusEl.textContent = '⚠️ Error koneksi: ' + err.message;
+    }
+}
+
 async function uploadIconFileToImgbbGeneric(file, imgId, statusId, previewWrapId, previewImgId){
     const statusEl = document.getElementById(statusId);
 
@@ -2492,7 +2555,18 @@ function initIconDropzone(){
     ['dragleave','drop'].forEach(evt => zone.addEventListener(evt, e => { e.preventDefault(); zone.classList.remove('drag-over'); }));
     zone.addEventListener('drop', e => {
         const file = e.dataTransfer.files?.[0];
-        if (file && file.type.startsWith('image/')) uploadIconFileToImgbbGeneric(file, 'app-img', 'autoExtractStatus', 'iconPreviewWrap', 'iconPreviewImg');
+        if (file && file.type.startsWith('image/') && file.size > 0) {
+            uploadIconFileToImgbbGeneric(file, 'app-img', 'autoExtractStatus', 'iconPreviewWrap', 'iconPreviewImg');
+            return;
+        }
+        const url = extractImageUrlFromDataTransfer(e.dataTransfer);
+        if (url) {
+            uploadIconFromUrlGeneric(url, 'app-img', 'autoExtractStatus', 'iconPreviewWrap', 'iconPreviewImg');
+        } else {
+            const statusEl = document.getElementById('autoExtractStatus');
+            statusEl.style.color = '#f43f5e';
+            statusEl.textContent = '⚠️ Gagal baca gambar yang di-drag. Coba drag ulang dari sumbernya, atau tap dropzone buat pilih dari Gallery.';
+        }
     });
 }
 document.addEventListener('DOMContentLoaded', initIconDropzone);
@@ -2513,7 +2587,18 @@ function initUpdIconDropzone(){
     ['dragleave','drop'].forEach(evt => zone.addEventListener(evt, e => { e.preventDefault(); zone.classList.remove('drag-over'); }));
     zone.addEventListener('drop', e => {
         const file = e.dataTransfer.files?.[0];
-        if (file && file.type.startsWith('image/')) uploadIconFileToImgbbGeneric(file, 'upd-5', 'updAutoExtractStatus', 'updIconPreviewWrap', 'updIconPreviewImg');
+        if (file && file.type.startsWith('image/') && file.size > 0) {
+            uploadIconFileToImgbbGeneric(file, 'upd-5', 'updAutoExtractStatus', 'updIconPreviewWrap', 'updIconPreviewImg');
+            return;
+        }
+        const url = extractImageUrlFromDataTransfer(e.dataTransfer);
+        if (url) {
+            uploadIconFromUrlGeneric(url, 'upd-5', 'updAutoExtractStatus', 'updIconPreviewWrap', 'updIconPreviewImg');
+        } else {
+            const statusEl = document.getElementById('updAutoExtractStatus');
+            statusEl.style.color = '#f43f5e';
+            statusEl.textContent = '⚠️ Gagal baca gambar yang di-drag. Coba drag ulang dari sumbernya, atau tap dropzone buat pilih dari Gallery.';
+        }
     });
 }
 
