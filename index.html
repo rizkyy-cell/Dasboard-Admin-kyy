@@ -2425,8 +2425,19 @@ async function autoExtractAppInfoGeneric(urlId, sizeId, imgId, statusId, preview
     }
 }
 
+/* KODE BARU */
 async function uploadIconFileToImgbbGeneric(file, imgId, statusId, previewWrapId, previewImgId){
     const statusEl = document.getElementById(statusId);
+
+    // File hasil drag dari halaman/tab lain (misal hasil pencarian Google) sering
+    // "kosong" karena browser mobile gagal ambil bytes lintas-origin — cek dulu
+    // ukurannya sebelum lanjut, biar pesannya jelas bukan "Error: undefined".
+    if (!file || !file.size || file.size < 100) {
+        statusEl.style.color = '#f43f5e';
+        statusEl.textContent = '⚠️ File gambar kosong/gagal dibaca. Kalau ini hasil drag dari halaman lain, simpan dulu gambarnya ke Gallery HP, baru tap dropzone buat pilih dari situ.';
+        return;
+    }
+
     const pin = await ensureExtractPin();
     if (!pin) return;
 
@@ -2437,7 +2448,7 @@ async function uploadIconFileToImgbbGeneric(file, imgId, statusId, previewWrapId
         const base64 = await new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result.split(',')[1]);
-            reader.onerror = reject;
+            reader.onerror = () => reject(new Error('Gagal membaca file gambar (mungkin corrupt/rusak).'));
             reader.readAsDataURL(file);
         });
 
