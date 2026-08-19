@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/@simplewebauthn/browser@13/dist/bundle/index.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
   
   <style>
     :root { --tg-bg: #0e1621; --tg-panel: #17212b; --tg-accent: #3390ec; --tg-text-muted: #7f91a4; --tg-text: #ffffff; --admin-add: #10b981; --admin-edit: #f59e0b; --admin-delete: #ef4444; }
@@ -229,6 +230,11 @@
 
     .mod-box-item { background: rgba(23, 33, 43, 0.8); margin: 12px 15px; padding: 18px; border-radius: 18px; border: 1px solid rgba(255, 255, 255, 0.08); }
     .mod-box-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    /* Drag handle buat reorder ala Discord: tahan icon ini, geser, lepas di posisi manapun */
+    .drag-handle { cursor: grab; color: var(--tg-text-muted); font-size: 18px; padding: 10px 12px; margin: -10px -6px -10px 0; touch-action: none; flex-shrink: 0; }
+    .drag-handle:active { cursor: grabbing; color: var(--tg-accent); }
+    .mod-box-item.sortable-ghost { opacity: 0.35; }
+    .mod-box-item.sortable-drag { box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
     .mod-box-title-group { display: flex; align-items: center; gap: 12px; }
     .mod-box-icon { width: 48px; height: 48px; background: rgba(255,255,255,0.05); border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 24px; }
     .mod-box-name { font-size: 16px; font-weight: 700; color: #ffffff; word-break: break-word; line-height: 1.3; }
@@ -2239,8 +2245,49 @@ requestAnimationFrame(()=>{
     });
 
 
+    // ===== DRAG & DROP REORDER (ala Discord) — dipakai bareng buat list Web, App Mod, Store =====
+    // Nyimpen instance Sortable per container biar gak double-attach tiap kali list di-render ulang.
+    const _sortableInstances = {};
+
+    // Tahan icon drag-handle di kartu, geser ke atas/bawah, lepas di posisi manapun —
+    // urutan barunya langsung ke-simpan ke Supabase (kolom "urutan"), lalu ke-load ulang
+    // web publik pakai urutan yang sama.
+    function initSortableList(containerId, tabel, refreshFn) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        if (_sortableInstances[containerId]) return; // udah ke-attach, gak perlu diulang
+
+        _sortableInstances[containerId] = new Sortable(container, {
+            handle: '.drag-handle',
+            animation: 180,
+            delay: 120,
+            delayOnTouchOnly: true,
+            touchStartThreshold: 5,
+            ghostClass: 'sortable-ghost',
+            dragClass: 'sortable-drag',
+            onEnd: async function () {
+                const kartuUrut = Array.from(container.children).filter(el => el.dataset && el.dataset.id);
+                const total = kartuUrut.length;
+                if (!total) return;
+                tampilkanAlert('Menyimpan urutan...', 'sukses');
+                try {
+                    // Kartu paling atas dapat angka urutan tertinggi, paling bawah dapat 1 —
+                    // konsisten sama query .order('urutan', {ascending:false}) yang dipakai di mana-mana.
+                    await Promise.all(kartuUrut.map((el, i) =>
+                        supabaseClient.from(tabel).update({ urutan: total - i }).eq('id', Number(el.dataset.id))
+                    ));
+                    tampilkanAlert('Urutan tersimpan & sinkron ke web publik!', 'sukses');
+                    if (refreshFn) refreshFn();
+                } catch (err) {
+                    tampilkanAlert('Gagal simpan urutan: ' + err.message, 'error');
+                    if (refreshFn) refreshFn(); // reset tampilan balik ke urutan tersimpan terakhir
+                }
+            }
+        });
+    }
+
     async function ambilDataWeb() {
-        const { data } = await supabaseClient.from('web_saya').select('*').order('id', { ascending: false });
+        const { data } = await supabaseClient.from('web_saya').select('*').order('urutan', { ascending: false, nullsFirst: true }).order('id', { ascending: false });
         if (data) { memoriWeb = data; renderFilterKategori('web'); renderListWeb(); }
     }
 
@@ -2250,11 +2297,12 @@ requestAnimationFrame(()=>{
         memoriWeb.forEach((web, idx) => {
             const katWeb = (web.kategori || 'lainnya').toLowerCase();
             if (filterAktif !== 'semua' && katWeb !== filterAktif) return;
-            container.innerHTML += `<div class="mod-box-item kat-fade-in"><div class="mod-box-header" style="margin-bottom:0;"><div class="mod-box-title-group"><div class="mod-box-icon" style="font-size:20px; width:40px; height:40px;"><i class="fas fa-globe"></i></div><div class="mod-box-name">${web.nama_web}</div></div></div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'web_saya')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusWeb(${web.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
+            container.innerHTML += `<div class="mod-box-item kat-fade-in" data-id="${web.id}"><div class="mod-box-header" style="margin-bottom:0;"><div class="mod-box-title-group" style="display:flex; align-items:center; gap:4px;"><i class="fas fa-grip-vertical drag-handle"></i><div class="mod-box-icon" style="font-size:20px; width:40px; height:40px;"><i class="fas fa-globe"></i></div><div class="mod-box-name">${web.nama_web}</div></div></div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'web_saya')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusWeb(${web.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
         });
         if (!container.innerHTML) {
             container.innerHTML = `<div style="text-align:center; color:var(--tg-text-muted); font-size:12.5px; padding:24px;">Tidak ada web di kategori ini.</div>`;
         }
+        initSortableList('container-web-list', 'web_saya', ambilDataWeb);
     }
     async function simpanWebKeSupabase() {
         const nama = document.getElementById('web-title').value.replace(/\n/g, '<br>'); 
@@ -2286,7 +2334,7 @@ requestAnimationFrame(()=>{
 
     
     async function ambilDataApp() {
-        const { data } = await supabaseClient.from('app_mods').select('*').order('id', { ascending: false });
+        const { data } = await supabaseClient.from('app_mods').select('*').order('urutan', { ascending: false, nullsFirst: true }).order('id', { ascending: false });
         if (data) { memoriApp = data; renderListApp(); }
     }
     
@@ -2313,9 +2361,10 @@ requestAnimationFrame(()=>{
             let devLink = app.dev_link ? app.dev_link : 'https://t.me/rizky_kurniawan25';
 
             container.innerHTML += `
-                <div class="mod-box-item kat-fade-in">
+                <div class="mod-box-item kat-fade-in" data-id="${app.id}">
                     <div class="mod-box-header">
-                        <div class="mod-box-title-group">
+                        <div class="mod-box-title-group" style="display:flex; align-items:center; gap:4px;">
+                            <i class="fas fa-grip-vertical drag-handle"></i>
                             <div class="mod-box-icon">${iconHtml}</div>
                             <div class="mod-box-name">${app.nama_app}</div>
                         </div>
@@ -2353,6 +2402,7 @@ requestAnimationFrame(()=>{
         if (!adaTampil) {
             container.innerHTML = `<div style="text-align:center; color:var(--tg-text-muted); font-size:12.5px; padding:24px;">Tidak ada aplikasi di kategori ini.</div>`;
         }
+        initSortableList('container-app-list', 'app_mods', ambilDataApp);
     }
 
     // FUNGSI TOGGLE READ MORE / READ LESS DI WEB ADMIN DEV
@@ -2706,11 +2756,12 @@ async function hapusApp(id) {
             adaTampil = true;
             let iconHtml = prod.img_url ? `<img src="${prod.img_url.replace(/<br\s*\/?>/mg, '')}" onerror="this.outerHTML='🛍️'" style="width:100%; height:100%; object-fit:cover;">` : '🛍️';
             let stockBadge = prod.stock ? `<span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px; font-size:10px; margin-left:5px; color:#fff;">Stock: ${prod.stock}</span>` : '';
-            container.innerHTML += `<div class="mod-box-item kat-fade-in"><div class="mod-box-header"><div class="mod-box-title-group"><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${prod.nama_produk}</div></div><div class="mod-box-size" style="color:#00ff7f; background:none;">${prod.harga}${stockBadge}</div></div><div class="mod-box-desc">${prod.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'store_products')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusStore(${prod.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
+            container.innerHTML += `<div class="mod-box-item kat-fade-in" data-id="${prod.id}"><div class="mod-box-header"><div class="mod-box-title-group" style="display:flex; align-items:center; gap:4px;"><i class="fas fa-grip-vertical drag-handle"></i><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${prod.nama_produk}</div></div><div class="mod-box-size" style="color:#00ff7f; background:none;">${prod.harga}${stockBadge}</div></div><div class="mod-box-desc">${prod.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'store_products')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusStore(${prod.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
         });
         if (!adaTampil) {
             container.innerHTML = `<div style="text-align:center; color:var(--tg-text-muted); font-size:12.5px; padding:24px;">Tidak ada produk di kategori ini.</div>`;
         }
+        initSortableList('container-store-list', 'store_products', ambilDataStore);
     }
     
     // FUNGSI TARIK DATA STORE DARI SUPABASE DENGAN URUTAN TERBARU
@@ -2718,6 +2769,7 @@ async function ambilDataStore() {
     const { data, error } = await supabaseClient
         .from('store_products')
         .select('*')
+        .order('urutan', { ascending: false, nullsFirst: true })
         .order('id', { ascending: false });
 
     if (data && !error) {
