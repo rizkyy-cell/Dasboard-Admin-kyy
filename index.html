@@ -1009,6 +1009,14 @@
         <span>Atau upload gambar icon manual (tap / drag &amp; drop)</span>
     </div>
     <input type="file" id="iconFileInput" accept="image/*" style="display:none" onchange="handleIconFileUpload(event)">
+
+    <div style="display:flex; gap:8px; margin-top:10px; margin-bottom:4px;">
+        <input type="text" id="app-img-url-input" class="admin-textarea" style="margin:0; flex:1;" placeholder="Atau tempel link gambar dari internet (https://...)">
+        <button type="button" class="admin-btn-save" style="margin:0; padding:0 16px; background:var(--tg-accent); white-space:nowrap;" onclick="ambilIconDariLinkInput('app-img-url-input', 'app-img', 'autoExtractStatus', 'iconPreviewWrap', 'iconPreviewImg')">
+            <i class="fas fa-link"></i> Ambil
+        </button>
+    </div>
+
     <div id="iconPreviewWrap" style="display:none; text-align:center; margin-bottom:12px;">
         <img id="iconPreviewImg" style="width:64px;height:64px;border-radius:14px;object-fit:cover;border:1px solid rgba(255,255,255,0.15);">
     </div>
@@ -1894,6 +1902,7 @@ async function verifikasiLoginAdmin() {
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Ikon</label><textarea id="upd-5" class="admin-textarea">${imgAsli}</textarea>`;
             innerH += `<div class="icon-dropzone" id="updIconDropzone" onclick="document.getElementById('updIconFileInput').click()"><i class="fas fa-cloud-upload-alt"></i><span>Atau upload gambar icon manual (tap / drag &amp; drop)</span></div>`;
             innerH += `<input type="file" id="updIconFileInput" accept="image/*" style="display:none" onchange="handleIconFileUploadEdit(event)">`;
+            innerH += `<div style="display:flex; gap:8px; margin-top:10px; margin-bottom:4px;"><input type="text" id="upd-img-url-input" class="admin-textarea" style="margin:0; flex:1;" placeholder="Atau tempel link gambar dari internet (https://...)"><button type="button" class="admin-btn-save" style="margin:0; padding:0 16px; background:var(--tg-accent); white-space:nowrap;" onclick="ambilIconDariLinkInput('upd-img-url-input', 'upd-5', 'updAutoExtractStatus', 'updIconPreviewWrap', 'updIconPreviewImg')"><i class="fas fa-link"></i> Ambil</button></div>`;
             innerH += `<div id="updIconPreviewWrap" style="display:${imgAsli ? 'block' : 'none'}; text-align:center; margin-bottom:12px;"><img id="updIconPreviewImg" src="${imgAsli}" style="width:64px;height:64px;border-radius:14px;object-fit:cover;border:1px solid rgba(255,255,255,0.15);"></div>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Display Modder</label><textarea id="upd-6" class="admin-textarea">${devNameAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Modder</label><textarea id="upd-7" class="admin-textarea">${devLinkAsli}</textarea>`;
@@ -2487,6 +2496,28 @@ async function uploadIconFromUrlGeneric(imageUrl, imgId, statusId, previewWrapId
         statusEl.style.color = '#f43f5e';
         statusEl.textContent = '⚠️ Error koneksi: ' + err.message;
     }
+}
+
+// Tombol "Ambil" di sebelah input link gambar — validasi ringan dulu di client,
+// baru panggil uploadIconFromUrlGeneric (fetch+upload dilakukan server-side).
+function ambilIconDariLinkInput(inputId, imgId, statusId, previewWrapId, previewImgId){
+    const inputEl = document.getElementById(inputId);
+    const statusEl = document.getElementById(statusId);
+    const url = (inputEl?.value || '').trim();
+
+    if (!url) {
+        statusEl.style.color = '#f43f5e';
+        statusEl.textContent = '⚠️ Tempel dulu link gambarnya di kotak sebelah kiri.';
+        return;
+    }
+    if (!/^https?:\/\/.+/i.test(url)) {
+        statusEl.style.color = '#f43f5e';
+        statusEl.textContent = '⚠️ Link harus diawali http:// atau https://';
+        return;
+    }
+
+    uploadIconFromUrlGeneric(url, imgId, statusId, previewWrapId, previewImgId);
+    inputEl.value = '';
 }
 
 async function uploadIconFileToImgbbGeneric(file, imgId, statusId, previewWrapId, previewImgId){
