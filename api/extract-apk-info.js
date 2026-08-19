@@ -121,33 +121,37 @@ async function uploadBase64ToImgbb(base64Data) {
 
 // Batas ukuran gambar yang di-fetch dari URL internet (icon aja, gak perlu gede-gede)
 const MAX_IMAGE_FETCH_BYTES = 20 * 1024 * 1024; // 20MB
+// Batas ukuran HTML halaman yang dibaca buat nyari og:image (halaman berat/spam dihindari)
+const MAX_HTML_SCAN_BYTES = 3 * 1024 * 1024; // 3MB
 
-// Ambil bytes gambar dari URL manapun (server-side, jadi bebas CORS), lalu balikin base64.
-// Dipakai buat fitur "tempel link gambar dari internet" di dashboard admin.
-async function fetchImageAsBase64(imageUrl) {
-    let res;
-    try {
-        res = await fetch(imageUrl, {
-            redirect: 'follow',
-            headers: {
-                // Banyak CDN/hosting nolak request tanpa User-Agent & Referer browser-like
-                'User-Agent': 'Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36',
-                'Accept': 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8'
-            }
-        });
-    } catch (err) {
-        throw new Error('Gagal konek ke URL gambar tersebut (mungkin diblokir hosting-nya atau URL salah).');
+const IMAGE_FETCH_HEADERS = {
+    // Banyak CDN/hosting nolak request tanpa User-Agent & Referer browser-like
+    'User-Agent': 'Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36',
+    'Accept': 'text/html,image/avif,image/webp,image/apng,image/*,*/*;q=0.8'
+};
+
+// Cari gambar utama dari sebuah halaman HTML (og:image / twitter:image / <link image_src>).
+// Ini yang bikin link non-direct (halaman APKMirror, share.google, dsb) tetap kepakai,
+// persis kayak behavior "paste link" bawaan ImgBB.
+function extractPageImageUrl(html, baseUrl) {
+    const patterns = [
+        /<meta[^>]+(?:property|name)=["']og:image(?::secure_url)?["'][^>]+content=["']([^"']+)["']/i,
+        /<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']og:image(?::secure_url)?["']/i,
+        /<meta[^>]+(?:property|name)=["']twitter:image(?::src)?["'][^>]+content=["']([^"']+)["']/i,
+        /<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']twitter:image(?::src)?["']/i,
+        /<link[^>]+rel=["']image_src["'][^>]+href=["']([^"']+)["']/i
+    ];
+    for (const re of patterns) {
+        const m = html.match(re);
+        if (m && m[1]) {
+            try { return new URL(m[1], baseUrl).toString(); } catch { return m[1]; }
+        }
     }
+    return null;
+}
 
-    if (!res.ok) {
-        throw new Error(`Gagal ambil gambar dari URL (status ${res.status}). Kemungkinan link diproteksi/hotlink-blocked.`);
-    }
-
-    const contentType = (res.headers.get('content-type') || '').toLowerCase();
-    if (!contentType.startsWith('image/')) {
-        throw new Error('URL yang ditempel bukan file gambar langsung (mungkin link halaman, bukan link gambar).');
-    }
-
+// Baca body response gambar dengan validasi ukuran, balikin base64.
+async function readImageResponseAsBase64(res) {
     const declared = parseInt(res.headers.get('content-length') || '0', 10);
     if (declared && declared > MAX_IMAGE_FETCH_BYTES) {
         throw new Error(`Gambar terlalu besar (${formatBytes(declared)}). Batas ${formatBytes(MAX_IMAGE_FETCH_BYTES)}.`);
@@ -167,6 +171,46 @@ async function fetchImageAsBase64(imageUrl) {
     }
 
     return Buffer.concat(chunks).toString('base64');
+}
+
+// Ambil bytes gambar dari URL manapun (server-side, jadi bebas CORS), lalu balikin base64.
+// Terima 2 jenis link: (1) link gambar langsung, (2) link halaman (APKMirror, share.google,
+// dsb) — kalau halaman, otomatis dicari og:image-nya lalu di-fetch ulang sekali.
+async function fetchImageAsBase64(rawUrl, depth = 0) {
+    let res;
+    try {
+        res = await fetch(rawUrl, { redirect: 'follow', headers: IMAGE_FETCH_HEADERS });
+    } catch (err) {
+        throw new Error('Gagal konek ke URL tersebut (mungkin diblokir hosting-nya atau URL salah).');
+    }
+
+    if (!res.ok) {
+        throw new Error(`Gagal ambil URL (status ${res.status}). Kemungkinan link diproteksi/dibatasi hosting-nya.`);
+    }
+
+    const contentType = (res.headers.get('content-type') || '').toLowerCase();
+
+    if (contentType.startsWith('image/')) {
+        return await readImageResponseAsBase64(res);
+    }
+
+    if (contentType.includes('text/html') && depth === 0) {
+        const declared = parseInt(res.headers.get('content-length') || '0', 10);
+        if (declared && declared > MAX_HTML_SCAN_BYTES) {
+            throw new Error('Halaman terlalu besar buat dipindai otomatis. Tempel link gambar langsung ya (klik-kanan gambar → "Salin alamat gambar").');
+        }
+        const html = await res.text();
+        const finalBaseUrl = res.url || rawUrl;
+        const foundImageUrl = extractPageImageUrl(html, finalBaseUrl);
+
+        if (!foundImageUrl) {
+            throw new Error('Halaman ini tidak punya gambar utama yang bisa dideteksi otomatis. Tempel link gambar langsung ya (klik-kanan gambar → "Salin alamat gambar").');
+        }
+
+        return await fetchImageAsBase64(foundImageUrl, depth + 1);
+    }
+
+    throw new Error('URL yang ditempel bukan gambar atau halaman yang bisa dideteksi (tipe: ' + (contentType || 'tidak diketahui') + ').');
 }
 
 module.exports = async function handler(req, res) {
