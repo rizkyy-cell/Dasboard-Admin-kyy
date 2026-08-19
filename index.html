@@ -1009,6 +1009,14 @@
         <span>Atau upload gambar icon manual (tap / drag &amp; drop)</span>
     </div>
     <input type="file" id="iconFileInput" accept="image/*" style="display:none" onchange="handleIconFileUpload(event)">
+
+    <div style="display:flex; gap:8px; margin-top:10px; margin-bottom:4px; align-items:center;">
+        <input type="text" id="app-img-url-input" class="admin-input" style="margin:0; flex:1 1 0; min-width:0;" placeholder="Link gambar / halaman (ImgBB, APKMirror, share.google, dll)">
+        <button type="button" style="flex:0 0 auto; padding:12px 16px; background:var(--tg-accent); color:#fff; font-weight:bold; border:none; border-radius:10px; cursor:pointer; display:flex; align-items:center; gap:6px; white-space:nowrap;" onclick="ambilIconDariLinkInput('app-img-url-input', 'app-img', 'autoExtractStatus', 'iconPreviewWrap', 'iconPreviewImg')">
+            <i class="fas fa-link"></i> Ambil
+        </button>
+    </div>
+
     <div id="iconPreviewWrap" style="display:none; text-align:center; margin-bottom:12px;">
         <img id="iconPreviewImg" style="width:64px;height:64px;border-radius:14px;object-fit:cover;border:1px solid rgba(255,255,255,0.15);">
     </div>
@@ -1894,6 +1902,7 @@ async function verifikasiLoginAdmin() {
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Ikon</label><textarea id="upd-5" class="admin-textarea">${imgAsli}</textarea>`;
             innerH += `<div class="icon-dropzone" id="updIconDropzone" onclick="document.getElementById('updIconFileInput').click()"><i class="fas fa-cloud-upload-alt"></i><span>Atau upload gambar icon manual (tap / drag &amp; drop)</span></div>`;
             innerH += `<input type="file" id="updIconFileInput" accept="image/*" style="display:none" onchange="handleIconFileUploadEdit(event)">`;
+            innerH += `<div style="display:flex; gap:8px; margin-top:10px; margin-bottom:4px; align-items:center;"><input type="text" id="upd-img-url-input" class="admin-input" style="margin:0; flex:1 1 0; min-width:0;" placeholder="Link gambar / halaman (ImgBB, APKMirror, share.google, dll)"><button type="button" style="flex:0 0 auto; padding:12px 16px; background:var(--tg-accent); color:#fff; font-weight:bold; border:none; border-radius:10px; cursor:pointer; display:flex; align-items:center; gap:6px; white-space:nowrap;" onclick="ambilIconDariLinkInput('upd-img-url-input', 'upd-5', 'updAutoExtractStatus', 'updIconPreviewWrap', 'updIconPreviewImg')"><i class="fas fa-link"></i> Ambil</button></div>`;
             innerH += `<div id="updIconPreviewWrap" style="display:${imgAsli ? 'block' : 'none'}; text-align:center; margin-bottom:12px;"><img id="updIconPreviewImg" src="${imgAsli}" style="width:64px;height:64px;border-radius:14px;object-fit:cover;border:1px solid rgba(255,255,255,0.15);"></div>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Display Modder</label><textarea id="upd-6" class="admin-textarea">${devNameAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Modder</label><textarea id="upd-7" class="admin-textarea">${devLinkAsli}</textarea>`;
@@ -2393,7 +2402,7 @@ async function autoExtractAppInfoGeneric(urlId, sizeId, imgId, statusId, preview
     statusEl.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Mengambil info dari APK... (bisa 10-30 detik)';
 
     try {
-        const res = await fetch('/api/extract-apk-info', {
+        const res = await fetch('https://dasboard-admin-kyy.vercel.app/api/extract-apk-info', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ pin, url })
@@ -2426,6 +2435,91 @@ async function autoExtractAppInfoGeneric(urlId, sizeId, imgId, statusId, preview
 }
 
 /* KODE BARU */
+// Ambil URL gambar dari drag-drop lintas-tab/halaman (mis. hasil Google Images).
+// Browser mobile biasanya TIDAK ngasih byte file untuk drag lintas-origin,
+// yang ada cuma referensi URL-nya lewat text/uri-list / text/html / text/plain.
+function extractImageUrlFromDataTransfer(dt){
+    try {
+        const uriList = dt.getData('text/uri-list');
+        if (uriList) {
+            const url = uriList.split('\n').map(l => l.trim()).find(l => l && !l.startsWith('#'));
+            if (url) return url;
+        }
+        const html = dt.getData('text/html');
+        if (html) {
+            const match = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+            if (match && match[1]) return match[1];
+        }
+        const plain = dt.getData('text/plain');
+        if (plain && /^https?:\/\//i.test(plain.trim())) return plain.trim();
+    } catch (e) { /* ignore */ }
+    return null;
+}
+
+// Upload icon dari URL gambar internet (drag dari halaman lain) — backend yang
+// fetch bytes-nya biar ga kena batasan CORS di browser.
+async function uploadIconFromUrlGeneric(imageUrl, imgId, statusId, previewWrapId, previewImgId){
+    const statusEl = document.getElementById(statusId);
+    if (!imageUrl || !/^https?:\/\//i.test(imageUrl)) {
+        statusEl.style.color = '#f43f5e';
+        statusEl.textContent = '⚠️ URL gambar tidak valid.';
+        return;
+    }
+
+    const pin = await ensureExtractPin();
+    if (!pin) return;
+
+    statusEl.style.color = '#3390ec';
+    statusEl.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Mengambil & mengupload gambar dari internet...';
+
+    try {
+        const res = await fetch('https://dasboard-admin-kyy.vercel.app/api/extract-apk-info', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin, mode: 'fetch_url', imageUrl })
+        });
+        const data = await res.json();
+
+        if (data.error && data.error.includes('PIN')) extractApkPin = null;
+
+        if (!res.ok || data.error) {
+            statusEl.style.color = '#f43f5e';
+            statusEl.textContent = '⚠️ ' + (data.error || 'Gagal ambil gambar dari URL tersebut.');
+            return;
+        }
+
+        document.getElementById(imgId).value = data.iconUrl;
+        showIconPreviewGeneric(data.iconUrl, previewWrapId, previewImgId);
+        statusEl.style.color = '#22c55e';
+        statusEl.textContent = '✅ Icon berhasil diambil dari internet & diupload!';
+    } catch (err) {
+        statusEl.style.color = '#f43f5e';
+        statusEl.textContent = '⚠️ Error koneksi: ' + err.message;
+    }
+}
+
+// Tombol "Ambil" di sebelah input link gambar — validasi ringan dulu di client,
+// baru panggil uploadIconFromUrlGeneric (fetch+upload dilakukan server-side).
+function ambilIconDariLinkInput(inputId, imgId, statusId, previewWrapId, previewImgId){
+    const inputEl = document.getElementById(inputId);
+    const statusEl = document.getElementById(statusId);
+    const url = (inputEl?.value || '').trim();
+
+    if (!url) {
+        statusEl.style.color = '#f43f5e';
+        statusEl.textContent = '⚠️ Tempel dulu link gambarnya di kotak sebelah kiri.';
+        return;
+    }
+    if (!/^https?:\/\/.+/i.test(url)) {
+        statusEl.style.color = '#f43f5e';
+        statusEl.textContent = '⚠️ Link harus diawali http:// atau https://';
+        return;
+    }
+
+    uploadIconFromUrlGeneric(url, imgId, statusId, previewWrapId, previewImgId);
+    inputEl.value = '';
+}
+
 async function uploadIconFileToImgbbGeneric(file, imgId, statusId, previewWrapId, previewImgId){
     const statusEl = document.getElementById(statusId);
 
@@ -2452,7 +2546,7 @@ async function uploadIconFileToImgbbGeneric(file, imgId, statusId, previewWrapId
             reader.readAsDataURL(file);
         });
 
-        const res = await fetch('/api/extract-apk-info', {
+        const res = await fetch('https://dasboard-admin-kyy.vercel.app/api/extract-apk-info', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ pin, mode: 'upload_only', imageBase64: base64 })
@@ -2492,7 +2586,18 @@ function initIconDropzone(){
     ['dragleave','drop'].forEach(evt => zone.addEventListener(evt, e => { e.preventDefault(); zone.classList.remove('drag-over'); }));
     zone.addEventListener('drop', e => {
         const file = e.dataTransfer.files?.[0];
-        if (file && file.type.startsWith('image/')) uploadIconFileToImgbbGeneric(file, 'app-img', 'autoExtractStatus', 'iconPreviewWrap', 'iconPreviewImg');
+        if (file && file.type.startsWith('image/') && file.size > 0) {
+            uploadIconFileToImgbbGeneric(file, 'app-img', 'autoExtractStatus', 'iconPreviewWrap', 'iconPreviewImg');
+            return;
+        }
+        const url = extractImageUrlFromDataTransfer(e.dataTransfer);
+        if (url) {
+            uploadIconFromUrlGeneric(url, 'app-img', 'autoExtractStatus', 'iconPreviewWrap', 'iconPreviewImg');
+        } else {
+            const statusEl = document.getElementById('autoExtractStatus');
+            statusEl.style.color = '#f43f5e';
+            statusEl.textContent = '⚠️ Gagal baca gambar yang di-drag. Coba drag ulang dari sumbernya, atau tap dropzone buat pilih dari Gallery.';
+        }
     });
 }
 document.addEventListener('DOMContentLoaded', initIconDropzone);
@@ -2513,7 +2618,18 @@ function initUpdIconDropzone(){
     ['dragleave','drop'].forEach(evt => zone.addEventListener(evt, e => { e.preventDefault(); zone.classList.remove('drag-over'); }));
     zone.addEventListener('drop', e => {
         const file = e.dataTransfer.files?.[0];
-        if (file && file.type.startsWith('image/')) uploadIconFileToImgbbGeneric(file, 'upd-5', 'updAutoExtractStatus', 'updIconPreviewWrap', 'updIconPreviewImg');
+        if (file && file.type.startsWith('image/') && file.size > 0) {
+            uploadIconFileToImgbbGeneric(file, 'upd-5', 'updAutoExtractStatus', 'updIconPreviewWrap', 'updIconPreviewImg');
+            return;
+        }
+        const url = extractImageUrlFromDataTransfer(e.dataTransfer);
+        if (url) {
+            uploadIconFromUrlGeneric(url, 'upd-5', 'updAutoExtractStatus', 'updIconPreviewWrap', 'updIconPreviewImg');
+        } else {
+            const statusEl = document.getElementById('updAutoExtractStatus');
+            statusEl.style.color = '#f43f5e';
+            statusEl.textContent = '⚠️ Gagal baca gambar yang di-drag. Coba drag ulang dari sumbernya, atau tap dropzone buat pilih dari Gallery.';
+        }
     });
 }
 
