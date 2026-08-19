@@ -2276,14 +2276,29 @@ requestAnimationFrame(()=>{
                 try {
                     // Kartu paling atas dapat angka urutan tertinggi, paling bawah dapat 1 —
                     // konsisten sama query .order('urutan', {ascending:false}) yang dipakai di mana-mana.
-                    await Promise.all(kartuUrut.map((el, i) =>
-                        supabaseClient.from(tabel).update({ urutan: total - i }).eq('id', Number(el.dataset.id))
+                    // .select() ditambahin biar ketauan beneran ke-update atau kena block RLS
+                    // (kalau RLS block, Supabase gak ngasih error tapi baris hasilnya kosong).
+                    const hasil = await Promise.all(kartuUrut.map((el, i) =>
+                        supabaseClient.from(tabel).update({ urutan: total - i }).eq('id', Number(el.dataset.id)).select()
                     ));
-                    tampilkanAlert('Urutan tersimpan & sinkron ke web publik!', 'sukses');
-                    if (refreshFn) refreshFn();
+
+                    const errorPertama = hasil.find(r => r.error)?.error;
+                    const adaYangKeblock = hasil.some(r => !r.error && (!r.data || r.data.length === 0));
+
+                    if (errorPertama) {
+                        console.error('Gagal update urutan (' + tabel + '):', errorPertama);
+                        tampilkanAlert('Gagal simpan urutan: ' + errorPertama.message, 'error');
+                    } else if (adaYangKeblock) {
+                        console.error('Update urutan ke-block, kemungkinan RLS policy tabel ' + tabel + ' gak izinin UPDATE dari role ini.');
+                        tampilkanAlert('Urutan GAGAL tersimpan (kemungkinan RLS Supabase blokir UPDATE tabel ' + tabel + '). Cek console/RLS policy.', 'error');
+                    } else {
+                        tampilkanAlert('Urutan tersimpan & sinkron ke web publik!', 'sukses');
+                    }
                 } catch (err) {
+                    console.error('Error simpan urutan (' + tabel + '):', err);
                     tampilkanAlert('Gagal simpan urutan: ' + err.message, 'error');
-                    if (refreshFn) refreshFn(); // reset tampilan balik ke urutan tersimpan terakhir
+                } finally {
+                    if (refreshFn) refreshFn(); // muat ulang dari DB biar tampilan selalu sinkron sama data asli
                 }
             }
         });
