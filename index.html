@@ -234,7 +234,8 @@
     .drag-handle { cursor: grab; color: var(--tg-text-muted); font-size: 18px; padding: 10px 12px; margin: -10px -6px -10px 0; touch-action: none; flex-shrink: 0; }
     .drag-handle:active { cursor: grabbing; color: var(--tg-accent); }
     .mod-box-item.sortable-ghost { opacity: 0.35; }
-    .mod-box-item.sortable-drag { box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+    .mod-box-item.sortable-chosen:not(.sortable-drag) { box-shadow: 0 4px 16px rgba(0,0,0,0.35); }
+    .mod-box-item.sortable-drag { box-shadow: 0 14px 32px rgba(0,0,0,0.55); transform: scale(1.015); z-index: 9999; }
     .mod-box-title-group { display: flex; align-items: center; gap: 12px; }
     .mod-box-icon { width: 48px; height: 48px; background: rgba(255,255,255,0.05); border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 24px; }
     .mod-box-name { font-size: 16px; font-weight: 700; color: #ffffff; word-break: break-word; line-height: 1.3; }
@@ -2249,6 +2250,13 @@ requestAnimationFrame(()=>{
     // Nyimpen instance Sortable per container biar gak double-attach tiap kali list di-render ulang.
     const _sortableInstances = {};
 
+    // Flag ini dipakai buat skip animasi "muncul" (kat-fade-in) pas list di-render ulang
+    // GARA-GARA abis drag — soalnya animasi muncul + animasi geser posisi dari Sortable
+    // kalau jalan bareng-bareng di frame yang sama, itu yang bikin kelihatan glitch/nimpa
+    // pas kartu lain ikut geser posisi. Render biasa (ganti filter, tambah/hapus data)
+    // tetap pakai animasi muncul seperti biasa.
+    let _skipEntranceAnim = false;
+
     // Tahan icon drag-handle di kartu, geser ke atas/bawah, lepas di posisi manapun —
     // urutan barunya langsung ke-simpan ke Supabase (kolom "urutan"), lalu ke-load ulang
     // web publik pakai urutan yang sama.
@@ -2259,7 +2267,14 @@ requestAnimationFrame(()=>{
 
         _sortableInstances[containerId] = new Sortable(container, {
             handle: '.drag-handle',
-            animation: 180,
+            animation: 220,
+            // Easing "ease-out" yang halus buat gerakan kartu lain pas geser posisi —
+            // kesannya lebih hidup/smooth kayak Discord, gak kaku linear.
+            easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+            // Ambang toleransi overlap sebelum posisi ke-swap — dikecilin dikit biar
+            // urutan berubah lebih responsif ngikutin jari, gak nunggu overlap penuh.
+            swapThreshold: 0.65,
+            invertSwap: true,
             // Pakai "fallback" (drag simulasi JS milik Sortable sendiri), BUKAN drag native
             // HTML5/browser — di Chrome Android drag native suka nyangkut/putus sendiri dan
             // ninggalin listener yang ngeblok scroll. Fallback jauh lebih stabil di HP.
@@ -2267,11 +2282,13 @@ requestAnimationFrame(()=>{
             fallbackTolerance: 3,
             fallbackOnBody: true,
             ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
             dragClass: 'sortable-drag',
             onEnd: async function () {
                 const kartuUrut = Array.from(container.children).filter(el => el.dataset && el.dataset.id);
                 const total = kartuUrut.length;
                 if (!total) return;
+                _skipEntranceAnim = true; // list bakal di-render ulang abis ini, jangan animasi "muncul" lagi
                 tampilkanAlert('Menyimpan urutan...', 'sukses');
                 try {
                     // Kartu paling atas dapat angka urutan tertinggi, paling bawah dapat 1 —
@@ -2312,15 +2329,17 @@ requestAnimationFrame(()=>{
     function renderListWeb() {
         const container = document.getElementById('container-web-list'); container.innerHTML = '';
         const filterAktif = filterAktifWeb;
+        const kelasKartu = _skipEntranceAnim ? 'mod-box-item' : 'mod-box-item kat-fade-in';
         memoriWeb.forEach((web, idx) => {
             const katWeb = (web.kategori || 'lainnya').toLowerCase();
             if (filterAktif !== 'semua' && katWeb !== filterAktif) return;
-            container.innerHTML += `<div class="mod-box-item kat-fade-in" data-id="${web.id}"><div class="mod-box-header" style="margin-bottom:0;"><div class="mod-box-title-group" style="display:flex; align-items:center; gap:4px;"><i class="fas fa-grip-vertical drag-handle"></i><div class="mod-box-icon" style="font-size:20px; width:40px; height:40px;"><i class="fas fa-globe"></i></div><div class="mod-box-name">${web.nama_web}</div></div></div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'web_saya')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusWeb(${web.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
+            container.innerHTML += `<div class="${kelasKartu}" data-id="${web.id}"><div class="mod-box-header" style="margin-bottom:0;"><div class="mod-box-title-group" style="display:flex; align-items:center; gap:4px;"><i class="fas fa-grip-vertical drag-handle"></i><div class="mod-box-icon" style="font-size:20px; width:40px; height:40px;"><i class="fas fa-globe"></i></div><div class="mod-box-name">${web.nama_web}</div></div></div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'web_saya')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusWeb(${web.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
         });
         if (!container.innerHTML) {
             container.innerHTML = `<div style="text-align:center; color:var(--tg-text-muted); font-size:12.5px; padding:24px;">Tidak ada web di kategori ini.</div>`;
         }
         initSortableList('container-web-list', 'web_saya', ambilDataWeb);
+        _skipEntranceAnim = false;
     }
     async function simpanWebKeSupabase() {
         const nama = document.getElementById('web-title').value.replace(/\n/g, '<br>'); 
@@ -2361,6 +2380,7 @@ requestAnimationFrame(()=>{
         if (!container) return;
         container.innerHTML = '';
         const filterAktif = filterAktifApp;
+        const kelasKartu = _skipEntranceAnim ? 'mod-box-item' : 'mod-box-item kat-fade-in';
         let adaTampil = false;
         
         memoriApp.forEach((app, idx) => {
@@ -2379,7 +2399,7 @@ requestAnimationFrame(()=>{
             let devLink = app.dev_link ? app.dev_link : 'https://t.me/rizky_kurniawan25';
 
             container.innerHTML += `
-                <div class="mod-box-item kat-fade-in" data-id="${app.id}">
+                <div class="${kelasKartu}" data-id="${app.id}">
                     <div class="mod-box-header">
                         <div class="mod-box-title-group" style="display:flex; align-items:center; gap:4px;">
                             <i class="fas fa-grip-vertical drag-handle"></i>
@@ -2421,6 +2441,7 @@ requestAnimationFrame(()=>{
             container.innerHTML = `<div style="text-align:center; color:var(--tg-text-muted); font-size:12.5px; padding:24px;">Tidak ada aplikasi di kategori ini.</div>`;
         }
         initSortableList('container-app-list', 'app_mods', ambilDataApp);
+        _skipEntranceAnim = false;
     }
 
     // FUNGSI TOGGLE READ MORE / READ LESS DI WEB ADMIN DEV
@@ -2767,6 +2788,7 @@ async function hapusApp(id) {
     function renderListStore() {
         const container = document.getElementById('container-store-list'); container.innerHTML = '';
         const filterAktif = filterAktifStore;
+        const kelasKartu = _skipEntranceAnim ? 'mod-box-item' : 'mod-box-item kat-fade-in';
         let adaTampil = false;
         memoriStore.forEach((prod, idx) => {
             const katProd = (prod.kategori || 'lainnya').toLowerCase();
@@ -2774,12 +2796,13 @@ async function hapusApp(id) {
             adaTampil = true;
             let iconHtml = prod.img_url ? `<img src="${prod.img_url.replace(/<br\s*\/?>/mg, '')}" onerror="this.outerHTML='🛍️'" style="width:100%; height:100%; object-fit:cover;">` : '🛍️';
             let stockBadge = prod.stock ? `<span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px; font-size:10px; margin-left:5px; color:#fff;">Stock: ${prod.stock}</span>` : '';
-            container.innerHTML += `<div class="mod-box-item kat-fade-in" data-id="${prod.id}"><div class="mod-box-header"><div class="mod-box-title-group" style="display:flex; align-items:center; gap:4px;"><i class="fas fa-grip-vertical drag-handle"></i><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${prod.nama_produk}</div></div><div class="mod-box-size" style="color:#00ff7f; background:none;">${prod.harga}${stockBadge}</div></div><div class="mod-box-desc">${prod.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'store_products')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusStore(${prod.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
+            container.innerHTML += `<div class="${kelasKartu}" data-id="${prod.id}"><div class="mod-box-header"><div class="mod-box-title-group" style="display:flex; align-items:center; gap:4px;"><i class="fas fa-grip-vertical drag-handle"></i><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${prod.nama_produk}</div></div><div class="mod-box-size" style="color:#00ff7f; background:none;">${prod.harga}${stockBadge}</div></div><div class="mod-box-desc">${prod.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'store_products')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusStore(${prod.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
         });
         if (!adaTampil) {
             container.innerHTML = `<div style="text-align:center; color:var(--tg-text-muted); font-size:12.5px; padding:24px;">Tidak ada produk di kategori ini.</div>`;
         }
         initSortableList('container-store-list', 'store_products', ambilDataStore);
+        _skipEntranceAnim = false;
     }
     
     // FUNGSI TARIK DATA STORE DARI SUPABASE DENGAN URUTAN TERBARU
