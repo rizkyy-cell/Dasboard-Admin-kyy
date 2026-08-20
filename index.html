@@ -1052,6 +1052,10 @@
         <textarea id="prod-desc" class="admin-textarea tinggi" placeholder="Deskripsi Masa Aktif & Detail (Bisa klik enter...)"></textarea>
         <textarea id="prod-price" class="admin-textarea" placeholder="Harga Jual"></textarea>
         <textarea id="prod-stock" class="admin-textarea" placeholder="Jumlah Stock / Ketersediaan"></textarea>
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; margin-bottom:12px; background:rgba(255,255,255,0.04); border-radius:12px; border:1px solid rgba(255,255,255,0.08);">
+            <span style="font-size:13.5px; color:var(--tg-text-muted); display:flex; align-items:center; gap:8px;"><i class="fas fa-ban" style="color:#f87171;"></i> Tandai Stok Habis (Sold Out)</span>
+            <label class="switch"><input type="checkbox" id="prod-soldout"><span class="slider"></span></label>
+        </div>
         <textarea id="prod-wa" class="admin-textarea" placeholder="Link Order WA"></textarea>
         <textarea id="prod-img" class="admin-textarea" placeholder="Link Gambar Produk (Opsional)"></textarea>
         <div class="kategori-trigger" id="prod-kategori-trigger" onclick="bukaDropdownKategori(this, 'prod-kategori-value', 'prod-kategori-label', 'store')">
@@ -1927,6 +1931,7 @@ async function verifikasiLoginAdmin() {
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Deskripsi</label><textarea id="upd-2" class="admin-textarea tinggi">${descAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Harga Jual</label><textarea id="upd-3" class="admin-textarea">${hargaAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Stock Produk</label><input type="text" id="upd-stock" class="admin-input" style="width:100%; padding:12px; background:var(--tg-bg); border:1px solid rgba(255,255,255,0.1); color:white; border-radius:10px;" value="${(data.stock || '')}">`;
+            innerH += `<div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; margin:0 0 12px; background:rgba(255,255,255,0.04); border-radius:12px; border:1px solid rgba(255,255,255,0.08);"><span style="font-size:13.5px; color:var(--tg-text-muted); display:flex; align-items:center; gap:8px;"><i class="fas fa-ban" style="color:#f87171;"></i> Tandai Stok Habis (Sold Out)</span><label class="switch"><input type="checkbox" id="upd-soldout" ${data.sold_out ? 'checked' : ''}><span class="slider"></span></label></div>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link WA</label><textarea id="upd-4" class="admin-textarea">${linkAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Gambar</label><textarea id="upd-5" class="admin-textarea">${imgAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Kategori</label><div class="kategori-trigger" id="upd-kategori-trigger" onclick="bukaDropdownKategori(this, 'upd-kategori-value', 'upd-kategori-label', 'store')"><span id="upd-kategori-label">${kategoriLabelAsliStore}</span><i class="fas fa-chevron-down"></i></div><input type="hidden" id="upd-kategori-value" value="${kategoriAsliStore}">`;
@@ -1986,6 +1991,7 @@ requestAnimationFrame(()=>{
                 deskripsi: document.getElementById('upd-2').value.replace(/\n/g, '<br>'), 
                 harga: document.getElementById('upd-3').value.replace(/\n/g, '<br>'), 
                 stock: document.getElementById('upd-stock').value, 
+                sold_out: document.getElementById('upd-soldout').checked,
                 link_wa: document.getElementById('upd-4').value, 
                 img_url: document.getElementById('upd-5').value.replace(/\n/g, '<br>'),
                 kategori: document.getElementById('upd-kategori-value').value
@@ -2785,9 +2791,11 @@ async function hapusApp(id) {
         }
     );
 }
-    // Deteksi otomatis "stok habis" — sama persis logikanya kayak di web publik, biar
-    // admin bisa lihat langsung produk mana yang otomatis ke-disable di sana.
-    function isStokHabis(stockVal) {
+    // Deteksi "stok habis" — utamanya dari saklar sold_out (kontrol eksplisit admin),
+    // tapi tetap kompatibel sama cara lama (isi teks "0"/"SOLD"/"Habis" di field Stock)
+    // buat produk lama yang udah kadung diisi manual sebelum saklar ini ada.
+    function isStokHabis(stockVal, soldOutFlag) {
+        if (soldOutFlag === true) return true;
         if (stockVal === null || stockVal === undefined) return false;
         const s = String(stockVal).trim().toLowerCase();
         if (s === '') return false;
@@ -2807,10 +2815,10 @@ async function hapusApp(id) {
             if (filterAktif !== 'semua' && katProd !== filterAktif) return;
             adaTampil = true;
             let iconHtml = prod.img_url ? `<img src="${prod.img_url.replace(/<br\s*\/?>/mg, '')}" onerror="this.outerHTML='🛍️'" style="width:100%; height:100%; object-fit:cover;">` : '🛍️';
-            const stokHabis = isStokHabis(prod.stock);
+            const stokHabis = isStokHabis(prod.stock, prod.sold_out);
             let stockBadge = prod.stock
                 ? (stokHabis
-                    ? `<span style="background:rgba(239,68,68,0.18); color:#f87171; padding:2px 8px; border-radius:6px; font-size:10px; margin-left:5px; font-weight:bold;">Stok Habis</span>`
+                    ? `<span style="background:rgba(239,68,68,0.18); color:#f87171; padding:2px 8px; border-radius:6px; font-size:10px; margin-left:5px; font-weight:bold;">SOLD OUT</span>`
                     : `<span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px; font-size:10px; margin-left:5px; color:#fff;">Stock: ${prod.stock}</span>`)
                 : '';
             container.innerHTML += `<div class="${kelasKartu}" data-id="${prod.id}" style="${stokHabis ? 'opacity:0.7;' : ''}"><div class="mod-box-header"><div class="mod-box-title-group" style="display:flex; align-items:center; gap:4px;"><i class="fas fa-grip-vertical drag-handle"></i><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${prod.nama_produk}</div></div><div class="mod-box-size" style="color:#00ff7f; background:none;">${prod.harga}${stockBadge}</div></div><div class="mod-box-desc">${prod.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'store_products')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusStore(${prod.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
@@ -2846,17 +2854,19 @@ async function ambilDataStore() {
         const desc = document.getElementById('prod-desc').value.replace(/\n/g, '<br>');
         const price = document.getElementById('prod-price').value.replace(/\n/g, '<br>'); 
         const stock = document.getElementById('prod-stock').value; 
+        const soldOut = document.getElementById('prod-soldout').checked;
         let waRaw = document.getElementById('prod-wa').value;
         const wa = waRaw.replace(/\n/g, '').replace(/<br\s*\/?>/mg, ''); 
         const img = document.getElementById('prod-img').value.replace(/\n/g, '<br>');
         const kategori = document.getElementById('prod-kategori-value').value;
         if(!nama || !price) return tampilkanAlert("Wajib diisi!", "error");
-        const { error } = await supabaseClient.from('store_products').insert([{ nama_produk: nama, deskripsi: desc, harga: price, stock: stock, link_wa: wa, img_url: img, kategori: kategori }]);
+        const { error } = await supabaseClient.from('store_products').insert([{ nama_produk: nama, deskripsi: desc, harga: price, stock: stock, sold_out: soldOut, link_wa: wa, img_url: img, kategori: kategori }]);
         if (!error) { 
             tampilkanAlert("Tersimpan!", "sukses"); 
             toggleForm('store-form', 'btn-show-store', 'Store'); 
             document.getElementById('prod-kategori-value').value = 'lainnya';
             document.getElementById('prod-kategori-label').innerText = 'Lainnya';
+            document.getElementById('prod-soldout').checked = false;
             ambilDataStore(); 
         }
     }
