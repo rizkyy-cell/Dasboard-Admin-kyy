@@ -366,12 +366,47 @@
     font-size: 0.9rem;
     cursor: pointer;
     margin-top: 0.5rem;
-    transition: all 0.3s ease;
+    transition: transform 0.15s ease, box-shadow 0.25s ease, background 0.25s ease;
     box-shadow: 0 4px 15px rgba(200, 157, 54, 0.3);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    position: relative; overflow: hidden;
 }
 
 .login-btn:disabled { cursor: not-allowed; opacity: 0.3; box-shadow: none; background: #555; color: #888; }
 .login-btn:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(243, 208, 120, 0.5); }
+/* Animasi "ketekan" pas diklik/ditap — feedback instan biar user yakin tombolnya kepencet */
+.login-btn:not(:disabled):active { transform: scale(0.96) translateY(0); box-shadow: 0 2px 8px rgba(200, 157, 54, 0.35); }
+
+/* Kondisi lagi proses verifikasi ke server: teks diganti, ada spinner, tombol dikunci
+   (double-klik/spam gak akan ngirim request dobel). */
+.login-btn.is-loading { opacity: 0.85; cursor: wait; }
+.login-btn .btn-spinner {
+    width: 15px; height: 15px; border-radius: 50%;
+    border: 2px solid rgba(18,18,22,0.25); border-top-color: #121216;
+    animation: btnSpin 0.6s linear infinite; display: none; flex-shrink: 0;
+}
+.login-btn.is-loading .btn-spinner { display: inline-block; }
+.login-btn.is-loading .btn-label { opacity: 0.85; }
+@keyframes btnSpin { to { transform: rotate(360deg); } }
+
+/* Kondisi lagi kena cooldown anti-spam (kebanyakan PIN salah) */
+.login-btn.is-locked { background: #3a2a2a; color: #d98c8c; box-shadow: none; cursor: not-allowed; opacity: 0.7; }
+
+/* Shake halus di form pas PIN salah — feedback visual tambahan selain toast merah */
+@keyframes formShake {
+    10%, 90% { transform: translateX(-1px); }
+    20%, 80% { transform: translateX(2px); }
+    30%, 50%, 70% { transform: translateX(-4px); }
+    40%, 60% { transform: translateX(4px); }
+}
+.login-form.shake-error { animation: formShake 0.45s cubic-bezier(.36,.07,.19,.97) both; }
+
+/* Info cooldown di bawah tombol, kelihatan cuma pas lagi lockout */
+#login-cooldown-info {
+    display: none; text-align: center; font-size: 11.5px; color: #d98c8c;
+    margin-top: 8px; line-height: 1.4;
+}
+#login-cooldown-info.show { display: block; }
 
 @media (max-width: 650px) {
     .demo-container { flex-direction: column; padding: 2rem 1.2rem; min-height: auto; gap: 1.5rem; }
@@ -889,7 +924,10 @@
                             <label>PIN </label>
                             <input type="password" id="adminPinInput" placeholder="Nyalakan lampu dulu..." disabled maxlength="6" pattern="\d*" inputmode="numeric">
                         </div>
-                        <button class="login-btn" id="login-btn" type="button" disabled onclick="verifikasiLoginAdmin()">Sign-in</button>
+                        <button class="login-btn" id="login-btn" type="button" disabled onclick="verifikasiLoginAdmin()">
+                            <span class="btn-spinner"></span><span class="btn-label">Sign-in</span>
+                        </button>
+                        <div id="login-cooldown-info"></div>
                         <button type="button" id="fingerprint-login-btn" disabled style="width:100%; margin-top:10px; padding:10px; background:transparent; border:1px solid rgba(255,255,255,0.15); border-radius:20px; color:#fff; font-size:0.85rem; cursor:pointer;" onclick="loginFingerprint()">
     🔒 Masuk dengan Fingerprint
                         </button>
@@ -1767,11 +1805,99 @@ async function prosesBanUnbanUser(userId, action, btn) {
     );
 }
 
+// ===== ANTI-SPAM LOGIN: lockout progresif berdasarkan jumlah PIN salah beruntun =====
+// Disimpan di localStorage biar tetep kekunci meski halaman di-refresh/app ditutup.
+// Skalanya sengaja dibikin naik cepet biar brute-force PIN 6 digit jadi gak praktis:
+//   3x salah -> kunci 15 detik | 5x salah -> 1 menit | 7x salah -> 5 menit | 10x+ -> 15 menit
+const LOGIN_LOCKOUT_KEY = 'kyy_admin_login_lockout';
+const LOGIN_LOCKOUT_TANGGA = [
+    { batas: 3, detik: 15 },
+    { batas: 5, detik: 60 },
+    { batas: 7, detik: 300 },
+    { batas: 10, detik: 900 },
+];
+
+function bacaStatusLockout() {
+    try {
+        const raw = localStorage.getItem(LOGIN_LOCKOUT_KEY);
+        return raw ? JSON.parse(raw) : { gagalBeruntun: 0, terkunciSampai: 0 };
+    } catch { return { gagalBeruntun: 0, terkunciSampai: 0 }; }
+}
+function simpanStatusLockout(state) {
+    try { localStorage.setItem(LOGIN_LOCKOUT_KEY, JSON.stringify(state)); } catch {}
+}
+function hitungDurasiLockout(gagalBeruntun) {
+    let detik = 0;
+    for (const tahap of LOGIN_LOCKOUT_TANGGA) {
+        if (gagalBeruntun >= tahap.batas) detik = tahap.detik;
+    }
+    return detik;
+}
+
+let _timerCooldownLogin = null;
+
+// Update tampilan tombol/input sesuai status lockout saat ini. Dipanggil pas halaman
+// dibuka (biar lockout dari sesi sebelumnya kebawa), dan tiap detik selama cooldown jalan.
+function terapkanTampilanLockout() {
+    const state = bacaStatusLockout();
+    const sisaMs = state.terkunciSampai - Date.now();
+    const loginBtnEl = document.getElementById('login-btn');
+    const cooldownInfoEl = document.getElementById('login-cooldown-info');
+    const pinInputEl = document.getElementById('adminPinInput');
+    if (!loginBtnEl || !cooldownInfoEl || !pinInputEl) return;
+
+    if (sisaMs > 0) {
+        const sisaDetik = Math.ceil(sisaMs / 1000);
+        loginBtnEl.classList.add('is-locked');
+        loginBtnEl.disabled = true;
+        pinInputEl.disabled = true;
+        cooldownInfoEl.classList.add('show');
+        cooldownInfoEl.innerHTML = `<i class="fas fa-lock"></i> Terlalu banyak percobaan gagal. Coba lagi dalam <b>${sisaDetik} detik</b>.`;
+
+        clearInterval(_timerCooldownLogin);
+        _timerCooldownLogin = setInterval(() => {
+            const sisa = Math.ceil((state.terkunciSampai - Date.now()) / 1000);
+            if (sisa <= 0) {
+                clearInterval(_timerCooldownLogin);
+                terapkanTampilanLockout(); // buka kunci, balikin ke kondisi normal (lampu nentuin disabled/enggak)
+            } else {
+                cooldownInfoEl.innerHTML = `<i class="fas fa-lock"></i> Terlalu banyak percobaan gagal. Coba lagi dalam <b>${sisa} detik</b>.`;
+            }
+        }, 1000);
+        return true; // lagi kekunci
+    } else {
+        loginBtnEl.classList.remove('is-locked');
+        cooldownInfoEl.classList.remove('show');
+        cooldownInfoEl.innerHTML = '';
+        // Balikin disabled state ke kondisi normal (ngikut lampu nyala/enggak), bukan maksa enable
+        const lampNyala = document.getElementById('lamp-container')?.classList.contains('on');
+        loginBtnEl.disabled = !lampNyala;
+        pinInputEl.disabled = !lampNyala;
+        return false; // gak lagi kekunci
+    }
+}
+
+let _sedangProsesLogin = false; // guard biar gak bisa nge-fire request dobel walau di-tap berkali-kali
+
 async function verifikasiLoginAdmin() {
-    const inputPin = document.getElementById('adminPinInput').value;
+    // Guard 1: masih ada request sebelumnya yang jalan -> abaikan tap ini
+    if (_sedangProsesLogin) return;
+    // Guard 2: lagi kena cooldown lockout -> abaikan, jangan sampai nembak API sama sekali
+    if (terapkanTampilanLockout()) return;
+
+    const pinInputEl = document.getElementById('adminPinInput');
+    const loginBtnEl = document.getElementById('login-btn');
+    const inputPin = pinInputEl.value;
     if (!inputPin) return tampilkanAlert("PIN tidak boleh kosong!", "error");
-    
+
     const infoDevice = navigator.userAgent;
+
+    // Nyalain loading state: spinner muncul, teks ganti, tombol+input dikunci sementara
+    _sedangProsesLogin = true;
+    loginBtnEl.classList.add('is-loading');
+    loginBtnEl.disabled = true;
+    pinInputEl.disabled = true;
+    loginBtnEl.querySelector('.btn-label').textContent = 'Memverifikasi...';
 
     try {
         // 1. Tembak API Vercel dulu dan tunggu jawaban mutlak dari server (di-await)
@@ -1783,7 +1909,8 @@ async function verifikasiLoginAdmin() {
         
         // 2. Cek hasil mutlak dari Vercel server
         if (res.ok) {
-            // JIKA BENAR: Kirim log SUKSES ke Supabase (PIN diisi null demi keamanan)
+            // JIKA BENAR: reset counter anti-spam & kirim log SUKSES ke Supabase (PIN diisi null demi keamanan)
+            simpanStatusLockout({ gagalBeruntun: 0, terkunciSampai: 0 });
             await supabaseClient.from('admin_logs').insert([{
                 status: "SUKSES",
                 info_device: infoDevice,
@@ -1809,7 +1936,14 @@ async function verifikasiLoginAdmin() {
             await muatLogKeamanan();
             
         } else {
-            // JIKA SALAH: Kirim log GAGAL ke Supabase beserta PIN salahnya
+            // JIKA SALAH: naikin counter gagal beruntun, cek apakah udah kena ambang lockout
+            const state = bacaStatusLockout();
+            state.gagalBeruntun += 1;
+            const durasiLockout = hitungDurasiLockout(state.gagalBeruntun);
+            if (durasiLockout > 0) state.terkunciSampai = Date.now() + durasiLockout * 1000;
+            simpanStatusLockout(state);
+
+            // Kirim log GAGAL ke Supabase beserta PIN salahnya
             await supabaseClient.from('admin_logs').insert([{
                 status: "GAGAL",
                 info_device: infoDevice,
@@ -1817,16 +1951,49 @@ async function verifikasiLoginAdmin() {
             }]);
 
             tampilkanAlert("PIN Salah! Akses Ditolak.", "error");
-            document.getElementById('adminPinInput').value = '';
-            
+            pinInputEl.value = '';
+
+            // Feedback visual shake di form biar user langsung ngeh salah tanpa baca toast
+            const formEl = document.querySelector('.login-form');
+            formEl.classList.remove('shake-error');
+            void formEl.offsetWidth; // trik restart animasi CSS
+            formEl.classList.add('shake-error');
+
             // Refresh tabel agar log GAGAL tadi langsung muncul di bawah
             await muatLogKeamanan();
         }
     } catch (err) {
         console.error("Gagal verifikasi login:", err);
         tampilkanAlert("Koneksi gagal atau server error!", "error");
+    } finally {
+        // Matiin loading state, balik ke tampilan normal (atau tampilan lockout kalau kena kunci barusan)
+        _sedangProsesLogin = false;
+        loginBtnEl.classList.remove('is-loading');
+        loginBtnEl.querySelector('.btn-label').textContent = 'Sign-in';
+        if (!terapkanTampilanLockout()) {
+            const lampNyala = document.getElementById('lamp-container')?.classList.contains('on');
+            loginBtnEl.disabled = !lampNyala;
+            pinInputEl.disabled = !lampNyala;
+            if (!pinInputEl.disabled) pinInputEl.focus();
+        }
     }
 }
+
+// Jalanin pengecekan lockout begitu halaman dibuka, biar kalau user reload pas lagi
+// kekunci, dia tetep kekunci (gak bisa bypass cuma dengan refresh halaman).
+document.addEventListener('DOMContentLoaded', terapkanTampilanLockout);
+
+// Enter di kolom PIN langsung submit — biar gak perlu geser jari nyari tombol Sign-in tiap kali.
+document.addEventListener('DOMContentLoaded', () => {
+    const pinInputEl = document.getElementById('adminPinInput');
+    if (pinInputEl) {
+        pinInputEl.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') verifikasiLoginAdmin();
+        });
+    }
+});
+
+
 
     function tampilkanAlert(pesan, jenis = 'sukses') {
         const toast = document.getElementById('custom-toast');
@@ -3183,14 +3350,19 @@ function updateLampState(isOn) {
         lampContainer.classList.remove("off");
         lampContainer.classList.add("on");
 
-        pinInput.disabled = false;
-        loginBtn.disabled = false;
+        // Jangan langsung buka kunci kalau lagi kena cooldown anti-spam —
+        // terapkanTampilanLockout() yang nentuin disabled/enggak-nya secara final.
+        const lagiKekunci = typeof terapkanTampilanLockout === 'function' ? terapkanTampilanLockout() : false;
+        if (!lagiKekunci) {
+            pinInput.disabled = false;
+            loginBtn.disabled = false;
+            setTimeout(() => pinInput.focus(), 50);
+        }
         
-        // Membuka kunci tombol fingerprint jika lampu ON
+        // Membuka kunci tombol fingerprint jika lampu ON (fingerprint gak kena aturan lockout PIN)
         if (fingerprintBtn) fingerprintBtn.disabled = false; 
 
         pinInput.placeholder = "Input PIN";
-        setTimeout(() => pinInput.focus(), 50);
 
     } else {
         lampContainer.classList.remove("on");
