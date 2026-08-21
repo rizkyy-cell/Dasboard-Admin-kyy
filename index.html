@@ -2821,13 +2821,34 @@ async function hapusApp(id) {
                     ? `<span style="background:rgba(239,68,68,0.18); color:#f87171; padding:2px 8px; border-radius:6px; font-size:10px; margin-left:5px; font-weight:bold;">SOLD OUT</span>`
                     : `<span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px; font-size:10px; margin-left:5px; color:#fff;">Stock: ${prod.stock}</span>`)
                 : '';
-            container.innerHTML += `<div class="${kelasKartu}" data-id="${prod.id}" style="${stokHabis ? 'opacity:0.7;' : ''}"><div class="mod-box-header"><div class="mod-box-title-group" style="display:flex; align-items:center; gap:4px;"><i class="fas fa-grip-vertical drag-handle"></i><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${prod.nama_produk}</div></div><div class="mod-box-size" style="color:#00ff7f; background:none;">${prod.harga}${stockBadge}</div></div><div class="mod-box-desc">${prod.deskripsi || ''}</div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'store_products')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusStore(${prod.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
+            container.innerHTML += `<div class="${kelasKartu}" data-id="${prod.id}" style="${stokHabis ? 'opacity:0.7;' : ''}"><div class="mod-box-header"><div class="mod-box-title-group" style="display:flex; align-items:center; gap:4px;"><i class="fas fa-grip-vertical drag-handle"></i><div class="mod-box-icon">${iconHtml}</div><div class="mod-box-name">${prod.nama_produk}</div></div><div class="mod-box-size" style="color:#00ff7f; background:none;">${prod.harga}${stockBadge}</div></div><div class="mod-box-desc">${prod.deskripsi || ''}</div><div style="display:flex; align-items:center; justify-content:space-between; padding:8px 2px; margin:6px 0; border-top:1px solid rgba(255,255,255,0.06); border-bottom:1px solid rgba(255,255,255,0.06);"><span style="font-size:12.5px; color:var(--tg-text-muted); display:flex; align-items:center; gap:6px;"><i class="fas fa-ban" style="color:#f87171;"></i> Sold Out</span><label class="switch"><input type="checkbox" ${prod.sold_out ? 'checked' : ''} onchange="toggleSoldOutLangsung(${prod.id}, this.checked)"><span class="slider"></span></label></div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'store_products')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusStore(${prod.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
         });
         if (!adaTampil) {
             container.innerHTML = `<div style="text-align:center; color:var(--tg-text-muted); font-size:12.5px; padding:24px;">Tidak ada produk di kategori ini.</div>`;
         }
         initSortableList('container-store-list', 'store_products', ambilDataStore);
         _skipEntranceAnim = false;
+    }
+
+    // Saklar Sold Out langsung di kartu — sekali tap, langsung update ke Supabase,
+    // gak perlu buka popup Edit dulu. Pakai .select() biar ketauan kalau kena block RLS.
+    async function toggleSoldOutLangsung(id, checked) {
+        tampilkanAlert(checked ? 'Menandai Sold Out...' : 'Membuka stok lagi...', 'sukses');
+        try {
+            const { data, error } = await supabaseClient.from('store_products').update({ sold_out: checked }).eq('id', id).select();
+            if (error) {
+                console.error('Gagal toggle sold_out:', error);
+                tampilkanAlert('Gagal: ' + error.message, 'error');
+            } else if (!data || data.length === 0) {
+                tampilkanAlert('Gagal update (kemungkinan diblokir RLS Supabase untuk kolom sold_out).', 'error');
+            } else {
+                tampilkanAlert(checked ? 'Ditandai SOLD OUT!' : 'Produk tersedia lagi!', 'sukses');
+            }
+        } catch (err) {
+            tampilkanAlert('Error: ' + err.message, 'error');
+        }
+        _skipEntranceAnim = true; // list di-render ulang abis ini, skip animasi "muncul"
+        ambilDataStore();
     }
     
     // FUNGSI TARIK DATA STORE DARI SUPABASE DENGAN URUTAN TERBARU
