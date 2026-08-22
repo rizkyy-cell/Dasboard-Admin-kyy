@@ -213,8 +213,8 @@ async function fetchImageAsBase64(rawUrl, depth = 0) {
     throw new Error('URL yang ditempel bukan gambar atau halaman yang bisa dideteksi (tipe: ' + (contentType || 'tidak diketahui') + ').');
 }
 
-// Ambil <title>, meta description, dan favicon dari sebuah URL website.
-// Dipakai buat fitur "Auto-Extract Info Website" di form Tambah/Edit Web Saya.
+// Ambil <title>, meta description, dan gambar (favicon/logo/meta image) dari sebuah
+// URL website. Dipakai buat fitur "Auto-Extract Info Website" di form Web Saya.
 function extractSiteMeta(html, baseUrl) {
     const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
     const title = titleMatch ? titleMatch[1].trim().replace(/\s+/g, ' ') : '';
@@ -224,6 +224,8 @@ function extractSiteMeta(html, baseUrl) {
         /<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i,
         /<meta[^>]+(?:property|name)=["']og:description["'][^>]+content=["']([^"']+)["']/i,
         /<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']og:description["']/i,
+        /<meta[^>]+name=["']twitter:description["'][^>]+content=["']([^"']+)["']/i,
+        /<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:description["']/i,
     ];
     let description = '';
     for (const re of descPatterns) {
@@ -231,22 +233,57 @@ function extractSiteMeta(html, baseUrl) {
         if (m && m[1]) { description = m[1].trim().replace(/\s+/g, ' '); break; }
     }
 
-    // Favicon: coba cari <link rel="icon">, kalau gak ada fallback ke layanan favicon
-    // Google (selalu tersedia, gak perlu upload apapun, ringan & cepat).
-    let faviconUrl = '';
-    const iconMatch = html.match(/<link[^>]+rel=["'](?:shortcut icon|icon|apple-touch-icon)["'][^>]+href=["']([^"']+)["']/i)
-                    || html.match(/<link[^>]+href=["']([^"']+)["'][^>]+rel=["'](?:shortcut icon|icon|apple-touch-icon)["']/i);
-    if (iconMatch && iconMatch[1]) {
-        try { faviconUrl = new URL(iconMatch[1], baseUrl).toString(); } catch { faviconUrl = ''; }
-    }
-    if (!faviconUrl) {
-        try {
-            const domain = new URL(baseUrl).hostname;
-            faviconUrl = `https://www.google.com/s2/favicons?sz=128&domain=${encodeURIComponent(domain)}`;
-        } catch { faviconUrl = ''; }
+    let domain = '';
+    try { domain = new URL(baseUrl).hostname; } catch {}
+
+    // Kalau situsnya emang gak punya meta description sama sekali, jangan dikosongin —
+    // generate kalimat default yang masih masuk akal, biar admin gak perlu ngetik manual.
+    let descriptionOtomatis = false;
+    if (!description) {
+        description = title ? `Kunjungi ${title} untuk info lebih lanjut.` : (domain ? `Kunjungi ${domain} untuk info lebih lanjut.` : '');
+        descriptionOtomatis = true;
     }
 
-    return { title, description, faviconUrl };
+    // Cari gambar apapun yang tersedia di halaman, urut dari yang paling representatif:
+    // 1) apple-touch-icon (biasanya resolusi paling tinggi & jelas)
+    // 2) favicon/shortcut icon biasa
+    // 3) og:image / twitter:image (gambar/logo utama halaman, kalau icon beneran gak ada)
+    // Google favicon guesser SENGAJA gak dipakai di sini lagi — dia suka ngasih ikon
+    // globe generik buram buat domain yang belum ke-index Google, kelihatan kayak error
+    // padahal bukan. Lebih baik ambil dari HTML asli situsnya langsung, atau kosong aja
+    // (nanti fallback ke ikon globe bawaan dashboard, itu lebih jujur daripada gambar buram).
+    let imgUrl = '';
+    const cariTag = (regexList) => {
+        for (const re of regexList) {
+            const m = html.match(re);
+            if (m && m[1]) return m[1];
+        }
+        return null;
+    };
+
+    const appleIcon = cariTag([
+        /<link[^>]+rel=["']apple-touch-icon(?:-precomposed)?["'][^>]+href=["']([^"']+)["']/i,
+        /<link[^>]+href=["']([^"']+)["'][^>]+rel=["']apple-touch-icon(?:-precomposed)?["']/i,
+    ]);
+    const shortcutIcon = cariTag([
+        /<link[^>]+rel=["'](?:shortcut icon|icon)["'][^>]+href=["']([^"']+)["']/i,
+        /<link[^>]+href=["']([^"']+)["'][^>]+rel=["'](?:shortcut icon|icon)["']/i,
+    ]);
+    const ogImage = cariTag([
+        /<meta[^>]+(?:property|name)=["']og:image(?::secure_url)?["'][^>]+content=["']([^"']+)["']/i,
+        /<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']og:image(?::secure_url)?["']/i,
+        /<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i,
+        /<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image["']/i,
+    ]);
+
+    const kandidat = appleIcon || shortcutIcon || ogImage;
+    if (kandidat) {
+        try { imgUrl = new URL(kandidat, baseUrl).toString(); } catch { imgUrl = ''; }
+    }
+    // Kalau beneran gak ketemu satupun (situsnya polos tanpa icon/logo/meta image),
+    // biarin kosong aja — biasa aja, nanti fallback ke ikon globe default. Gak dipaksain.
+
+    return { title, description, descriptionOtomatis, imgUrl, faviconUrl: imgUrl };
 }
 
 module.exports = async function handler(req, res) {
@@ -299,8 +336,8 @@ module.exports = async function handler(req, res) {
             }
             const html = await res2.text();
             const info = extractSiteMeta(html, res2.url || siteUrl.trim());
-            if (!info.title && !info.description) {
-                return res.status(200).json({ error: 'Gak ketemu title/deskripsi di halaman ini. Isi manual aja.' });
+            if (!info.title) {
+                return res.status(200).json({ error: 'Gak ketemu title di halaman ini. Isi manual aja.' });
             }
             return res.status(200).json(info);
         }
@@ -352,4 +389,4 @@ module.exports = async function handler(req, res) {
         return res.status(200).json({ error: err.message || 'Gagal memproses link.' });
     }
 };
-                               
+                                 
