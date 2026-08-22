@@ -2537,6 +2537,17 @@ requestAnimationFrame(()=>{
         } catch { return ''; }
     }
 
+    // Fallback bertingkat pas gambar icon gagal load: coba tebakan favicon Google dulu,
+    // baru kalau itu juga gagal -> ikon globe biasa.
+    function handleWebIconError(imgEl, fallbackFaviconUrl) {
+        if (fallbackFaviconUrl && imgEl.src !== fallbackFaviconUrl && !imgEl.dataset.triedFallback) {
+            imgEl.dataset.triedFallback = '1';
+            imgEl.src = fallbackFaviconUrl;
+        } else {
+            imgEl.outerHTML = '<i class="fas fa-globe"></i>';
+        }
+    }
+
     function renderListWeb() {
         const container = document.getElementById('container-web-list'); container.innerHTML = '';
         const filterAktif = filterAktifWeb;
@@ -2544,12 +2555,12 @@ requestAnimationFrame(()=>{
         memoriWeb.forEach((web, idx) => {
             const katWeb = (web.kategori || 'lainnya').toLowerCase();
             if (filterAktif !== 'semua' && katWeb !== filterAktif) return;
-            // Prioritas gambar: img_url hasil Auto-Extract/manual dulu, baru fallback ke
-            // tebakan favicon Google (bisa buram/generik buat domain yang belum ke-index),
-            // dan kalau dua-duanya gagal/gak ada, ya udah ikon globe biasa aja.
-            const iconSrc = web.img_url || getFaviconUrl(web.link_web);
-            const iconHtml = iconSrc
-                ? `<img src="${iconSrc}" onerror="this.outerHTML='<i class=&quot;fas fa-globe&quot;></i>'" style="width:60%; height:60%; object-fit:contain;">`
+            // Prioritas gambar: img_url hasil Auto-Extract/manual dulu, kalau gagal load baru
+            // fallback ke tebakan favicon Google, dan kalau itu juga gagal, ikon globe biasa.
+            const iconUtama = web.img_url || getFaviconUrl(web.link_web) || '';
+            const iconFallback = getFaviconUrl(web.link_web) || '';
+            const iconHtml = iconUtama
+                ? `<img src="${iconUtama}" onerror="handleWebIconError(this, '${iconFallback}')" style="width:60%; height:60%; object-fit:contain;">`
                 : `<i class="fas fa-globe"></i>`;
             const deskripsiPreview = web.deskripsi ? `<div class="mod-box-desc" style="margin-top:6px; font-size:12px;">${web.deskripsi}</div>` : '';
             container.innerHTML += `<div class="${kelasKartu}" data-id="${web.id}"><div class="mod-box-header" style="margin-bottom:0;"><div class="mod-box-title-group" style="display:flex; align-items:center; gap:4px;"><i class="fas fa-grip-vertical drag-handle"></i><div class="mod-box-icon" style="font-size:20px; width:40px; height:40px;">${iconHtml}</div><div class="mod-box-name">${web.nama_web}</div></div></div>${deskripsiPreview}<div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'web_saya')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusWeb(${web.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
