@@ -1023,6 +1023,23 @@
         <button class="admin-btn-save" style="background:var(--tg-accent); margin-bottom:12px;" onclick="autoExtractWebInfo()" id="web-autoextract-btn"><i class="fas fa-bolt"></i> Auto-Extract Nama & Deskripsi</button>
         <div id="webAutoExtractStatus" style="font-size:12px; margin:-6px 0 10px; display:none;"></div>
         <textarea id="web-deskripsi" class="admin-textarea" placeholder="Deskripsi singkat website (otomatis terisi kalau pakai Auto-Extract)"></textarea>
+
+        <textarea id="web-img" class="admin-textarea" placeholder="Link Ikon/Logo Website (auto-terisi, atau isi manual)"></textarea>
+        <div class="icon-dropzone" id="webIconDropzone" onclick="document.getElementById('webIconFileInput').click()">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <span>Atau upload gambar icon manual (tap / drag &amp; drop)</span>
+        </div>
+        <input type="file" id="webIconFileInput" accept="image/*" style="display:none" onchange="handleWebIconFileUpload(event)">
+        <div style="display:flex; gap:8px; margin-top:10px; margin-bottom:4px; align-items:center;">
+            <input type="text" id="web-img-url-input" class="admin-input" style="margin:0; flex:1 1 0; min-width:0;" placeholder="Link gambar / halaman (ImgBB, dll)">
+            <button type="button" style="flex:0 0 auto; padding:12px 16px; background:var(--tg-accent); color:#fff; font-weight:bold; border:none; border-radius:10px; cursor:pointer; display:flex; align-items:center; gap:6px; white-space:nowrap;" onclick="ambilIconDariLinkInput('web-img-url-input', 'web-img', 'webAutoExtractStatus', 'webIconPreviewWrap', 'webIconPreviewImg')">
+                <i class="fas fa-link"></i> Ambil
+            </button>
+        </div>
+        <div id="webIconPreviewWrap" style="display:none; text-align:center; margin-bottom:12px;">
+            <img id="webIconPreviewImg" style="width:64px;height:64px;border-radius:14px;object-fit:cover;border:1px solid rgba(255,255,255,0.15);">
+        </div>
+
         <div class="kategori-trigger" id="web-kategori-trigger" onclick="bukaDropdownKategori(this, 'web-kategori-value', 'web-kategori-label')">
             <span id="web-kategori-label">Lainnya</span>
             <i class="fas fa-chevron-down"></i>
@@ -1914,6 +1931,7 @@ async function verifikasiLoginAdmin() {
         if (res.ok) {
             // JIKA BENAR: reset counter anti-spam & kirim log SUKSES ke Supabase (PIN diisi null demi keamanan)
             simpanStatusLockout({ gagalBeruntun: 0, terkunciSampai: 0 });
+            extractApkPin = inputPin; // reuse PIN yang sama buat fitur Auto-Extract, gak perlu masukin lagi
             await supabaseClient.from('admin_logs').insert([{
                 status: "SUKSES",
                 info_device: infoDevice,
@@ -2058,12 +2076,15 @@ document.addEventListener('DOMContentLoaded', () => {
             let namaAsli = (data.nama_web || '').replace(/<br\s*\/?>/mg, "\n");
             let linkAsli = (data.link_web || '').replace(/<br\s*\/?>/mg, "\n");
             let deskripsiAsli = (data.deskripsi || '').replace(/<br\s*\/?>/mg, "\n");
+            let imgAsliWeb = (data.img_url || '').replace(/<br\s*\/?>/mg, "\n");
             let kategoriAsli = (data.kategori || 'lainnya').toLowerCase();
             let kategoriLabelAsli = kategoriAsli.charAt(0).toUpperCase() + kategoriAsli.slice(1);
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama Web</label><textarea id="upd-1" class="admin-textarea">${namaAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Web</label><textarea id="upd-2" class="admin-textarea">${linkAsli}</textarea>`;
             innerH += `<button type="button" class="admin-btn-save" style="background:var(--tg-accent); margin-bottom:10px;" onclick="autoExtractWebInfoEdit()"><i class="fas fa-bolt"></i> Auto-Extract Nama & Deskripsi</button><div id="updWebAutoExtractStatus" style="font-size:12px; margin:-6px 0 10px; display:none;"></div>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Deskripsi</label><textarea id="upd-web-deskripsi" class="admin-textarea">${deskripsiAsli}</textarea>`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Ikon/Logo</label><textarea id="upd-web-img" class="admin-textarea">${imgAsliWeb}</textarea>`;
+            innerH += `<div id="updWebIconPreviewWrap" style="display:${imgAsliWeb ? 'block' : 'none'}; text-align:center; margin-bottom:12px;"><img id="updWebIconPreviewImg" src="${imgAsliWeb}" style="width:64px;height:64px;border-radius:14px;object-fit:cover;border:1px solid rgba(255,255,255,0.15);"></div>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Kategori</label><div class="kategori-trigger" id="upd-kategori-trigger" onclick="bukaDropdownKategori(this, 'upd-kategori-value', 'upd-kategori-label')"><span id="upd-kategori-label">${kategoriLabelAsli}</span><i class="fas fa-chevron-down"></i></div><input type="hidden" id="upd-kategori-value" value="${kategoriAsli}">`;
         } else if (tabel === 'app_mods') {
             let data = memoriApp[index];
@@ -2144,6 +2165,7 @@ requestAnimationFrame(()=>{
                 nama_web: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), 
                 link_web: document.getElementById('upd-2').value.replace(/\n/g, '<br>'),
                 deskripsi: document.getElementById('upd-web-deskripsi').value.replace(/\n/g, '<br>'),
+                img_url: document.getElementById('upd-web-img').value.replace(/\n/g, '<br>'),
                 kategori: document.getElementById('upd-kategori-value').value
             };
         } else if (tabel === 'app_mods') {
@@ -2522,9 +2544,12 @@ requestAnimationFrame(()=>{
         memoriWeb.forEach((web, idx) => {
             const katWeb = (web.kategori || 'lainnya').toLowerCase();
             if (filterAktif !== 'semua' && katWeb !== filterAktif) return;
-            const faviconUrl = getFaviconUrl(web.link_web);
-            const iconHtml = faviconUrl
-                ? `<img src="${faviconUrl}" onerror="this.outerHTML='<i class=&quot;fas fa-globe&quot;></i>'" style="width:60%; height:60%; object-fit:contain;">`
+            // Prioritas gambar: img_url hasil Auto-Extract/manual dulu, baru fallback ke
+            // tebakan favicon Google (bisa buram/generik buat domain yang belum ke-index),
+            // dan kalau dua-duanya gagal/gak ada, ya udah ikon globe biasa aja.
+            const iconSrc = web.img_url || getFaviconUrl(web.link_web);
+            const iconHtml = iconSrc
+                ? `<img src="${iconSrc}" onerror="this.outerHTML='<i class=&quot;fas fa-globe&quot;></i>'" style="width:60%; height:60%; object-fit:contain;">`
                 : `<i class="fas fa-globe"></i>`;
             const deskripsiPreview = web.deskripsi ? `<div class="mod-box-desc" style="margin-top:6px; font-size:12px;">${web.deskripsi}</div>` : '';
             container.innerHTML += `<div class="${kelasKartu}" data-id="${web.id}"><div class="mod-box-header" style="margin-bottom:0;"><div class="mod-box-title-group" style="display:flex; align-items:center; gap:4px;"><i class="fas fa-grip-vertical drag-handle"></i><div class="mod-box-icon" style="font-size:20px; width:40px; height:40px;">${iconHtml}</div><div class="mod-box-name">${web.nama_web}</div></div></div>${deskripsiPreview}<div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'web_saya')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusWeb(${web.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
@@ -2571,9 +2596,15 @@ requestAnimationFrame(()=>{
 
             if (data.title) document.getElementById('web-title').value = data.title;
             if (data.description) document.getElementById('web-deskripsi').value = data.description;
+            if (data.imgUrl) {
+                document.getElementById('web-img').value = data.imgUrl;
+                showIconPreviewGeneric(data.imgUrl, 'webIconPreviewWrap', 'webIconPreviewImg');
+            }
 
             statusEl.style.color = '#22c55e';
-            statusEl.innerHTML = '✅ Nama & deskripsi berhasil diambil! Cek dulu sebelum simpan.';
+            statusEl.innerHTML = data.imgUrl
+                ? '✅ Nama, deskripsi & icon berhasil diambil! Cek dulu sebelum simpan.'
+                : '✅ Nama & deskripsi berhasil diambil (situs ini gak punya icon/logo yang kedeteksi, gapapa biasa aja). Cek dulu sebelum simpan.';
         } catch (err) {
             statusEl.style.color = '#f43f5e';
             statusEl.innerHTML = '⚠️ Error koneksi: ' + err.message;
@@ -2615,9 +2646,18 @@ requestAnimationFrame(()=>{
 
             if (data.title) document.getElementById('upd-1').value = data.title;
             if (data.description) document.getElementById('upd-web-deskripsi').value = data.description;
+            if (data.imgUrl) {
+                const updImgInput = document.getElementById('upd-web-img');
+                if (updImgInput) {
+                    updImgInput.value = data.imgUrl;
+                    showIconPreviewGeneric(data.imgUrl, 'updWebIconPreviewWrap', 'updWebIconPreviewImg');
+                }
+            }
 
             statusEl.style.color = '#22c55e';
-            statusEl.innerHTML = '✅ Nama & deskripsi berhasil diambil! Cek dulu sebelum simpan.';
+            statusEl.innerHTML = data.imgUrl
+                ? '✅ Nama, deskripsi & icon berhasil diambil! Cek dulu sebelum simpan.'
+                : '✅ Nama & deskripsi berhasil diambil (situs ini gak punya icon/logo yang kedeteksi, gapapa biasa aja). Cek dulu sebelum simpan.';
         } catch (err) {
             statusEl.style.color = '#f43f5e';
             statusEl.innerHTML = '⚠️ Error koneksi: ' + err.message;
@@ -2628,15 +2668,19 @@ requestAnimationFrame(()=>{
         const nama = document.getElementById('web-title').value.replace(/\n/g, '<br>'); 
         const url = document.getElementById('web-url').value.replace(/\n/g, '<br>');
         const deskripsi = document.getElementById('web-deskripsi').value.replace(/\n/g, '<br>');
+        const imgUrl = document.getElementById('web-img').value.replace(/\n/g, '<br>');
         const kategori = document.getElementById('web-kategori-value').value;
         if(!nama || !url) return tampilkanAlert("Wajib diisi!", "error");
-        const { error } = await supabaseClient.from('web_saya').insert([{ nama_web: nama, link_web: url, deskripsi: deskripsi, kategori: kategori }]);
+        const { error } = await supabaseClient.from('web_saya').insert([{ nama_web: nama, link_web: url, deskripsi: deskripsi, img_url: imgUrl, kategori: kategori }]);
         if (!error) { 
             tampilkanAlert("Tersimpan!", "sukses"); 
             toggleForm('web-form', 'btn-show-web', 'Web Saya'); 
             document.getElementById('web-kategori-value').value = 'lainnya';
             document.getElementById('web-kategori-label').innerText = 'Lainnya';
             document.getElementById('web-deskripsi').value = '';
+            document.getElementById('web-img').value = '';
+            const previewWrap = document.getElementById('webIconPreviewWrap');
+            if (previewWrap) previewWrap.style.display = 'none';
             document.getElementById('webAutoExtractStatus').style.display = 'none';
             ambilDataWeb(); 
         }
@@ -2948,6 +2992,36 @@ async function uploadIconFileToImgbbGeneric(file, imgId, statusId, previewWrapId
 function autoExtractAppInfo(){
     autoExtractAppInfoGeneric('app-url', 'app-size', 'app-img', 'autoExtractStatus', 'iconPreviewWrap', 'iconPreviewImg');
 }
+function handleWebIconFileUpload(event){
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (file) uploadIconFileToImgbbGeneric(file, 'web-img', 'webAutoExtractStatus', 'webIconPreviewWrap', 'webIconPreviewImg');
+}
+function initWebIconDropzone(){
+    const zone = document.getElementById('webIconDropzone');
+    if (!zone || zone.dataset.wired) return;
+    zone.dataset.wired = '1';
+    ['dragenter','dragover'].forEach(evt => zone.addEventListener(evt, e => { e.preventDefault(); zone.classList.add('drag-over'); }));
+    ['dragleave','drop'].forEach(evt => zone.addEventListener(evt, e => { e.preventDefault(); zone.classList.remove('drag-over'); }));
+    zone.addEventListener('drop', e => {
+        const file = e.dataTransfer.files?.[0];
+        if (file && file.type.startsWith('image/') && file.size > 0) {
+            uploadIconFileToImgbbGeneric(file, 'web-img', 'webAutoExtractStatus', 'webIconPreviewWrap', 'webIconPreviewImg');
+            return;
+        }
+        const url = extractImageUrlFromDataTransfer(e.dataTransfer);
+        if (url) {
+            uploadIconFromUrlGeneric(url, 'web-img', 'webAutoExtractStatus', 'webIconPreviewWrap', 'webIconPreviewImg');
+        } else {
+            const statusEl = document.getElementById('webAutoExtractStatus');
+            statusEl.style.display = 'block';
+            statusEl.style.color = '#f43f5e';
+            statusEl.textContent = '⚠️ Gagal baca gambar yang di-drag. Coba drag ulang dari sumbernya, atau tap dropzone buat pilih dari Gallery.';
+        }
+    });
+}
+document.addEventListener('DOMContentLoaded', initWebIconDropzone);
+
 function handleIconFileUpload(event){
     const file = event.target.files?.[0];
     event.target.value = '';
