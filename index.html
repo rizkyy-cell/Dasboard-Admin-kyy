@@ -1020,6 +1020,9 @@
         <div class="admin-form-title"><i class="fas fa-globe"></i> Input Web Baru</div>
         <textarea id="web-title" class="admin-textarea" placeholder="Nama Web (Bisa klik enter paragraf baru...)"></textarea>
         <textarea id="web-url" class="admin-textarea" placeholder="Link Website (Contoh: https://...)"></textarea>
+        <button class="admin-btn-save" style="background:var(--tg-accent); margin-bottom:12px;" onclick="autoExtractWebInfo()" id="web-autoextract-btn"><i class="fas fa-bolt"></i> Auto-Extract Nama & Deskripsi</button>
+        <div id="webAutoExtractStatus" style="font-size:12px; margin:-6px 0 10px; display:none;"></div>
+        <textarea id="web-deskripsi" class="admin-textarea" placeholder="Deskripsi singkat website (otomatis terisi kalau pakai Auto-Extract)"></textarea>
         <div class="kategori-trigger" id="web-kategori-trigger" onclick="bukaDropdownKategori(this, 'web-kategori-value', 'web-kategori-label')">
             <span id="web-kategori-label">Lainnya</span>
             <i class="fas fa-chevron-down"></i>
@@ -2054,10 +2057,13 @@ document.addEventListener('DOMContentLoaded', () => {
             let data = memoriWeb[index];
             let namaAsli = (data.nama_web || '').replace(/<br\s*\/?>/mg, "\n");
             let linkAsli = (data.link_web || '').replace(/<br\s*\/?>/mg, "\n");
+            let deskripsiAsli = (data.deskripsi || '').replace(/<br\s*\/?>/mg, "\n");
             let kategoriAsli = (data.kategori || 'lainnya').toLowerCase();
             let kategoriLabelAsli = kategoriAsli.charAt(0).toUpperCase() + kategoriAsli.slice(1);
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Nama Web</label><textarea id="upd-1" class="admin-textarea">${namaAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Link Web</label><textarea id="upd-2" class="admin-textarea">${linkAsli}</textarea>`;
+            innerH += `<button type="button" class="admin-btn-save" style="background:var(--tg-accent); margin-bottom:10px;" onclick="autoExtractWebInfoEdit()"><i class="fas fa-bolt"></i> Auto-Extract Nama & Deskripsi</button><div id="updWebAutoExtractStatus" style="font-size:12px; margin:-6px 0 10px; display:none;"></div>`;
+            innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Deskripsi</label><textarea id="upd-web-deskripsi" class="admin-textarea">${deskripsiAsli}</textarea>`;
             innerH += `<label style="color:var(--tg-text-muted); font-size:12px; font-weight:bold;">Kategori</label><div class="kategori-trigger" id="upd-kategori-trigger" onclick="bukaDropdownKategori(this, 'upd-kategori-value', 'upd-kategori-label')"><span id="upd-kategori-label">${kategoriLabelAsli}</span><i class="fas fa-chevron-down"></i></div><input type="hidden" id="upd-kategori-value" value="${kategoriAsli}">`;
         } else if (tabel === 'app_mods') {
             let data = memoriApp[index];
@@ -2137,6 +2143,7 @@ requestAnimationFrame(()=>{
             payload = { 
                 nama_web: document.getElementById('upd-1').value.replace(/\n/g, '<br>'), 
                 link_web: document.getElementById('upd-2').value.replace(/\n/g, '<br>'),
+                deskripsi: document.getElementById('upd-web-deskripsi').value.replace(/\n/g, '<br>'),
                 kategori: document.getElementById('upd-kategori-value').value
             };
         } else if (tabel === 'app_mods') {
@@ -2499,6 +2506,15 @@ requestAnimationFrame(()=>{
         if (data) { memoriWeb = data; renderFilterKategori('web'); renderListWeb(); }
     }
 
+    // Favicon website otomatis dari domain-nya, gak perlu simpan/upload apapun —
+    // pakai layanan favicon Google yang selalu tersedia & ringan.
+    function getFaviconUrl(link) {
+        try {
+            const domain = new URL(link).hostname;
+            return `https://www.google.com/s2/favicons?sz=128&domain=${encodeURIComponent(domain)}`;
+        } catch { return ''; }
+    }
+
     function renderListWeb() {
         const container = document.getElementById('container-web-list'); container.innerHTML = '';
         const filterAktif = filterAktifWeb;
@@ -2506,7 +2522,12 @@ requestAnimationFrame(()=>{
         memoriWeb.forEach((web, idx) => {
             const katWeb = (web.kategori || 'lainnya').toLowerCase();
             if (filterAktif !== 'semua' && katWeb !== filterAktif) return;
-            container.innerHTML += `<div class="${kelasKartu}" data-id="${web.id}"><div class="mod-box-header" style="margin-bottom:0;"><div class="mod-box-title-group" style="display:flex; align-items:center; gap:4px;"><i class="fas fa-grip-vertical drag-handle"></i><div class="mod-box-icon" style="font-size:20px; width:40px; height:40px;"><i class="fas fa-globe"></i></div><div class="mod-box-name">${web.nama_web}</div></div></div><div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'web_saya')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusWeb(${web.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
+            const faviconUrl = getFaviconUrl(web.link_web);
+            const iconHtml = faviconUrl
+                ? `<img src="${faviconUrl}" onerror="this.outerHTML='<i class=&quot;fas fa-globe&quot;></i>'" style="width:60%; height:60%; object-fit:contain;">`
+                : `<i class="fas fa-globe"></i>`;
+            const deskripsiPreview = web.deskripsi ? `<div class="mod-box-desc" style="margin-top:6px; font-size:12px;">${web.deskripsi}</div>` : '';
+            container.innerHTML += `<div class="${kelasKartu}" data-id="${web.id}"><div class="mod-box-header" style="margin-bottom:0;"><div class="mod-box-title-group" style="display:flex; align-items:center; gap:4px;"><i class="fas fa-grip-vertical drag-handle"></i><div class="mod-box-icon" style="font-size:20px; width:40px; height:40px;">${iconHtml}</div><div class="mod-box-name">${web.nama_web}</div></div></div>${deskripsiPreview}<div class="admin-action-bar"><button class="btn-admin edit" onclick="bukaPopupEdit(${idx}, 'web_saya')"><i class="fas fa-edit"></i> Edit</button><button class="btn-admin delete" onclick="hapusWeb(${web.id})"><i class="fas fa-trash"></i> Hapus</button></div></div>`;
         });
         if (!container.innerHTML) {
             container.innerHTML = `<div style="text-align:center; color:var(--tg-text-muted); font-size:12.5px; padding:24px;">Tidak ada web di kategori ini.</div>`;
@@ -2514,17 +2535,109 @@ requestAnimationFrame(()=>{
         initSortableList('container-web-list', 'web_saya', ambilDataWeb);
         _skipEntranceAnim = false;
     }
+    // Baca <title> + meta description + favicon dari link website yang ditulis di form,
+    // langsung isiin ke field Nama & Deskripsi (admin tetap bisa edit sebelum simpan).
+    async function autoExtractWebInfo() {
+        const urlInput = document.getElementById('web-url');
+        const statusEl = document.getElementById('webAutoExtractStatus');
+        const siteUrl = urlInput.value.trim();
+
+        if (!siteUrl) {
+            statusEl.style.display = 'block'; statusEl.style.color = '#f43f5e';
+            statusEl.innerHTML = '⚠️ Isi Link Website dulu ya.';
+            return;
+        }
+
+        const pin = await ensureExtractPin();
+        if (!pin) return;
+
+        statusEl.style.display = 'block'; statusEl.style.color = '#3390ec';
+        statusEl.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Membaca info website...';
+
+        try {
+            const res = await fetch('https://dasboard-admin-kyy.vercel.app/api/extract-apk-info', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pin, mode: 'extract_site_meta', siteUrl })
+            });
+            const data = await res.json();
+            if (data.error && data.error.includes('PIN')) extractApkPin = null;
+
+            if (!res.ok || data.error) {
+                statusEl.style.color = '#f43f5e';
+                statusEl.innerHTML = '⚠️ ' + (data.error || 'Gagal ambil info website.');
+                return;
+            }
+
+            if (data.title) document.getElementById('web-title').value = data.title;
+            if (data.description) document.getElementById('web-deskripsi').value = data.description;
+
+            statusEl.style.color = '#22c55e';
+            statusEl.innerHTML = '✅ Nama & deskripsi berhasil diambil! Cek dulu sebelum simpan.';
+        } catch (err) {
+            statusEl.style.color = '#f43f5e';
+            statusEl.innerHTML = '⚠️ Error koneksi: ' + err.message;
+        }
+    }
+
+    // Sama kayak autoExtractWebInfo tapi buat popup Edit (field id-nya beda)
+    async function autoExtractWebInfoEdit() {
+        const urlInput = document.getElementById('upd-2');
+        const statusEl = document.getElementById('updWebAutoExtractStatus');
+        const siteUrl = urlInput.value.trim();
+
+        if (!siteUrl) {
+            statusEl.style.display = 'block'; statusEl.style.color = '#f43f5e';
+            statusEl.innerHTML = '⚠️ Isi Link Web dulu ya.';
+            return;
+        }
+
+        const pin = await ensureExtractPin();
+        if (!pin) return;
+
+        statusEl.style.display = 'block'; statusEl.style.color = '#3390ec';
+        statusEl.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Membaca info website...';
+
+        try {
+            const res = await fetch('https://dasboard-admin-kyy.vercel.app/api/extract-apk-info', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pin, mode: 'extract_site_meta', siteUrl })
+            });
+            const data = await res.json();
+            if (data.error && data.error.includes('PIN')) extractApkPin = null;
+
+            if (!res.ok || data.error) {
+                statusEl.style.color = '#f43f5e';
+                statusEl.innerHTML = '⚠️ ' + (data.error || 'Gagal ambil info website.');
+                return;
+            }
+
+            if (data.title) document.getElementById('upd-1').value = data.title;
+            if (data.description) document.getElementById('upd-web-deskripsi').value = data.description;
+
+            statusEl.style.color = '#22c55e';
+            statusEl.innerHTML = '✅ Nama & deskripsi berhasil diambil! Cek dulu sebelum simpan.';
+        } catch (err) {
+            statusEl.style.color = '#f43f5e';
+            statusEl.innerHTML = '⚠️ Error koneksi: ' + err.message;
+        }
+    }
+
     async function simpanWebKeSupabase() {
         const nama = document.getElementById('web-title').value.replace(/\n/g, '<br>'); 
         const url = document.getElementById('web-url').value.replace(/\n/g, '<br>');
+        const deskripsi = document.getElementById('web-deskripsi').value.replace(/\n/g, '<br>');
         const kategori = document.getElementById('web-kategori-value').value;
         if(!nama || !url) return tampilkanAlert("Wajib diisi!", "error");
-        const { error } = await supabaseClient.from('web_saya').insert([{ nama_web: nama, link_web: url, kategori: kategori }]);
+        const { error } = await supabaseClient.from('web_saya').insert([{ nama_web: nama, link_web: url, deskripsi: deskripsi, kategori: kategori }]);
         if (!error) { 
             tampilkanAlert("Tersimpan!", "sukses"); 
             toggleForm('web-form', 'btn-show-web', 'Web Saya'); 
             document.getElementById('web-kategori-value').value = 'lainnya';
             document.getElementById('web-kategori-label').innerText = 'Lainnya';
+            document.getElementById('web-deskripsi').value = '';
+            document.getElementById('webAutoExtractStatus').style.display = 'none';
             ambilDataWeb(); 
         }
     }
