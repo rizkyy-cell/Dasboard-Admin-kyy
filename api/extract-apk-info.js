@@ -213,13 +213,49 @@ async function fetchImageAsBase64(rawUrl, depth = 0) {
     throw new Error('URL yang ditempel bukan gambar atau halaman yang bisa dideteksi (tipe: ' + (contentType || 'tidak diketahui') + ').');
 }
 
+// Ambil <title>, meta description, dan favicon dari sebuah URL website.
+// Dipakai buat fitur "Auto-Extract Info Website" di form Tambah/Edit Web Saya.
+function extractSiteMeta(html, baseUrl) {
+    const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
+    const title = titleMatch ? titleMatch[1].trim().replace(/\s+/g, ' ') : '';
+
+    const descPatterns = [
+        /<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i,
+        /<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i,
+        /<meta[^>]+(?:property|name)=["']og:description["'][^>]+content=["']([^"']+)["']/i,
+        /<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']og:description["']/i,
+    ];
+    let description = '';
+    for (const re of descPatterns) {
+        const m = html.match(re);
+        if (m && m[1]) { description = m[1].trim().replace(/\s+/g, ' '); break; }
+    }
+
+    // Favicon: coba cari <link rel="icon">, kalau gak ada fallback ke layanan favicon
+    // Google (selalu tersedia, gak perlu upload apapun, ringan & cepat).
+    let faviconUrl = '';
+    const iconMatch = html.match(/<link[^>]+rel=["'](?:shortcut icon|icon|apple-touch-icon)["'][^>]+href=["']([^"']+)["']/i)
+                    || html.match(/<link[^>]+href=["']([^"']+)["'][^>]+rel=["'](?:shortcut icon|icon|apple-touch-icon)["']/i);
+    if (iconMatch && iconMatch[1]) {
+        try { faviconUrl = new URL(iconMatch[1], baseUrl).toString(); } catch { faviconUrl = ''; }
+    }
+    if (!faviconUrl) {
+        try {
+            const domain = new URL(baseUrl).hostname;
+            faviconUrl = `https://www.google.com/s2/favicons?sz=128&domain=${encodeURIComponent(domain)}`;
+        } catch { faviconUrl = ''; }
+    }
+
+    return { title, description, faviconUrl };
+}
+
 module.exports = async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method tidak diizinkan' });
     }
 
     try {
-        const { pin, url, mode, imageBase64, imageUrl } = req.body;
+        const { pin, url, mode, imageBase64, imageUrl, siteUrl } = req.body;
 
         if (!pin || pin !== process.env.ADMIN_PIN) {
             return res.status(401).json({ error: 'PIN salah / akses ditolak.' });
@@ -240,6 +276,33 @@ module.exports = async function handler(req, res) {
             const base64Data = await fetchImageAsBase64(imageUrl.trim());
             const iconUrl = await uploadBase64ToImgbb(base64Data);
             return res.status(200).json({ iconUrl });
+        }
+
+        // MODE: ambil nama (title), deskripsi (meta description), & favicon dari URL website.
+        // Dipakai form "Tambah/Edit Web Saya" — beda dari mode fetch_url yang khusus icon app.
+        if (mode === 'extract_site_meta') {
+            if (!siteUrl || !siteUrl.trim()) return res.status(200).json({ error: 'Link website tidak ada.' });
+            if (!/^https?:\/\//i.test(siteUrl.trim())) return res.status(200).json({ error: 'Link website tidak valid.' });
+
+            let res2;
+            try {
+                res2 = await fetch(siteUrl.trim(), { redirect: 'follow', headers: IMAGE_FETCH_HEADERS });
+            } catch (err) {
+                return res.status(200).json({ error: 'Gagal konek ke website tersebut.' });
+            }
+            if (!res2.ok) {
+                return res.status(200).json({ error: `Gagal ambil halaman (status ${res2.status}).` });
+            }
+            const contentType = (res2.headers.get('content-type') || '').toLowerCase();
+            if (!contentType.includes('text/html')) {
+                return res.status(200).json({ error: 'URL ini bukan halaman website (bukan HTML).' });
+            }
+            const html = await res2.text();
+            const info = extractSiteMeta(html, res2.url || siteUrl.trim());
+            if (!info.title && !info.description) {
+                return res.status(200).json({ error: 'Gak ketemu title/deskripsi di halaman ini. Isi manual aja.' });
+            }
+            return res.status(200).json(info);
         }
 
         // MODE default: extract dari APK
@@ -289,3 +352,4 @@ module.exports = async function handler(req, res) {
         return res.status(200).json({ error: err.message || 'Gagal memproses link.' });
     }
 };
+                               
